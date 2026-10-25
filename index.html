@@ -1365,6 +1365,12 @@ textarea.input{resize:vertical;min-height:70px}
 .fleet-util>span{flex:1;height:5px;background:#EEF3F7;border-radius:4px;overflow:hidden}
 .fleet-util>span i{display:block;height:100%;background:linear-gradient(90deg,#8FB7C2,#2F6F7E);border-radius:4px}
 .fleet-util>b{font-size:8.5px;color:var(--muted);white-space:nowrap}
+.ready-text{color:var(--green)}
+.ready-strip{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:10.5px;line-height:1.5}
+.ready-strip b{white-space:nowrap;font-size:10.5px}
+.ready-strip.ready{background:#F1F8F5;border-color:#CFE3D9;color:#2F6F5E}
+.ready-strip.notready{background:#FDF7EC;border-color:#EAD7B7;color:#6B4D1F}
+.ready-strip.notready b{color:#A36A18}
 
 </style>
 </head>
@@ -1421,7 +1427,14 @@ const SERVICES = [
   {code:'S-INSTALL', name:'安装/调试', rate:150, desc:'定位、通电、基础功能测试'},
   {code:'S-DEBRIS', name:'包装清运', rate:45, desc:'将包装材料带离现场'},
   {code:'S-WAIT', name:'等待费', rate:75, desc:'超过约定免费等待时间'},
-  {code:'S-REDELIVER', name:'二次派送', rate:150, desc:'首次失败后的再次派送'}
+  {code:'S-REDELIVER', name:'二次派送', rate:150, desc:'首次失败后的再次派送'},
+  {code:'S-LIMITED', name:'受限区域', rate:125, desc:'校园、医院、军事区、展会等受限进入'},
+  {code:'S-AFTER', name:'非工作时间', rate:85, desc:'夜间、周末或约定外时段交付'},
+  {code:'S-NOTIFY', name:'到达通知', rate:20, desc:'到达前通知客户/收货人并确认'},
+  {code:'S-DETENTION', name:'等待/滞留', rate:75, desc:'超过免费等待时间，按小时计'},
+  {code:'S-TOLL', name:'过路/桥隧', rate:30, desc:'实际发生的 toll 代收'},
+  {code:'S-FSC', name:'燃油附加', rate:25, desc:'演示用固定 FSC；真实应按承运商费率计算'},
+  {code:'S-OVERSIZE', name:'超尺寸', rate:150, desc:'超长/超宽/超高或特殊装卸'}
 ];
 
 const STATUS = {
@@ -1467,7 +1480,12 @@ const EXCEPTIONS = [
   {code:'E-TRANSIT', name:'在途延误/故障'},
   {code:'E-DAMAGE', name:'货损/短少'},
   {code:'E-COST', name:'费用争议'},
-  {code:'E-COMPLIANCE', name:'合规/保险/隐私'}
+  {code:'E-COMPLIANCE', name:'合规/保险/隐私'},
+  {code:'E-ATTEMPT', name:'首次派送失败'},
+  {code:'E-REATTEMPT', name:'二次派送'},
+  {code:'E-REFUSED', name:'客户拒收'},
+  {code:'E-OSD', name:'货损/短少/溢装'},
+  {code:'E-CLAIM', name:'索赔/理赔'}
 ];
 
 let db = null;
@@ -1588,7 +1606,9 @@ function makeOrder(o) {
     model:'M03', qty:1, address:'', city:'', state:'TX', zip:'', building:'',
     lat:null, lng:null, geoSource:'',
     addressType:'商业', floor:0, elevator:'unknown', doorWidth:'', doorHeight:'',
-    stairs:'unknown', stairNote:'', liftgate:'unknown', parking:'未知', sitePhotos:0,
+    stairs:'unknown', stairsCount:'', stairNote:'', liftgate:'unknown', parking:'未知', sitePhotos:0,
+    dock:'unknown', threshold:'', clearance:'', gateCode:'', addressValidated:'unknown', appointmentRequired:'unknown',
+    windowStartTime:'', windowEndTime:'',
     serviceLevel:'L3', serviceCodes:[], windowStart:addDays(5), windowEnd:addDays(7),
     dispatchDate:'', notes:'', createdAt:new Date().toISOString(), status:'D0',
     gates:{G0:{status:'pending',notes:[]},G1:{status:'pending',notes:[]},G2:{status:'pending',notes:[]},G3:{status:'pending',notes:[]},G4:{status:'pending',notes:[]}},
@@ -1601,11 +1621,11 @@ function makeOrder(o) {
 }
 
 const VEHICLE_SEED = [
-  {id:'veh-van-01', name:'VAN-01 厢式车', type:'Van', maxWeight:800, maxStops:4, costPerKm:0.9, co2PerKm:0.22, driver:'陈师傅', shiftStart:'08:30', shiftEnd:'18:00', status:'available'},
-  {id:'veh-box-01', name:'BOX-01 箱车', type:'Box truck', maxWeight:2200, maxStops:6, costPerKm:1.35, co2PerKm:0.34, driver:'李师傅', shiftStart:'08:00', shiftEnd:'18:00', status:'available'},
-  {id:'veh-sprinter-01', name:'SPRINTER-01 高顶车', type:'Sprinter', maxWeight:1200, maxStops:5, costPerKm:1.05, co2PerKm:0.26, driver:'王师傅', shiftStart:'09:00', shiftEnd:'19:00', status:'available'}
+  {id:'veh-van-01', name:'VAN-01 厢式车', type:'Van', maxWeight:800, maxStops:4, maxLength:300, maxWidth:180, maxHeight:240, maxVolume:12, liftgate:true, crew:1, costPerKm:0.9, co2PerKm:0.22, driver:'陈师傅', shiftStart:'08:30', shiftEnd:'18:00', status:'available'},
+  {id:'veh-box-01', name:'BOX-01 箱车', type:'Box truck', maxWeight:2200, maxStops:6, maxLength:420, maxWidth:210, maxHeight:280, maxVolume:28, liftgate:true, crew:2, costPerKm:1.35, co2PerKm:0.34, driver:'李师傅', shiftStart:'08:00', shiftEnd:'18:00', status:'available'},
+  {id:'veh-sprinter-01', name:'SPRINTER-01 高顶车', type:'Sprinter', maxWeight:1200, maxStops:5, maxLength:360, maxWidth:190, maxHeight:250, maxVolume:18, liftgate:true, crew:2, costPerKm:1.05, co2PerKm:0.26, driver:'王师傅', shiftStart:'09:00', shiftEnd:'19:00', status:'available'}
 ];
-function makeVehicle(v){ return Object.assign({id:'veh-'+uid('v'),name:'未命名车辆',type:'Van',maxWeight:800,maxStops:4,costPerKm:0.9,co2PerKm:0.22,driver:'',shiftStart:'08:30',shiftEnd:'18:00',status:'available'}, v||{}); }
+function makeVehicle(v){ return Object.assign({id:'veh-'+uid('v'),name:'未命名车辆',type:'Van',maxWeight:800,maxStops:4,maxLength:300,maxWidth:180,maxHeight:240,maxVolume:12,liftgate:true,crew:1,costPerKm:0.9,co2PerKm:0.22,driver:'',shiftStart:'08:30',shiftEnd:'18:00',status:'available'}, v||{}); }
 
 function seedDb() {
   const suppliers = [
@@ -1761,6 +1781,14 @@ function seedDb() {
       createdAt:addDays(-2)+'T14:30:00', notes:'标准订单。'})
   ];
 
+  orders.forEach(o=>{
+    if(!o.addressValidated || o.addressValidated==='unknown') o.addressValidated='yes';
+    if(!o.dock || o.dock==='unknown') o.dock=o.addressType==='住宅'?'no':'yes';
+    if(!o.appointmentRequired || o.appointmentRequired==='unknown') o.appointmentRequired=o.addressType==='商业'?'no':'unknown';
+    if(!o.windowStartTime) o.windowStartTime='09:00';
+    if(!o.windowEndTime) o.windowEndTime='17:00';
+    if(!o.stairsCount && o.stairs==='yes') o.stairsCount=6;
+  });
   return {
     version:APP_VERSION,
     settings:defaultSettings(),
@@ -1853,9 +1881,24 @@ function gateG0(order) {
   if(!order.windowStart) missing.push('期望日期');
   if(!order.serviceLevel) missing.push('服务等级');
   if(!order.addressType) missing.push('地址类型');
-  return missing.length
-    ? {status:'fail', notes:['缺少：'+missing.join('、')]}
-    : {status:'pass', notes:['关键字段完整']};
+  const invalid=[];
+  if(order.zip && !/^\d{5}(-\d{4})?$/.test(String(order.zip))) invalid.push('ZIP 格式');
+  if(order.state && !/^[A-Z]{2}$/.test(String(order.state))) invalid.push('州代码');
+  if(order.addressValidated==='no') invalid.push('地址验证状态为未通过');
+  if(missing.length) return {status:'fail', notes:['缺少：'+missing.join('、')]};
+  if(invalid.length) return {status:'fail', notes:['格式/验证问题：'+invalid.join('、')]};
+  return {status:'pass', notes:['关键字段完整；ZIP/州格式通过']};
+}
+
+function deliveryReadiness(order) {
+  const reasons=[];
+  if(order.addressValidated!=='yes') reasons.push('地址未验证');
+  if(!Number.isFinite(Number(order.lat)) || !Number.isFinite(Number(order.lng))) reasons.push('缺楼栋坐标');
+  if(order.geoSource && !['manual'].includes(order.geoSource)) reasons.push('坐标为 '+order.geoSource+' 近似');
+  const g1=gateG1(order);
+  if(g1.status!=='pass') reasons.push('G1 '+g1.status);
+  if(g1.status==='pass' && ['商业','商场','办公'].includes(order.addressType) && order.appointmentRequired==='yes' && (!order.windowStartTime||!order.windowEndTime)) reasons.push('预约时间窗未确认');
+  return {ready:reasons.length===0,reasons};
 }
 
 function gateG1(order) {
@@ -1864,26 +1907,55 @@ function gateG1(order) {
   const notes = [];
   let status = 'pass';
   const mark = (s, note) => { notes.push(note); if(s==='fail') status='fail'; else if(s==='conditional' && status!=='fail') status='conditional'; };
+  const services=new Set(requiredServices(order));
+  const totalWeight=m.kg*Math.max(1,num(order.qty,1));
+  const residential=order.addressType==='住宅';
+  const commercial=['商业','商场','办公'].includes(order.addressType);
+  const noDock=order.dock==='no' || (residential && order.dock!=='yes');
+  const l1=order.serviceLevel==='L1';
 
-  if(order.serviceLevel==='L1') return {status:'pass', notes:['L1 路边交付，不涉及门洞/室内']};
+  if(order.addressValidated!=='yes') mark('conditional','地址未验证；需要 USPS/地理编码确认后才能派车');
+  if(order.geoSource && order.geoSource!=='manual') mark('conditional','当前为 ZIP/州近似坐标，不是楼栋坐标');
 
-  if(!order.doorWidth || !order.doorHeight) {
-    mark('conditional','门洞净宽/净高未知，需现场核验');
+  if(!l1){
+    if(order.dock==='unknown' && !residential) mark('conditional','卸货平台（dock）未知，需确认');
+    if(noDock && totalWeight>75){
+      if(order.liftgate==='no') mark('fail',`无 dock 且明确无尾板，${Math.round(totalWeight)} kg 无法安全卸货`);
+      else if(order.liftgate!=='yes') mark('conditional','无 dock，需确认尾板/吊装/地面卸货条件');
+    }
+    if(totalWeight>150 && order.liftgate!=='yes') mark('conditional','单票超过 150 kg，需尾板/双人/机械');
   } else {
-    if(m.h + 5 > num(order.doorHeight)) mark('fail', `包装高度 ${m.h} cm + 操作余量 > 门洞净高 ${order.doorHeight} cm`);
-    if(m.wid + 5 > num(order.doorWidth)) mark('conditional', `包装宽度 ${m.wid} cm 接近门洞净宽 ${order.doorWidth} cm，需专业评估`);
+    if(totalWeight>150 && order.liftgate!=='yes') mark('conditional','L1 超 150 kg，仍需确认尾板/机械卸货');
   }
 
-  if(num(order.floor) > 0) {
-    if(order.elevator==='no') mark('conditional','无电梯，需楼梯/吊装专项评估');
-    else if(order.elevator==='unknown') mark('conditional','电梯条件未知，需现场核验');
+  if(!l1){
+    if(!order.doorWidth || !order.doorHeight) {
+      mark('conditional','门洞净宽/净高未知，需现场核验');
+    } else {
+      if(m.h + 5 > num(order.doorHeight)) mark('fail', `包装高度 ${m.h} cm + 操作余量 > 门洞净高 ${order.doorHeight} cm`);
+      if(m.wid + 5 > num(order.doorWidth)) mark('conditional', `包装宽度 ${m.wid} cm 接近门洞净宽 ${order.doorWidth} cm，需专业评估`);
+    }
+    const floor=num(order.floor,0);
+    const stairFlag=order.stairs==='yes' || floor>0;
+    if(stairFlag){
+      if(order.elevator==='no' || order.stairs==='yes'){
+        if(order.elevator==='unknown' && order.stairs!=='yes') mark('conditional','电梯条件未知，需现场核验');
+        const count=num(order.stairsCount,0);
+        if(!count) mark('conditional','楼梯级数未知，需补充');
+        if(count>12) mark('conditional','楼梯超过 12 级，需专项评估/双人');
+        if(!services.has('S-2P')) mark('conditional','楼梯/无电梯场景需双人搬运（S-2P）');
+        if(!services.has('S-STAIR')) mark('conditional','楼梯/无电梯场景需楼梯搬运（S-STAIR）');
+      } else if(order.elevator==='unknown') mark('conditional','楼层>0，电梯条件未知');
+    }
+    if(num(order.threshold,0)>5) mark('conditional','门槛/台阶 > 5 cm，需确认过槛方式');
+    if(num(order.clearance,0)>0 && num(order.clearance,0)<250) mark('conditional','通道/限高 < 250 cm，需确认车辆与搬运路径');
+    if(commercial && order.appointmentRequired!=='no' && (!order.windowStartTime||!order.windowEndTime)) mark('conditional','商业地址未确认预约时间窗');
+    if(order.appointmentRequired==='yes' && (!order.windowStartTime||!order.windowEndTime)) mark('conditional','已要求预约，但未填写预约时间窗');
+    if(['L3','L4','L5'].includes(order.serviceLevel) && num(order.sitePhotos) < 3) mark('conditional','现场照片少于 3 张，需补充');
+    if(order.serviceLevel==='L4' && !order.stairNote) mark('conditional','L4 未填写楼梯/通道情况');
   }
 
-  if(m.kg > 150 && order.liftgate!=='yes') mark('conditional','单台超过 150 kg，需确认尾板/双人/机械');
-  if(['L3','L4','L5'].includes(order.serviceLevel) && num(order.sitePhotos) < 3) mark('conditional','现场照片少于 3 张，需补充');
-  if(order.serviceLevel==='L4' && !order.stairNote) mark('conditional','L4 未填写楼梯/通道情况');
-
-  if(!notes.length) notes.push('尺寸/通道/照片满足当前规则');
+  if(!notes.length) notes.push('尺寸/通道/预约/照片满足当前规则');
   return {status, notes};
 }
 
@@ -2381,7 +2453,7 @@ function orderTable() {
         <td>${esc(o.model)} × ${o.qty}<div class="small">${esc(o.serviceLevel)} ${esc(levelInfo(o.serviceLevel).name)}</div></td>
         <td>${esc(o.city)} ${esc(o.zip)}<div class="small">${esc(o.addressType)} · ${o.floor?o.floor+'F':'地面'}</div></td>
         <td><b class="small">${fmtDate(o.dispatchDate||o.windowStart)}</b><div class="small">${esc(o.building||'—')}</div></td>
-        <td>${statusBadge(o.status)}</td>
+        <td>${statusBadge(o.status)}<div class="small ${deliveryReadiness(o).ready?'ready-text':'warn-text'}">${deliveryReadiness(o).ready?'就绪':'未就绪'}</div></td>
         <td>${['G0','G1','G2','G3','G4'].map(g=>`<span class="gate-pill ${o.gates[g]?o.gates[g].status:'pending'}" title="${esc(GATES[g].label)}：${esc(o.gates[g]?o.gates[g].status:'pending')}"><span class="g">${g}</span>${gateSymbol(o.gates[g]?o.gates[g].status:'pending')}</span>`).join('')}</td>
         <td class="num-cell">${price?money(price):'—'}${price?`<div class="small">${isCommitted(o)?'承诺':'估价'}</div>`:''}</td>
         <td><div class="small">${esc(nextAction(o).label)}</div><span class="btn ghost sm">打开 ›</span></td>
@@ -2472,6 +2544,7 @@ function viewOrderDetail(id) {
 
   const invoice = o.costs && num(o.costs.invoice)>0 ? num(o.costs.invoice) : null;
   const variance = invoice!=null ? invoice - commitmentPrice(o) : null;
+  const readiness=deliveryReadiness(o);
   const statusOrder=['D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11'];
   const currentStage=statusOrder.indexOf(o.status);
   const flow=[
@@ -2496,10 +2569,12 @@ function viewOrderDetail(id) {
     <div class="detail-head"><div class="detail-title"><div><h2>${esc(o.code)}</h2><div class="sub">${esc(o.customer)} · ${esc(o.model)} × ${o.qty} · ${esc(o.city)} ${esc(o.zip)}</div></div></div>
       <div class="detail-actions">${orderActions(o,next)}</div></div>
     ${summary}
+    ${readiness.ready?`<div class="ready-strip ready"><b>派送就绪</b><span>地址、坐标、G1、预约条件通过当前检查</span></div>`:`<div class="ready-strip notready"><b>派送未就绪</b><span>${readiness.reasons.map(esc).join('；')}</span></div>`}
     <div class="workflow">${flowHtml}</div>
     <div class="pills" style="margin-bottom:12px">${['G0','G1','G2','G3','G4'].map(g=>`<span class="gate-pill ${o.gates[g]?.status||'pending'}"><span class="g">${g}</span>${esc(GATES[g].label)}</span>`).join('')}
       ${o.dispatchBatchId?`<span class="badge amber">批次 ${esc(o.dispatchBatchId)}</span>`:''}
-      <span class="badge ${statusInfo(o.status).tone}" style="margin-left:auto">${statusInfo(o.status).label}</span></div>
+      <span class="badge ${readiness.ready?'green':'red'}" style="margin-left:auto">${readiness.ready?'就绪':'未就绪'}</span>
+      <span class="badge ${statusInfo(o.status).tone}">${statusInfo(o.status).label}</span></div>
     <div class="grid main-side">
       <div class="grid" style="gap:14px">
         <div class="card"><div class="card-h"><h3>交付档案</h3><span class="extra">八维 · 版本 v1</span></div><div class="card-b">
@@ -2508,7 +2583,10 @@ function viewOrderDetail(id) {
             <div class="info-item"><div class="k">设备</div><div class="v">${esc(o.model)} × ${o.qty} · ${MODELS[o.model]?MODELS[o.model].h+' cm / '+MODELS[o.model].kg+' kg':'参数缺失'}</div></div>
             <div class="info-item"><div class="k">地址 / 楼栋</div><div class="v">${esc(o.building||'—')}<br>${esc(o.address)}<br>${esc(o.city)}, ${esc(o.state)} ${esc(o.zip)} · ${esc(o.addressType)}</div></div>
             <div class="info-item"><div class="k">楼层 / 电梯</div><div class="v">${o.floor?o.floor+'F':'地面'} · 电梯 ${esc(o.elevator)} · 楼梯 ${esc(o.stairs)}${o.stairNote?`<br><span class="small muted">${esc(o.stairNote)}</span>`:''}</div></div>
-            <div class="info-item"><div class="k">门洞 / 尾板</div><div class="v">${o.doorWidth||'?'} × ${o.doorHeight||'?'} cm · 尾板 ${esc(o.liftgate)}</div></div>
+            <div class="info-item"><div class="k">门洞 / 尾板 / Dock</div><div class="v">${o.doorWidth||'?'} × ${o.doorHeight||'?'} cm · 尾板 ${esc(o.liftgate)} · Dock ${esc(o.dock||'未知')}</div></div>
+            <div class="info-item"><div class="k">台阶 / 门槛 / 限高</div><div class="v">${esc(o.stairsCount||'—')} 级 · 门槛 ${o.threshold||'—'} cm · 限高 ${o.clearance||'—'} cm</div></div>
+            <div class="info-item"><div class="k">预约 / 门禁</div><div class="v">${o.appointmentRequired==='yes'?'必须预约':o.appointmentRequired==='no'?'不需预约':'预约未知'} · ${o.windowStartTime||'—'}–${o.windowEndTime||'—'}<br><span class="small muted">${esc(o.gateCode||'无门禁信息')}</span></div></div>
+            <div class="info-item"><div class="k">地址验证 / 坐标</div><div class="v">${o.addressValidated==='yes'?'已验证':o.addressValidated==='no'?'未通过':'未验证'} · ${esc(geoLabel(o.geoSource))}</div></div>
             <div class="info-item"><div class="k">服务包</div><div class="v">${esc(o.serviceLevel)} ${esc(levelInfo(o.serviceLevel).name)} · ${requiredServices(o).map(esc).join('、')}</div></div>
             <div class="info-item"><div class="k">计划发货 / 时间窗</div><div class="v">${fmtDate(o.dispatchDate||o.windowStart)} · ${fmtDate(o.windowStart)} → ${fmtDate(o.windowEnd)}<br><span class="small muted">${esc(geoLabel(o.geoSource))} · ${Number(o.lat).toFixed(4)}, ${Number(o.lng).toFixed(4)}</span></div></div>
             <div class="info-item"><div class="k">备注</div><div class="v">${esc(o.notes||'—')}</div></div>
@@ -2684,6 +2762,8 @@ function viewAnalytics() {
   const avgPrice=priced.length?sum(priced,o=>displayPrice(o))/priced.length:0;
   const mergeRate=dispatchable.length?batchOrderIds.size/dispatchable.length*100:0;
   const exceptionRate=active.length?openEx/active.length*100:0;
+  const readyCount=all.filter(o=>deliveryReadiness(o).ready).length;
+  const readyRate=all.length?readyCount/all.length*100:0;
   const stateRows=Object.entries(all.reduce((m,o)=>{m[o.state]=(m[o.state]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1]).map(([abbr,n])=>({label:abbr,value:n,color:'#7FA3BE'}));
   const levelRows=LEVELS.map(l=>({label:`${l.code} ${l.name}`,value:all.filter(o=>o.serviceLevel===l.code).length,color:LEVEL_COLORS[l.code]}));
   const stageRows=[
@@ -2707,13 +2787,15 @@ function viewAnalytics() {
   const fleetHtml=fleetRows.map(x=>`<div class="fleet-row"><div class="fleet-main"><b>${esc(x.v.name)}</b><span>${esc(x.v.driver||'—')} · ${x.v.maxWeight} kg / ${x.v.maxStops} 站 · ${esc(x.v.shiftStart)}–${esc(x.v.shiftEnd)}</span></div><div class="fleet-util"><span><i style="width:${Math.round(x.util)}%"></i></span><b>${x.batches} 批 · ${Math.round(x.util)}%</b></div></div>`).join('')||'<div class="empty">暂无车辆资源</div>';
   const batchRows=batches.slice(-8).reverse().map(b=>`<tr><td><b>${esc(b.id)}</b><div class="small">${fmtDate(b.date)} · ${esc(b.state)}</div></td><td>${b.route?`${b.route.distance.toFixed(1)} km / ${Math.round(b.route.duration)} 分`:'—'}</td><td>${esc(b.vehicleName||'—')}</td><td>${esc(b.etaEnd||'—')}${b.late?' <span class="badge red">超班次</span>':''}</td><td>${(b.route&&b.route.co2!=null)?b.route.co2.toFixed(1)+' kg':'—'}</td></tr>`).join('');
   return `<div class="page-head"><div><h2>运营分析</h2><div class="lead">从订单、承诺、异常、车辆和成本看运营；这些是管理口径，不是财务审计或客户 OTIF 结算口径。</div></div><div class="actions"><button class="btn" data-action="export-data">导出数据</button></div></div>
-    <div class="grid cols-3" style="margin-bottom:14px">
+    <div class="grid cols-4" style="margin-bottom:14px">
       ${kpi('在办订单',active.length,'不含归档/取消')}
       ${kpi('有效承诺',committed.length,'当前 active 版本')}
       ${kpi('完成/归档',completed.length,'D9–D11')}
       ${kpi('异常率',exceptionRate.toFixed(1)+'%',openEx+' 条开启',exceptionRate?'warn':'good')}
       ${kpi('合单率',mergeRate.toFixed(1)+'%',batchOrderIds.size+' 单进入批次','')}
       ${kpi('平均承诺/估价',money(avgPrice),priced.length+' 单有价格')}
+      ${kpi('调度就绪率',readyRate.toFixed(1)+'%',readyCount+' / '+all.length+' 单',readyRate<80?'warn':'good')}
+      ${kpi('批次',batches.length,'路线批次总数','')}
     </div>
     <div class="grid main-side">
       <div class="grid" style="gap:14px">
@@ -3333,7 +3415,11 @@ function createBatchFromIds(ids) {
   const path = orders.some(o=>['L3','L4','L5'].includes(o.serviceLevel)) ? 'P2' : 'P1';
   const seq = (db.batches||[]).filter(b=>b.date===date&&b.state===state).length + 1;
   const id = `BATCH-${date.replace(/-/g,'').slice(2)}-${state}-${String(seq).padStart(2,'0')}`;
-  const batch = {id, date, state, orderIds:orders.map(o=>o.id), path, status:'planned', createdAt:new Date().toISOString(), note:'按地图合并建议生成，需询价与路线确认'};
+  const weight=sum(orders,modelWeight);
+  const vehicle=pickVehicle(weight,orders.length,orders);
+  const unready=orders.filter(o=>!deliveryReadiness(o).ready).length;
+  const batch = {id, date, state, orderIds:orders.map(o=>o.id), path, status:'planned', createdAt:new Date().toISOString(), note:'按地图合并建议生成，需询价与路线确认',
+    vehicleId:vehicle?.id||'', vehicleName:vehicle?.name||'无可用车辆', unready};
   db.batches.push(batch);
   orders.forEach(o=>{ o.dispatchBatchId=id; addTimeline(o,'batch',`加入合并批次 ${id}`); });
   saveDb(); render(); toast('已生成合并批次 '+id,'ok');
@@ -3425,25 +3511,37 @@ function stateLevelPlan(orders) {
 function serviceMinutes(o){ return ({L1:15,L2:20,L3:30,L4:45,L5:60})[o.serviceLevel]||30; }
 function timeToMin(t){ const [h,m]=String(t||'08:30').split(':').map(Number); return (h||0)*60+(m||0); }
 function minToTime(n){ n=Math.round(n); return String(Math.floor(n/60)%24).padStart(2,'0')+':'+String(n%60).padStart(2,'0'); }
-function pickVehicle(weight, stops){
-  const list=(db.vehicles||[]).filter(v=>v.status!=='maintenance' && num(v.maxWeight)>=weight && num(v.maxStops)>=stops);
+function pickVehicle(weight, stops, orders){
+  const list0=orders||[];
+  const maxHeight=Math.max(0,...list0.map(o=>MODELS[o.model]?.h||0));
+  const needLift=list0.some(o=>o.liftgate==='yes' || requiredServices(o).includes('S-LIFT') || o.dock==='no' || o.addressType==='住宅');
+  const needCrew=list0.some(o=>requiredServices(o).includes('S-2P') || (num(o.floor,0)>0 && o.elevator==='no') || o.stairs==='yes');
+  const list=(db.vehicles||[]).filter(v=>v.status!=='maintenance'
+    && num(v.maxWeight)>=weight && num(v.maxStops)>=stops
+    && (!maxHeight || num(v.maxHeight,999)>=maxHeight)
+    && (!needLift || v.liftgate!==false)
+    && (!needCrew || num(v.crew,1)>=2));
   list.sort((a,b)=>num(a.maxWeight)-num(b.maxWeight)||num(a.costPerKm)-num(b.costPerKm));
   return list[0]||null;
 }
 function scheduleRoute(start, seq, vehicle){
   const startTime=vehicle?.shiftStart||'08:30';
   let t=timeToMin(startTime), cur=start, totalService=0;
-  const etas=[];
+  const etas=[]; const windowMisses=[];
   seq.forEach(o=>{
     const leg=distanceKm(cur[0],cur[1],Number(o.lat),Number(o.lng));
     t+=leg/35*60;
     etas.push({id:o.id,eta:minToTime(t),leg});
+    if(o.windowStartTime && o.windowEndTime){
+      const ws=timeToMin(o.windowStartTime), we=timeToMin(o.windowEndTime);
+      if(t>we || t<ws-15) windowMisses.push({id:o.id,eta:minToTime(t),window:`${o.windowStartTime}–${o.windowEndTime}`});
+    }
     t+=serviceMinutes(o); totalService+=serviceMinutes(o);
     cur=[Number(o.lat),Number(o.lng)];
   });
   const endTime=minToTime(t);
-  const late=t>timeToMin(vehicle?.shiftEnd||'18:00');
-  return {etas,startTime,endTime,serviceTotal:totalService,late};
+  const late=t>timeToMin(vehicle?.shiftEnd||'18:00') || windowMisses.length>0;
+  return {etas,windowMisses,startTime,endTime,serviceTotal:totalService,late};
 }
 
 function suggestedPlanFor(orders, abbr) {
@@ -3461,19 +3559,21 @@ function suggestedPlanFor(orders, abbr) {
     seq.forEach(o=>{ dist+=distanceKm(cur[0],cur[1],Number(o.lat),Number(o.lng)); cur=[Number(o.lat),Number(o.lng)]; });
     const weight=sum(list,modelWeight);
     const priority=Math.max(...list.map(o=>LEVELS.findIndex(l=>l.code===o.serviceLevel)+1));
-    const vehicle=pickVehicle(weight,list.length);
+    const vehicle=pickVehicle(weight,list.length,list);
     const sched=scheduleRoute(hub,seq,vehicle);
+    const unready=list.filter(o=>!deliveryReadiness(o).ready).length;
     routes.push({merge,orders:list,sequence:seq,date:mapDateValue(list[0]),city:list[0].city,weight,distance:dist,duration:dist/40*60,path:merge?(list.some(o=>['L3','L4','L5'].includes(o.serviceLevel))?'P2':'P1'):(list[0].serviceLevel==='L5'?'P4':list[0].serviceLevel==='L4'?'P3':list[0].serviceLevel==='L3'?'P2':'P1'),priority,start:hub,startLabel:`${stateName(abbr)}主要城市中心（示例）`,
       vehicle,vehicleName:vehicle?vehicle.name:'无可用车辆',utilization:vehicle?Math.min(1,weight/num(vehicle.maxWeight,1)):0,
-      startTime:sched.startTime,endTime:sched.endTime,etas:sched.etas,late:sched.late,serviceTotal:sched.serviceTotal,
-      co2:dist*(vehicle?num(vehicle.co2PerKm,0.25):0.25),cost:dist*(vehicle?num(vehicle.costPerKm,1):1)});
+      startTime:sched.startTime,endTime:sched.endTime,etas:sched.etas,windowMisses:sched.windowMisses,late:sched.late,serviceTotal:sched.serviceTotal,
+      co2:dist*(vehicle?num(vehicle.co2PerKm,0.25):0.25),cost:dist*(vehicle?num(vehicle.costPerKm,1):1),unready});
   };
   merges.forEach(c=>mk(c.orders,true));
   singles.forEach(o=>mk([o],false));
   routes.sort((a,b)=>String(a.date).localeCompare(String(b.date)) || b.priority-a.priority || b.orders.length-a.orders.length || a.city.localeCompare(b.city));
   routes.forEach((r,i)=>r.index=i);
   return {orders:unbatched,routes,merges:routes.filter(r=>r.merge),savedTrips:Math.max(0,unbatched.length-routes.length),
-    co2:sum(routes,r=>r.co2),cost:sum(routes,r=>r.cost),vehicleCount:new Set(routes.map(r=>r.vehicle?.id).filter(Boolean)).size,lateCount:routes.filter(r=>r.late||!r.vehicle).length};
+    co2:sum(routes,r=>r.co2),cost:sum(routes,r=>r.cost),vehicleCount:new Set(routes.map(r=>r.vehicle?.id).filter(Boolean)).size,lateCount:routes.filter(r=>r.late||!r.vehicle).length,
+    unready:sum(routes,r=>r.unready||0)};
 }
 
 function suggestedRouteCard(r) {
@@ -3481,7 +3581,7 @@ function suggestedRouteCard(r) {
     <div class="sr-top"><span class="badge ${r.merge?'teal':'gray'}">${r.merge?'合并':'单点'}</span><b>${esc(r.city)}</b><span>${fmtDate(r.date)} · ${r.orders.length} 单 · ${Math.round(r.weight)} kg</span></div>
     <div class="sr-seq">${r.sequence.map((o,i)=>`<span><em>${i+1}</em>${esc(o.code)}</span>`).join('<i>→</i>')}</div>
     <div class="sr-meta">直线 ${r.distance.toFixed(1)} km · 约 ${Math.round(r.duration)} 分钟 · 建议 ${r.path}</div>
-    <div class="sr-meta" style="margin-top:2px"><span class="badge ${r.vehicle?'teal':'red'}">${esc(r.vehicle?r.vehicle.name:'无可用车辆')}</span> ${esc(r.startTime||'08:30')}–${esc(r.endTime||'—')} · 载重 ${Math.round((r.utilization||0)*100)}%${r.late?' <span class="badge red">超班次</span>':''}</div>
+    <div class="sr-meta" style="margin-top:2px"><span class="badge ${r.vehicle?'teal':'red'}">${esc(r.vehicle?r.vehicle.name:'无可用车辆')}</span> ${esc(r.startTime||'08:30')}–${esc(r.endTime||'—')} · 载重 ${Math.round((r.utilization||0)*100)}%${r.late?' <span class="badge red">超班次</span>':''}${r.windowMisses&&r.windowMisses.length?' <span class="badge red">'+r.windowMisses.length+' 站超窗</span>':''}${r.unready?' <span class="badge red">'+r.unready+' 单未就绪</span>':''}</div>
     <div class="actions" style="margin-top:5px">${r.merge?`<button class="btn sm" data-action="apply-suggested-one" data-index="${r.index}">生成批次</button>`:''}<button class="btn sm" data-action="preview-suggested" data-index="${r.index}">看道路</button><button class="btn ghost sm" data-action="focus-order" data-id="${r.orders[0].id}">定位</button></div>
   </div>`;
 }
@@ -3497,7 +3597,7 @@ function dispatchPlanHtml(plan) {
       <div><b>${plan.savedTrips}</b><span>减少出车</span></div>
     </div>
     <div class="plan-note">按同城/同日/同服务组优先，12 km 内最多 4 单合并；先高等级、再顺路。</div>
-    <div class="plan-eco">预计 CO₂ ${plan.co2.toFixed(1)} kg · 预估车辆成本 $${plan.cost.toFixed(0)} · 用车 ${plan.vehicleCount} 台${plan.lateCount?` · <b>${plan.lateCount} 条超班次</b>`:''}</div>
+    <div class="plan-eco">预计 CO₂ ${plan.co2.toFixed(1)} kg · 预估车辆成本 $${plan.cost.toFixed(0)} · 用车 ${plan.vehicleCount} 台${plan.lateCount?` · <b>${plan.lateCount} 条超班次</b>`:''}${plan.unready?` · <b>${plan.unready} 单未就绪</b>`:''}</div>
     <div class="suggest-list">${plan.routes.slice(0,5).map(suggestedRouteCard).join('')}</div>
     ${mergeCount?`<button class="btn primary sm" style="width:100%;margin-top:8px" data-action="apply-suggested-all">生成全部合并批次</button>`:''}
     <div class="plan-foot">“看道路”会调用 OSRM 获取实际道路路线；生成批次使用建议顺序与直线估算，后续以路线设计为准。</div>
@@ -3511,7 +3611,7 @@ function applySuggestedBatch(route, abbr) {
   const n=(db.batches||[]).filter(b=>b.date===date&&b.state===abbr).length+1;
   const id=`AUTO-${date.replace(/-/g,'').slice(2)}-${abbr}-${String(n).padStart(2,'0')}`;
   const batch={id,date,state:abbr,orderIds:route.orders.map(o=>o.id),path:route.path,status:'planned',createdAt:new Date().toISOString(),note:'按智能配送建议生成，需询价与道路/时效确认',
-    vehicleId:route.vehicle?.id||'', vehicleName:route.vehicle?.name||'无可用车辆', etaEnd:route.endTime||'', late:!!route.late,
+    vehicleId:route.vehicle?.id||'', vehicleName:route.vehicle?.name||'无可用车辆', etaEnd:route.endTime||'', late:!!route.late, unready:route.unready||0,
     route:{distance:route.distance,duration:route.duration,source:'建议排序（直线估算）',start:route.start,startLabel:route.startLabel,sequence:route.sequence.map(o=>o.id),co2:route.co2,cost:route.cost,vehicleName:route.vehicle?.name||'',etaEnd:route.endTime||''}};
   db.batches.push(batch);
   route.orders.forEach((o,i)=>{o.dispatchBatchId=id; addTimeline(o,'route',`加入建议批次 ${id}（第 ${i+1} 站）`);});
@@ -3845,8 +3945,11 @@ function saveRouteBatch() {
   const date=mapDateValue(orders[0]);
   const seq=(db.batches||[]).filter(b=>b.date===date&&b.state===p.state).length+1;
   const id=`ROUTE-${date.replace(/-/g,'').slice(2)}-${p.state}-${String(seq).padStart(2,'0')}`;
+  const weight=sum(orders,modelWeight);
+  const vehicle=pickVehicle(weight,orders.length,orders);
   const batch={id,date,state:p.state,orderIds:p.orderIds,path:'ROUTE',status:'planned',createdAt:new Date().toISOString(),note:'按路线设计生成，需询价与道路/时效确认',
-    route:{distance:p.distance,duration:p.duration,source:p.source,start:p.start,startLabel:p.startLabel,sequence:p.orderIds}};
+    vehicleId:vehicle?.id||'', vehicleName:vehicle?.name||'无可用车辆', unready:orders.filter(o=>!deliveryReadiness(o).ready).length,
+    route:{distance:p.distance,duration:p.duration,source:p.source,start:p.start,startLabel:p.startLabel,sequence:p.orderIds,vehicleName:vehicle?.name||''}};
   db.batches.push(batch);
   orders.forEach((o,i)=>{ o.dispatchBatchId=id; addTimeline(o,'route',`加入路线批次 ${id}（第 ${i+1} 站）`); });
   ui.routePlan=null; ui.routeSelection=[];
@@ -3978,11 +4081,20 @@ function openOrderModal(existing=null) {
       <div class="field"><label>楼梯</label><select class="input" name="stairs">${options([{code:'no',name:'无'},{code:'yes',name:'有'},{code:'unknown',name:'未知'}],o.stairs)}</select></div>
       <div class="field"><label>尾板</label><select class="input" name="liftgate">${options([{code:'yes',name:'有'},{code:'no',name:'无'},{code:'unknown',name:'未知'}],o.liftgate)}</select></div>
       <div class="field"><label>停车/卸货</label><select class="input" name="parking">${options([{code:'可停',name:'可停'},{code:'限时',name:'限时'},{code:'不可停',name:'不可停'},{code:'未知',name:'未知'}],o.parking)}</select></div>
+      <div class="field"><label>卸货平台 Dock</label><select class="input" name="dock">${options([{code:'yes',name:'有 dock'},{code:'no',name:'无 dock'},{code:'unknown',name:'未知'}],o.dock)}</select></div>
+      <div class="field"><label>台阶数</label><input class="input" type="number" min="0" name="stairsCount" value="${inputValue(o.stairsCount)}" placeholder="例如 6"></div>
+      <div class="field"><label>门槛高度 cm</label><input class="input" type="number" min="0" name="threshold" value="${inputValue(o.threshold)}" placeholder="例如 8"></div>
+      <div class="field"><label>通道/限高 cm</label><input class="input" type="number" min="0" name="clearance" value="${inputValue(o.clearance)}" placeholder="例如 220"></div>
+      <div class="field"><label>门禁/入口代码</label><input class="input" name="gateCode" value="${inputValue(o.gateCode)}" placeholder="Gate code / receiving entrance"></div>
+      <div class="field"><label>地址验证</label><select class="input" name="addressValidated">${options([{code:'yes',name:'已验证'},{code:'no',name:'未通过'},{code:'unknown',name:'未验证'}],o.addressValidated)}</select></div>
+      <div class="field"><label>预约要求</label><select class="input" name="appointmentRequired">${options([{code:'yes',name:'必须预约'},{code:'no',name:'不需预约'},{code:'unknown',name:'未知'}],o.appointmentRequired)}</select></div>
       <div class="field"><label>现场照片数量</label><input class="input" type="number" min="0" name="sitePhotos" value="${num(o.sitePhotos,0)}"><span class="hint">建议至少 3 张：入口/门洞/通道</span></div>
       <div class="field"><label>服务等级 *</label><select class="input" name="serviceLevel">${LEVELS.map(l=>`<option value="${l.code}" ${o.serviceLevel===l.code?'selected':''}>${l.code} ${l.name} — ${l.desc}</option>`).join('')}</select></div>
       <div class="field"><label>计划发货日 *</label><input class="input" type="date" name="dispatchDate" required value="${inputValue(o.dispatchDate||o.windowStart)}"><span class="hint">地图按此日期汇总</span></div>
       <div class="field"><label>期望开始 *</label><input class="input" type="date" name="windowStart" required value="${inputValue(o.windowStart)}"></div>
       <div class="field"><label>期望结束 *</label><input class="input" type="date" name="windowEnd" required value="${inputValue(o.windowEnd)}"></div>
+      <div class="field"><label>预约开始时间</label><input class="input" type="time" name="windowStartTime" value="${inputValue(o.windowStartTime)}"></div>
+      <div class="field"><label>预约结束时间</label><input class="input" type="time" name="windowEndTime" value="${inputValue(o.windowEndTime)}"></div>
       <div class="field full"><label>楼梯/通道备注</label><input class="input" name="stairNote" value="${inputValue(o.stairNote)}" placeholder="台阶数、平台、转角、通道宽度"></div>
       <div class="field full"><label>服务项（可调整；报价、承诺、POD、账单共用）</label>${serviceChecks(o.serviceCodes)}<div style="margin-top:6px"><button type="button" class="btn sm" id="fill-services">按等级/地址填入推荐服务</button></div></div>
       <div class="field full"><label>备注</label><textarea class="input" name="notes">${esc(o.notes||'')}</textarea></div>
@@ -3995,7 +4107,10 @@ function openOrderModal(existing=null) {
       address:fd.get('address').trim(), city:fd.get('city').trim(), state:fd.get('state').trim().toUpperCase(), zip:fd.get('zip').trim(),
       addressType:fd.get('addressType'), floor:Math.max(0,num(fd.get('floor'),0)), elevator:fd.get('elevator'),
       doorWidth:fd.get('doorWidth')===''?'':num(fd.get('doorWidth')), doorHeight:fd.get('doorHeight')===''?'':num(fd.get('doorHeight')),
-      stairs:fd.get('stairs'), stairNote:fd.get('stairNote').trim(), liftgate:fd.get('liftgate'), parking:fd.get('parking'),
+      stairs:fd.get('stairs'), stairsCount:fd.get('stairsCount')===''?'':num(fd.get('stairsCount')), stairNote:fd.get('stairNote').trim(), liftgate:fd.get('liftgate'), parking:fd.get('parking'),
+      dock:fd.get('dock'), threshold:fd.get('threshold')===''?'':num(fd.get('threshold')), clearance:fd.get('clearance')===''?'':num(fd.get('clearance')),
+      gateCode:fd.get('gateCode').trim(), addressValidated:fd.get('addressValidated'), appointmentRequired:fd.get('appointmentRequired'),
+      windowStartTime:fd.get('windowStartTime'), windowEndTime:fd.get('windowEndTime'),
       sitePhotos:Math.max(0,num(fd.get('sitePhotos'),0)),
       building:fd.get('building').trim(), lat:fd.get('lat')===''?null:num(fd.get('lat')), lng:fd.get('lng')===''?null:num(fd.get('lng')),
       geoSource:(fd.get('lat')&&fd.get('lng'))?'manual':'',
@@ -4529,6 +4644,17 @@ document.addEventListener('keydown', (e)=>{
     // 演示数据升级：旧版本只有 5 个 TX 订单；在演示模式下补齐多州订单，便于地图体验。
     if(db.settings.demo) {
       const seed = seedDb();
+      if(!db.meta || db.meta.demoP0Version !== 1) {
+        db.orders.forEach(o=>{
+          if(!o.addressValidated || o.addressValidated==='unknown') o.addressValidated='yes';
+          if(!o.dock || o.dock==='unknown') o.dock=o.addressType==='住宅'?'no':'yes';
+          if(!o.appointmentRequired || o.appointmentRequired==='unknown') o.appointmentRequired=o.addressType==='商业'?'no':'unknown';
+          if(!o.windowStartTime) o.windowStartTime='09:00';
+          if(!o.windowEndTime) o.windowEndTime='17:00';
+          if(!o.stairsCount && o.stairs==='yes') o.stairsCount=6;
+        });
+        db.meta = Object.assign({}, db.meta||{}, {demoP0Version:1});
+      }
       if(!db.meta || db.meta.demoGeoVersion !== 2) {
         // 旧演示数据只覆盖 TX；升级为多州示例，保留用户自建供应商。
         const demoIds = new Set(['sup-std','sup-pro1','sup-pro2','sup-ltl']);
