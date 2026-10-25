@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vending Machine Delivery Requirements · HAHA Logistics</title>
+  <link rel="stylesheet" href="./customer.css">
+  <link rel="stylesheet" href="./demo.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span>HAHA</span><b>LOGISTICS</b></div>
+    <div class="secure">Secure delivery request</div>
+  </header>
+  <main class="wrap">
+    <div id="loading" class="card">Loading your delivery request…</div>
+    <div id="invalid" class="card hidden">
+      <h1>Link unavailable</h1>
+      <p>This delivery request link is invalid or has expired. Please contact your HAHA representative for a new link.</p>
+    </div>
+    <div id="form-wrap" class="hidden">
+      <div class="intro">
+        <div class="eyebrow">DELIVERY REQUIREMENTS</div>
+        <h1>Tell us where your vending machine needs to go.</h1>
+        <p>This form helps our team confirm access, equipment and appointment requirements before we promise a delivery. It takes about 5 minutes.</p>
+      </div>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <div class="steps" id="steps">
+        <span data-step="1" class="active">1 Contact</span><span data-step="2">2 Equipment</span><span data-step="3">3 Access</span><span data-step="4">4 Photos</span><span data-step="5">5 Review</span>
+      </div>
+
+      <form id="delivery-form" novalidate>
+        <section class="card step" data-step="1">
+          <div class="step-head"><span class="n">01</span><div><h2>Contact & address</h2><p>Where should we coordinate the delivery?</p></div></div>
+          <div class="grid two">
+            <label>Customer / business name <input name="customer_name" required autocomplete="organization"></label>
+            <label>Contact person <input name="contact" required autocomplete="name"></label>
+            <label>Email <input type="email" name="email" required autocomplete="email"></label>
+            <label>Phone <input type="tel" name="phone" required autocomplete="tel"></label>
+            <label class="full">Street address <input name="address" required autocomplete="street-address" placeholder="Street, suite, unit"></label>
+            <label>City <input name="city" required autocomplete="address-level2"></label>
+            <label>State <input name="state" required maxlength="2" placeholder="TX" autocomplete="address-level1"></label>
+            <label>ZIP Code <input name="zip" required inputmode="numeric" placeholder="75201" autocomplete="postal-code"></label>
+          </div>
+        </section>
+
+        <section class="card step hidden" data-step="2">
+          <div class="step-head"><span class="n">02</span><div><h2>Equipment & timing</h2><p>What are we delivering, and when would you like it?</p></div></div>
+          <div class="grid two">
+            <label>Equipment model
+              <select name="equipment_model">
+                <option>M01</option><option>M02</option><option>M03</option><option>M04</option><option>M05</option><option>M06</option><option>M07</option>
+              </select>
+            </label>
+            <label>Quantity <input type="number" name="qty" min="1" value="1"></label>
+            <label>Requested delivery date <input type="date" name="requested_date"></label>
+            <label>Delivery location type
+              <select name="location_type">
+                <option value="CURBSIDE">Curbside</option>
+                <option value="ENTRANCE">Building entrance</option>
+                <option value="INSIDE">Inside the building</option>
+                <option value="ROOM">Specific room / location</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="card step hidden" data-step="3">
+          <div class="step-head"><span class="n">03</span><div><h2>Access details</h2><p>These answers help us decide whether a standard or professional delivery team is needed.</p></div></div>
+          <div class="question">
+            <label>Is an appointment required?<select name="appointment"><option value="YES">Yes</option><option value="NO">No</option><option value="NOT_SURE">Not sure</option></select></label>
+          </div>
+          <div id="inside-fields" class="grid two hidden">
+            <label>Floor <input type="number" name="floor" min="0" value="0"></label>
+            <label>Elevator
+              <select name="elevator"><option value="YES">Yes</option><option value="NO">No</option><option value="NOT_SURE">Not sure</option></select>
+            </label>
+            <label>Doorway width (inches) <input type="number" name="door_width" min="0" placeholder="e.g. 36"></label>
+            <label>Doorway height (inches) <input type="number" name="door_height" min="0" placeholder="e.g. 84"></label>
+            <label class="full">Hallway / turning restrictions <input name="hallway" placeholder="Tight corner, low ceiling, long hallway, etc."></label>
+          </div>
+          <div id="stair-fields" class="grid two hidden">
+            <label>Number of steps <input type="number" name="steps" min="0" placeholder="e.g. 8"></label>
+            <label>Landing size <input name="landing" placeholder="e.g. 4 ft x 4 ft"></label>
+            <label>Turning space <input name="turning" placeholder="e.g. tight 90-degree turn"></label>
+            <label>Other restrictions <input name="other_restrictions" placeholder="Gate code, low clearance, etc."></label>
+          </div>
+          <div class="grid two">
+            <label>Will the machine need to go up or down stairs?
+              <select name="stairs"><option value="NO">No</option><option value="YES">Yes</option><option value="NOT_SURE">Not sure</option></select>
+            </label>
+            <label>Any other access notes? <input name="access_notes" placeholder="Loading dock, freight elevator, parking, etc."></label>
+          </div>
+        </section>
+
+        <section class="card step hidden" data-step="4">
+          <div class="step-head"><span class="n">04</span><div><h2>Site photos</h2><p>Photos help us avoid a failed delivery. You can upload JPG, PNG or PDF files.</p></div></div>
+          <div class="photos" id="photos">
+            <div class="photo"><div><b>Building entrance</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="0" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="0"></div></div><div class="photo"><div><b>Unloading area</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="1" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="1"></div></div><div class="photo"><div><b>Doorway</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="2" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="2"></div></div><div class="photo"><div><b>Hallway</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="3" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="3"></div></div><div class="photo"><div><b>Elevator</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="4" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="4"></div></div><div class="photo"><div><b>Stairs</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="5" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="5"></div></div><div class="photo"><div><b>Final placement</b><div class="hint">Optional · JPG / PNG / PDF</div></div><label class="upload">Choose file<input type="file" data-photo="6" accept="image/jpeg,image/png,image/webp,application/pdf"></label><div class="thumbs" data-thumbs="6"></div></div>
+          </div>
+          <div class="alert">If you are not sure about a condition, choose “Not sure”. Our team will follow up; unknown conditions are not automatically approved.</div>
+        </section>
+
+        <section class="card step hidden" data-step="5">
+          <div class="step-head"><span class="n">05</span><div><h2>Review & submit</h2><p>Please check the information below. Our logistics team will review it before confirming delivery.</p></div></div>
+          <div id="review" class="review"></div>
+          <label class="consent"><input type="checkbox" name="consent" required> I confirm the information is accurate and understand that the delivery is subject to a final site and access review.</label>
+        </section>
+
+        <div class="nav">
+          <button type="button" class="btn" id="back">Back</button>
+          <button type="button" class="btn primary" id="next">Continue</button>
+          <button type="submit" class="btn primary hidden" id="submit">Submit delivery request</button>
+        </div>
+        <div class="draft-note">Your answers are saved as a draft on this device until you submit.</div>
+      </form>
+    </div>
+    <div id="done" class="card hidden">
+      <div class="done-icon">✓</div>
+      <h1>Delivery request submitted</h1>
+      <p>Thank you. Our logistics team will review your site information and contact you if we need anything else.</p>
+      <div id="done-summary" class="review"></div>
+    </div>
+  </main>
+  <script src="./demo-data.js"></script>
+  <script src="./demo-api.js"></script>
+  <script src="./customer.js"></script>
+</body>
+</html>

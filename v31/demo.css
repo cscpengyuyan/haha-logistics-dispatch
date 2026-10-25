@@ -1,0 +1,18 @@
+﻿/* Public demo chrome: read-only business data, local map/batch interactions. */
+body.demo-mode{padding-bottom:34px}
+.demo-ribbon{position:fixed;left:0;right:0;bottom:0;z-index:3000;background:#1F3A5F;color:#fff;font-size:10px;line-height:1.4;padding:7px 12px;display:flex;gap:8px;align-items:center;justify-content:center;box-shadow:0 -2px 12px rgba(0,0,0,.18);text-align:center;flex-wrap:wrap}
+.demo-ribbon b{color:#F4C97A;font-size:10px;letter-spacing:.4px}
+.demo-ribbon span{color:#C7D9E6;font-size:9px}
+.demo-mode details.action,
+.demo-mode #commit-btn,
+.demo-mode #dispatch-btn,
+.demo-mode #upload-btn,
+.demo-mode #order-file,
+.demo-mode [data-new-order],
+.demo-mode form[data-form="reserve"],
+.demo-mode form[data-form="replenish"],
+.demo-mode .upload{display:none!important}
+.demo-mode .card-b:has(> #order-file){display:none}
+@media(max-width:600px){.demo-ribbon{font-size:9px;padding:6px 8px}.demo-ribbon span{display:none}}
+
+.demo-mode [data-convert]{display:none!important}
