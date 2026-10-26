@@ -1,0 +1,25 @@
+(function(){
+ const H=window.HH={pages:{},mounts:{},page:'dashboard',selectedOrder:'H26001'};
+ H.clone=o=>JSON.parse(JSON.stringify(o));
+ try{const s=JSON.parse(localStorage.getItem('haha-v7'));H.state=s&&s.schema===7?s:H.clone(HH_SEED);}catch{H.state=H.clone(HH_SEED);}
+ H.e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ H.$=(s,r=document)=>r.querySelector(s);H.$$=(s,r=document)=>[...r.querySelectorAll(s)];
+ H.money=n=>n==null?'待核':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n);
+ H.time=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+ H.pill=(s,t='')=>`<span class="pill ${t||(/缺|风险|查验|隔离|过期|未确认|失败|高|暂停/.test(s)?'red':/待|中|情景|演示/.test(s)?'amber':/完成|确认|可用|通过|已核/.test(s)?'green':'blue')}">${H.e(s)}</span>`;
+ H.order=id=>H.state.orders.find(x=>x.id===id);H.model=id=>H.state.models.find(x=>x.id===id);H.warehouse=id=>H.state.warehouses.find(x=>x.id===id);
+ H.save=(action,ref='',detail='')=>{H.state.audit.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,6),time:new Date().toISOString(),actor:'演示 · 物流管理员',action,ref,detail});try{localStorage.setItem('haha-v7',JSON.stringify(H.state));}catch{H.toast('浏览器存储不可用，请导出备份；本次更改仅在内存。');}};
+ H.toast=msg=>{let el=H.$('#toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(H.toastTimer);H.toastTimer=setTimeout(()=>el.classList.remove('show'),4200);};
+ H.download=(name,data,type='application/json')=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+ H.csv=(name,rows)=>{const clean=v=>{let s=String(v??'');if(/^[=+@\-]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};H.download(name,'\ufeff'+rows.map(r=>r.map(clean).join(',')).join('\r\n'),'text/csv;charset=utf-8');};
+ H.navigate=p=>{location.hash=p; if(H.page===p)H.render();};
+ H.heading=(title,sub,buttons='')=>`<div class="page-heading"><div><div class="eyebrow">HAHA OPERATIONS / V7</div><h1>${title}</h1><p>${sub}</p></div><div class="actions">${buttons}</div></div>`;
+ H.metric=(label,value,detail,tone='')=>`<div class="metric ${tone}"><span>${label}</span><strong>${value}</strong><small>${detail}</small></div>`;
+ H.empty=t=>`<div class="empty">${t}</div>`;
+ H.releaseIssues=o=>{const a=[];if(o.geocodeStatus==='待核验')a.push('地址坐标待核验');try{if(H.tz)H.tz.window(o);}catch{a.push('预约时间存在无效或夏令时歧义');}if(o.appointmentVersion&&o.appointmentVersion!==o.version)a.push('预约确认版本已失效'); if(!o.checks.site)a.push('现场与包装能力未核验');if(!o.checks.provider)a.push('实际执行方未承接当前版本');if(!o.checks.budget)a.push('费用权限未批准');if(!o.checks.inventory)a.push('序列号未锁定');if(o.path.startsWith('C')&&!o.checks.station)a.push('专业站点未确认接收');if(o.appointment!=='已确认')a.push('客户预约未确认');if(o.path==='A'&&(o.endpoint==='L3'||o.L4))a.push('A 路径不承接专业室内/特殊搬运');const inv=H.state.inventory.find(x=>x.serial===o.serial);if(inv&&inv.warehouse!==o.warehouse)a.push('锁定库存与出货仓不一致');if(!inv||inv.status!=='锁定'||inv.orderId!==o.id)a.push('库存锁定关系失效');if(H.state.orders.some(x=>x.id!==o.id&&x.serial===o.serial&&x.status!=='物理交付完成'))a.push('序列号被其他订单占用');return a;};
+ H.modal=(title,body,submit,label='保存演示记录')=>{const close=/^[\x00-\x7F]+$/.test(title)?'Close':'关闭';H.$('#modal')?.remove();const host=document.createElement('div');host.id='modal';host.className='modal-backdrop';host.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="${H.e(title)}"><header><h2>${H.e(title)}</h2><button class="icon-btn" type="button" data-close aria-label="${close}">×</button></header><form><div class="modal-body">${body}</div><footer><button class="btn" type="button" data-close>${close}</button>${submit?`<button class="btn primary" type="submit">${label}</button>`:''}</footer></form></section>`;document.body.append(host);host.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>host.remove());host.addEventListener('click',e=>{if(e.target===host)host.remove();});host.querySelector('form').onsubmit=async e=>{e.preventDefault();try{await submit(new FormData(e.target));host.remove();H.render();}catch(err){H.toast(err.message);}};host.querySelector('input,select,textarea,button')?.focus();};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')H.$('#modal')?.remove();if(e.key==='Tab'&&H.$('#modal')){const a=H.$$('button,input,select,textarea,a[href]',H.$('#modal')).filter(x=>!x.disabled&&x.offsetParent);const f=a[0],l=a[a.length-1];if(e.shiftKey&&document.activeElement===f){e.preventDefault();l.focus();}else if(!e.shiftKey&&document.activeElement===l){e.preventDefault();f.focus();}}});
+ H.addDays=(d,n)=>new Date(Date.parse(d+'T12:00:00Z')+n*86400000).toISOString().slice(0,10);
+ H.days=(a,b)=>Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000);
+ H.field=(label,name,value='',type='text',attrs='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${H.e(value)}" ${attrs}></label>`;
+})();
