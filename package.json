@@ -1,0 +1,13 @@
+{
+  "name": "haha-logistics-dispatch",
+  "version": "8.0.0",
+  "private": true,
+  "description": "HAHA Logistics V8 operational workspace and optional collaboration API",
+  "engines": {
+    "node": ">=24.22.0"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec tests/*.test.*",
+    "start:server": "node server/server.mjs"
+  }
+}

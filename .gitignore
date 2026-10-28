@@ -1,0 +1,10 @@
+.openai/
+v8/__qa_mobile.html
+node_modules/
+*.log
+.env
+.env.*
+server/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
