@@ -1,0 +1,17 @@
+2026-11-01 / synthetic orders / local HTTP shared SQLite / real Dallas OSM graph
+Valhalla truck 3.9.1, VROOM 1.15.2, 127.0.0.1:18802
+python -m unittest discover -s tests -p test_road_service.py -v
+HH_LIVE_DFW=1; 3 tests passed in 13.700s.
+A: 2026-11-01T11:23:40Z 3334 metres, 351 driving seconds, 204 geometry points, reopened revision 1.
+B: 2026-11-01T11:23:42Z 4365 metres, 412 driving seconds, 240 geometry points, reopened revision 1.
+Both sets: 1 origin / 3 jobs; manual reverse order produced different geometry. Modified shift/departure invalidated plan. Full geometry, stop order, provider, timestamp, draft revision survived restore.
+Saved truck plan: offline Valhalla prevented F04 (HTTP 503). Reconnected: same plan issued to authorized driver (HTTP 200).
+Mock-only assertions cover request contracts, invalid addresses/permissions, invalid IDs, stale service inputs, old demo_cache/estimate/private_osrm blocked at confirmation.
+Real HTTP planning includes unit capacity, payload, deck rows, tool skills, completion windows, dead time, worked shift and actual vehicle dimensions / loaded and axle weights.
+
+Browser acceptance via tests/road-map-browser.cjs, Microsoft Edge, 1440x900 and 390x844.
+Each: loaded 3 synthetic dispatchable orders, planned, saved, got 206 byte ranges, rendered actual labelled Protomaps street layers, tightened finish deadline and received HTTP 422; no issue button with conflict, zero uncaught page exceptions, no horizontal overflow.
+Desktop labels included Valor Place, North Houston Street, San Jacinto Street, Ross Avenue and North Pearl Street.
+Phone-width labels included San Jacinto Street, McKinney Avenue, Texas Street and Wood Street.
+Evidence: evidence/road/desktop-route.mp4, phone-route.mp4, 01-before-selection.png, desktop-planned.png, phone-planned.png, 03-window-conflict.png.
+Real-road acceptance is scoped to the loaded regional data, synthetic entrances and operator-run service. Phone width is browser emulation.

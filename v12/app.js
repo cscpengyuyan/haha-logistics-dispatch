@@ -3,6 +3,9 @@
   const $ = s => document.querySelector(s);
   const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pages = {
+    road:['达拉斯道路试排','DALLAS ROAD PLANNER','从一仓三站开始，核对入口、车辆和收货窗口后计算。','M4 18h4L16 6h4 M4 14v7m16-18v7'],
+    dock:['我的待办','WORK QUEUE','选择一个环节，或直接办理下一票。','M4 4h16v16H4z M8 9h8m-8 5h5'],
+    gate:['仓口验放','WAREHOUSE RELEASE','按本票本段核对提货授权、实到人车与设备。','M3 10l9-7 9 7v10H3z M9 20v-8h6v8'],
     map:['地图调度','DISPATCH MAP','从可发订单组建线路，核对仓点、站序与收货窗口。','M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15m6-12v15'],
     dashboard:['运营总览','OPERATIONS OVERVIEW','查看当前岗位可见的订单、交付进度和待处理事项。','M3 3h7v8H3zm11 0h7v5h-7zM3 15h7v6H3zm11-3h7v9h-7z'],
     tasks:['岗位待办','MY WORK QUEUE','按当前登录岗位办理任务，交接结果写回同一张订单。','M4 5h16v16H4z M8 3v4m8-4v4m-9 5 2 2 4-4'],
@@ -16,7 +19,7 @@
     review:['经营复盘','PERFORMANCE REVIEW','按同仓、交付范围和原预约窗复核成本与履约结果，从指标回到原单。','M3 4v16h18M7 16v-4m5 4V8m5 8V5'],
     guide:['使用手册','FIELD MANUAL','按岗位试跑一票，核对交接方式、数据来源和运行边界。','M3 4q5-2 9 1 4-3 9-1v15q-5-2-9 1-4-3-9-1zM12 5v15']
   };
-  const roleNames={admin:'管理员',sales:'销售 / 订单',warehouse:'仓库',dispatch:'调度',driver:'执行车组',finance:'财务',service:'客服 / 技术'};
+  const roleNames={procurement:'采购',supplier:'外部执行方',admin:'管理员',sales:'销售 / 订单',warehouse:'仓库',dispatch:'调度',driver:'执行车组',finance:'财务',service:'客服 / 技术'};
   const statusNames={draft:'待备货',pending:'待备货',new:'待备货',ready:'待调度',dispatched:'已派车',in_transit:'在途',at_station:'站点保管',last_mile:'二程运输',delivered:'已交付',settled:'已核账',closed:'已结案',exception:'异常处理',cancelled:'已撤销'};
   const icon = (d,size=18)=>'<svg aria-hidden="true" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';
   let session={},data={orders:[],resources:[],routes:[]},current='',mounted=null,refreshNo=0,noticeTimer,workingUser='',lastSync='';
@@ -27,17 +30,43 @@
     const headers={...opts.headers}; let body=opts.body;
     if(body && typeof body!=='string' && !(body instanceof FormData) && !(body instanceof Blob)){body=JSON.stringify(body);headers['Content-Type']='application/json'}
     if(typeof body==='string' && !headers['Content-Type'])headers['Content-Type']='application/json';
-    const res=await fetch(path,{...opts,headers,body,credentials:'same-origin',cache:'no-store'});
+    const request={...opts,headers,body,credentials:'same-origin',cache:'no-store'};
+    const res=await (session.user && (opts.method||'GET')!=='GET' && !['/api/demo-login','/api/login','/api/logout','/api/review/query','/api/gate/lookup','/api/road/plan'].includes(path) ? window.SharedWrites.send(path,request,session.user.username) : fetch(path,request));
     const out=await res.json().catch(()=>({error:'服务响应异常，请核查服务是否在线。'}));
     if(!res.ok){if(res.status===401&&session.user){session.user=null;data={orders:[],resources:[],routes:[]};login()}const e=new Error(out.error||out.message||('请求失败 '+res.status));e.status=res.status;throw e}
     return out;
   }
   const canAdd=()=>['admin','sales','dispatch'].includes(session.user?.role);
-  const visible=p=>(p!=='review'||['admin','dispatch','finance'].includes(session.user?.role)) && (p!=='inventory'||session.user?.role!=='driver') && (p!=='recovery'||!['driver','sales'].includes(session.user?.role)) && !(['resources','ledger'].includes(p)&&['driver','service'].includes(session.user?.role)) && (p!=='finance'||['admin','finance','dispatch'].includes(session.user?.role));
-  const openOrder=(id,a)=>window.Workflow.openOrder(ctx(),id,a);
-  function ctx(){return {...data,user:session.user,publicDemo:!!window.PublicDemo,demo:session.demo,openOrder,navigate,toast,refresh:()=>refresh(true),api,
+  const visible=p=>(p!=="road"||!!window.PublicDemo) && (session.user?.role!=="supplier"||p==="tasks") && (p!=='gate'||['warehouse','procurement','dispatch','finance','admin'].includes(session.user?.role)) && (p!=='review'||['admin','dispatch','finance'].includes(session.user?.role)) && (p!=='inventory'||session.user?.role!=='driver') && (p!=='recovery'||!['driver','sales'].includes(session.user?.role)) && !(['resources','ledger'].includes(p)&&['driver','service'].includes(session.user?.role)) && (p!=='finance'||['admin','finance','dispatch'].includes(session.user?.role));
+  const route=()=>{const [view='dock',query='']=location.hash.slice(1).split('?');return {view:view||'dock',params:new URLSearchParams(query)}};
+  let openId='',pageKey='',requestedAction='';
+  const hashOf=(view,params)=>'#'+view+(params.size?'?'+params.toString():'');
+  function openOrder(id,action=''){
+    const {params}=route();
+    requestedAction=action;
+    params.set('order',id);
+    const hash=hashOf(current||'dock',params);
+    if(location.hash===hash)return syncTicket(id,true);
+    history.pushState({ticket:id},'',hash);
+    return syncTicket(id);
+  }
+  function syncTicket(id,force=false){
+    if(!id){openId='';window.Workflow.closeOrder();return}
+    if(openId===id&&!force&&document.querySelector('dialog[open]'))return;
+    openId=id;
+    const action=requestedAction;requestedAction='';
+    return window.Workflow.openOrder(ctx(),id,action);
+  }
+  function closeTicket(id){
+    const {view,params}=route();
+    if(openId!==id||params.get('order')!==id||document.querySelector('.wf-dialog[open]'))return;
+    openId='';params.delete('order');
+    if(history.state?.ticket===id)history.back();
+    else history.replaceState(null,'',hashOf(visible(view)?view:'dock',params));
+  }
+  function ctx(){return {...data,user:session.user,publicDemo:!!window.PublicDemo,demo:session.demo,openOrder,closeTicket,navigate,toast,focusOrderId:route().params.get('focus'),refresh:()=>refresh(true),api,
     saveRoute:async p=>{const result=await api('/api/ops/routes',{method:'POST',body:p});data.routes=(await api('/api/ops/routes')).routes;return result.route},
-    downloadFile:window.PublicDemo?((id,name)=>window.PublicDemo.downloadFile(id,name)):undefined,statusNames,roleNames,escape:esc,routingEnabled:!!session.routing,tilesEnabled:!!session.tiles}}
+    downloadFile:window.PublicDemo?((id,name)=>window.PublicDemo.downloadFile(id,name)):undefined,statusNames,roleNames,escape:esc,routingEnabled:!!session.routing,roadCoverage:session.road_coverage,tilesEnabled:!!session.tiles}}
   function destroy(){if(mounted?.destroy)mounted.destroy();mounted=null}
   function login(error=''){
     destroy();refreshNo++;workingUser='';current='';document.querySelectorAll('dialog').forEach(x=>x.remove());
@@ -45,26 +74,75 @@
     $('#root').innerHTML='<main class="auth-screen"><section class="auth-brand"><div class="brand"><img src="brand.svg" width="40" height="40" alt=""><div><strong>哈哈便利</strong><small>HAHA VENDING</small></div></div><div><div class="kicker">OPERATIONS CONTROL CENTER</div><h1>美国物流<br>协作中心</h1><p>从仓库放货，到设备交到约定位置。</p></div><small>SUPPLY CHAIN OPERATIONS &nbsp; / &nbsp; V12</small></section><section class="auth-side"><div class="auth-card"><span class="env '+(demo?'demo':'')+'">'+(publicMode?'公开演练 · 个人浏览器':demo?'本机演练库':'内部工作库')+'</span><h2>'+(demo?'进入岗位演练':'员工登录')+'</h2><p class="muted">'+(publicMode?'每位访客独立试跑。请只使用虚构订单与凭据。':demo?'以不同岗位接力办理同一笔示例订单。':'使用管理员分配的个人账号进入共享工作库。')+'</p><form id="signin">'+(demo?'<label class="field"><span>演练身份</span><select name="username">'+(session.demo_users||[]).map(u=>'<option value="'+esc(u.username||u)+'">'+esc(roleNames[u.role||u]||u.name||u)+'</option>').join('')+'</select></label>':'<label class="field"><span>员工账号</span><input name="username" autocomplete="username" required></label><label class="field"><span>密码</span><input name="password" type="password" autocomplete="current-password" required></label>')+'<div class="error-line" role="alert">'+esc(error)+'</div><button class="primary" type="submit">'+(demo?'进入工作台':'登录工作台')+' →</button></form><p class="login-note">'+(demo?'示例仓址、订单、车组与金额均用于操作演练。':'工作记录按账号与订单版本留痕。')+'</p></div></section></main>';
     $('#signin').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button');b.disabled=true;try{await api(demo?'/api/demo-login':'/api/login',{method:'POST',body:Object.fromEntries(new FormData(f))});await boot()}catch(err){f.querySelector('.error-line').textContent=err.message}finally{b.disabled=false}};
   }
-  function navigate(v){if(!pages[v]||!visible(v))v='map';if(location.hash.slice(1)!==v){location.hash=v;return}renderPage(v)}
+  function navigate(v){const page=v.split('?')[0];if(!pages[page]||!visible(page))v='dock';if(location.hash.slice(1)!==v){location.hash=v;return}renderPage(true)}
   function navGroup(name,keys){return '<div class="nav-caption">'+name+'</div>'+keys.filter(visible).map(k=>'<button data-nav="'+k+'">'+icon(pages[k][3])+'<span>'+pages[k][0]+'</span></button>').join('')}
   function shell(){
     workingUser=session.user.username;
-    $('#root').innerHTML='<div class="shell"><aside class="rail" id="rail"><div class="brand"><img src="brand.svg" alt="" width="37" height="37"><div><strong>哈哈便利</strong><small>LOGISTICS OPERATIONS</small></div></div><nav>'+navGroup('调度中心',['map','dashboard','tasks','orders'])+navGroup('业务协作',['inventory','resources','ledger','exceptions','recovery','finance'])+navGroup('工作空间',['review','guide'])+'</nav><div class="rail-bottom"><span class="avatar">'+esc(session.user.name?.slice(0,1)||'H')+'</span><div><b>'+esc(session.user.name)+'</b><small>'+esc(roleNames[session.user.role])+'</small></div><button id="signout" title="退出 / 切换岗位" aria-label="退出 / 切换岗位">'+icon('M9 3H4v18h5m4-14 5 5-5 5m-5-5h12')+'</button></div></aside><div class="main"><header class="topbar"><div class="crumb"><button class="menu-mobile btn-icon" aria-label="打开导航">'+icon('M3 6h18M3 12h18M3 18h18')+'</button>美国物流 <span>/</span> <b id="crumb"></b><span class="shell-version">V12</span></div><div class="top-rt"><button id="quick-find" aria-label="全局查单">⌕　查单 <kbd>Ctrl K</kbd></button><time id="clock"></time><span class="env '+(session.demo?'demo':'')+'">'+(window.PublicDemo?'公开演练 · 仅用虚构数据':session.demo?'本机演练库':'内部共享工作库')+'</span></div></header><div id="network"></div><main class="page-pad"><header class="mast"><div><div class="kicker" id="section-kicker"></div><h1 id="section-title"></h1><p id="section-hint"></p></div><div class="mast-actions"><button id="refresh" title="刷新共享数据">'+icon('M20 7v5h-5M4 17v-5h5M5.5 8a7 7 0 0 1 12-2L20 9M4 15l2.5 3a7 7 0 0 0 12-2',15)+'刷新</button>'+(canAdd()?'<button id="create" class="primary">＋ 新建订单</button>':'')+'</div></header><div id="content" class="content"></div></main></div></div>';
+    $('#root').innerHTML='<div class="shell"><aside class="rail" id="rail"><div class="brand"><img src="brand.svg" alt="" width="37" height="37"><div><strong>哈哈便利</strong><small>LOGISTICS OPERATIONS</small></div></div><nav>'+navGroup('调度中心',['dock','map','orders','dashboard'])+navGroup('业务协作',['gate','ledger','inventory','resources','exceptions','recovery','finance','tasks'])+navGroup('工作空间',['review','guide'])+'</nav><div class="rail-bottom"><span class="avatar">'+esc(session.user.name?.slice(0,1)||'H')+'</span><div><b>'+esc(session.user.name)+'</b><small>'+esc(roleNames[session.user.role])+'</small></div><button id="signout" title="退出 / 切换岗位" aria-label="退出 / 切换岗位">'+icon('M9 3H4v18h5m4-14 5 5-5 5m-5-5h12')+'</button></div></aside><div class="main"><header class="topbar"><div class="crumb"><button class="menu-mobile btn-icon" aria-label="打开导航">'+icon('M3 6h18M3 12h18M3 18h18')+'</button>美国物流 <span>/</span> <b id="crumb"></b><span class="shell-version">V12</span></div><div class="top-rt"><button id="quick-find" aria-label="全局查单">⌕　查单 <kbd>Ctrl K</kbd></button><time id="clock"></time><span class="env '+(session.demo?'demo':'')+'">'+(window.PublicDemo?'仅本设备演练 · 虚构数据':session.demo?'本机演练库':'内部共享工作库')+'</span></div></header><div id="network"></div><main class="page-pad"><header class="mast"><div><div class="kicker" id="section-kicker"></div><h1 id="section-title"></h1><p id="section-hint"></p></div><div class="mast-actions"><button id="refresh" title="刷新共享数据">'+icon('M20 7v5h-5M4 17v-5h5M5.5 8a7 7 0 0 1 12-2L20 9M4 15l2.5 3a7 7 0 0 0 12-2',15)+'刷新</button>'+(canAdd()?'<button id="create" class="primary">＋ 新建订单</button>':'')+'</div></header><div id="content" class="content"></div></main></div></div>';
     $('.menu-mobile').onclick=()=>{const rail=$('#rail');rail.classList.add('open');const mask=document.createElement('button');mask.className='scrim';mask.setAttribute('aria-label','收起导航');mask.onclick=closeNav;rail.after(mask)};
+    if(document.documentElement.dataset.sharedHost && window.PublicDemo){
+      const staff=document.createElement('a');staff.href='/v12/#dock';staff.textContent='员工登录';staff.className='btn';
+      $('#signout').before(staff);
+    }
     $('#signout').onclick=async()=>{try{await api('/api/logout',{method:'POST',body:{}});await boot()}catch(e){toast(e.message)}};
     $('#root').onclick=e=>{const n=e.target.closest('[data-nav]');if(n){if(n.dataset.resourceTab)window.Resources.focusTab(n.dataset.nav,n.dataset.resourceTab);closeNav();navigate(n.dataset.nav)}};
+    $('#refresh').title=window.PublicDemo?'刷新本设备演练':'刷新共享工作库';$('#refresh').lastChild.textContent=window.PublicDemo?'刷新本机':'刷新共享';
     $('#refresh').onclick=()=>refresh(true).catch(e=>toast(e.message));if($('#create'))$('#create').onclick=()=>window.Workflow.newOrder(ctx());
     $('#quick-find').onclick=()=>window.OrderFinder.open(ctx(),Object.keys(pages).filter(visible).map(key=>({key,label:pages[key][0],desc:pages[key][2]})));
     time();
   }
   function closeNav(){$('#rail')?.classList.remove('open');$('.scrim')?.remove()}
   function time(){if($('#clock'))$('#clock').textContent='达拉斯  '+new Intl.DateTimeFormat('zh-CN',{timeZone:'America/Chicago',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date())}
-  function renderPage(v=location.hash.slice(1)){
-    if(!session.user||!$('#content'))return;if(!pages[v]||!visible(v))v='map';
+  let mapPromise,roadSelection=[],roadDepot=null;
+  const scripts=new Map();
+  function script(src){
+    if(!scripts.has(src))scripts.set(src,new Promise((ok,no)=>{
+      const tag=document.createElement('script');tag.src=src;tag.onload=ok;
+      tag.onerror=()=>{scripts.delete(src);tag.remove();no(Error(src))};document.head.append(tag);
+    }));
+    return scripts.get(src);
+  }
+  function mountMap(host){host.innerHTML='<p role="status">正在打开调度地图…</p>';
+    mapPromise??=(async()=>{if(!window.L)await script('./vendor/leaflet.js?v=d40f33c2a370');await script('./vendor/us-states.js?v=e67bc2e1c565');await script('./dispatch-map.js?v=5afbd939c46e')})().catch(e=>{mapPromise=null;throw e});
+    mapPromise.then(()=>{if(current==='map'&&host.isConnected&&!mounted)mounted=window.DispatchMap.mount(host,ctx())}).catch(()=>{if(current==='map'){host.innerHTML='<p>地图资源未能加载，可继续从订单工作台作业。</p><button data-nav="orders">打开订单列表</button> <button data-nav="map">重新加载地图</button>'}});
+  }
+  function renderPage(force=false){
+    if(!session.user||!$('#content'))return;
+    const {view,params}=route(),v=pages[view]&&visible(view)?view:(session.user.role==='supplier'?'tasks':'dock');
+    const ticket=params.get('order'),panelParams=new URLSearchParams(params);panelParams.delete('order');
+    const nextKey=hashOf(v,panelParams);
+    if(current===v&&pageKey===nextKey&&!force){syncTicket(ticket);return}
+    if(openId!==ticket||!ticket){openId='';window.Workflow.closeOrder()}
+    if(v==='map'&&current==='map'&&mounted){
+      if(force)mounted.update?.(ctx());
+      if(pageKey!==nextKey&&params.get('focus'))mounted.focusOrder?.(params.get('focus'));
+      pageKey=nextKey;if(ticket)syncTicket(ticket);return;
+    }
+    pageKey=nextKey;
+    if(current==='map'&&v==='road'){roadSelection=mounted?.getSelection?.()||[];roadDepot=mounted?.getDepot?.()||null}
     destroy();current=v;const [title,en,hint]=pages[v];$('#crumb').textContent=title;$('#section-title').textContent=title;$('#section-hint').textContent=hint;$('#section-kicker').textContent=en+'   /   US OPERATIONS';
     document.querySelectorAll('nav [data-nav]').forEach(n=>n.dataset.nav===v?n.setAttribute('aria-current','page'):n.removeAttribute('aria-current'));
     const host=$('#content');host.onclick=null;host.replaceChildren();pendingRefresh=false;$('#network').replaceChildren();
-    if(v==='map') mounted=window.DispatchMap.mount(host,ctx());else if(v==='inventory'||v==='recovery')mounted=window.Lifecycle.mount(host,ctx(),v);else if(v==='dashboard')dashboard(host);else if(v==='guide'){guide(host);guideLinks(host)}else if(v==='review')mounted=window.Review.mount(host,ctx());else if(['resources','ledger'].includes(v))window.Resources.mount(host,ctx(),v);else window.Workflow.mount(host,ctx(),v);
+    if(session.user?.role==='supplier'){window.Partner.mount(host,ctx());return}
+    if(v==='dock')window.TicketDesk.mount(host,ctx(),params);
+    else if(v==='gate')window.Dock.mount(host,ctx());
+    else if(v==='map')mountMap(host);
+    else if(v==='road')mounted=window.PublicRoadUI.mount(host,ctx(),script,roadSelection,roadDepot);
+    else if(v==='inventory'||v==='recovery')mounted=window.Lifecycle.mount(host,ctx(),v);
+    else if(v==='dashboard')dashboard(host);
+    else if(v==='guide'){guide(host);guideLinks(host)}
+    else if(v==='review')mounted=window.Review.mount(host,ctx());
+    else if(['resources','ledger'].includes(v)){if(params.has('batch'))window.Resources.focusTab('ledger','inbound');window.Resources.mount(host,ctx(),v)}
+    else window.Workflow.mount(host,ctx(),v);
+    if(v==='finance')window.Bills.mount(host,ctx());
+    if(v==='tasks'){window.Team.mount(host,ctx());window.SharedWrites.mount(host,ctx())}
+    if(v==='tasks'&&session.demo)window.Practice.mount(host,ctx());
+    const previousRoadLink=document.getElementById('road-entry');previousRoadLink?.remove();
+    if(window.PublicDemo&&['dock','map'].includes(v)){
+      const button=document.createElement('button');button.id='road-entry';button.dataset.nav='road';
+      button.textContent=v==='map'?'以当前选单试排道路':'达拉斯一仓三站试排';document.querySelector('.mast-actions').prepend(button);
+    }
+    if(ticket)syncTicket(ticket);
   }
   function dashboard(h){
     const orders=data.orders,ready=orders.filter(o=>o.status==='ready'),travel=orders.filter(o=>['dispatched','in_transit','at_station','last_mile'].includes(o.status)),issues=orders.filter(o=>o.status==='exception'||o.exceptions?.some(x=>!x.resolved)),counts=new Map();
@@ -99,6 +177,22 @@
     ].map(([t,b])=>'<details><summary>'+t+'</summary><p>'+esc(b)+'</p></details>').join('')+'</article>';
   }
   function guideLinks(h){
+    if(document.documentElement.dataset.sharedHost){
+      const mode=document.createElement('p'), link=document.createElement('a');
+      link.href=window.PublicDemo?'/v12/#dock':'/training/#dock';
+      link.textContent=window.PublicDemo?'员工登录共享工作库':'进入独立访客演练';mode.append(link);h.prepend(mode);
+    }
+    if(window.PublicDemo){
+      const reset=document.createElement('button');
+      reset.textContent='重置本浏览器的演练';
+      reset.onclick=async()=>{
+        if(!confirm('清除本浏览器当前演练记录并重新开始？'))return;
+        reset.disabled=true;
+        try{await api('/api/demo/reset',{method:'POST',body:{}});sessionStorage.removeItem('haha-v12-role');localStorage.removeItem('haha-v12-dallas-road-draft-v1');location.replace('#dock');location.reload()}
+        catch(error){toast(error.message);reset.disabled=false}
+      };
+      h.append(reset);
+    }
     const steps=[['F01','确认交付范围','销售 · 客户承诺','orders'],['F02','锁定实物','仓库 · SN 与库位','inventory'],['F03','同范围比价','调度 · 全程报价','ledger','quote'],['F04','核验与派车','调度 · 12 项放行','map'],['F05','逐台签交','车组 · 交付与 POD','orders'],['F06','变更与异常','客服 · 保管与恢复','exceptions'],['F07','技术与返修','售后 · 已购启用或报障','recovery'],['F08','核账与关单','财务 · 预算与差异','finance']];
     const box=document.createElement('div');box.className='guide-grid';box.innerHTML=steps.filter(r=>visible(r[3])).map(([code,title,owner,view,tab])=>'<button class="guide-step" data-nav="'+view+'" '+(tab?'data-resource-tab="'+tab+'"':'')+'><span class="step-code">'+code+'</span><b>'+title+'　↗</b><small>'+owner+'</small></button>').join('');h.prepend(box);
   }
@@ -109,7 +203,7 @@
       if(n!==refreshNo||!session.user)return;
       const next={orders:o.orders||[],resources:r.resources||[],routes:rt.routes||[]};const changed=JSON.stringify(next)!==JSON.stringify(data);
       data=next;if(changed)pendingRefresh=true;lastSync=new Date().toLocaleTimeString('zh-CN');
-      if(force||!current)renderPage(location.hash.slice(1));
+      if(force||!current)renderPage(true);
       else if(pendingRefresh && $('#network')){$('#network').innerHTML='<div class="net-error">其他岗位已更新工作库，可刷新当前视图。<button>刷新视图</button></div>';$('#network button').onclick=()=>refresh(true).catch(e=>toast(e.message))}
       else if($('#network'))$('#network').replaceChildren();
     }catch(e){if(n===refreshNo&&session.user){if($('#network'))$('#network').innerHTML='<div class="net-error">工作库读取失败。'+esc(e.message)+' 请刷新重试。</div>'}throw e}

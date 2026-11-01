@@ -8,9 +8,9 @@
   const routes = {A: '普通卡派', B: '原仓专业直送', C1: '经站统包', C2: '经站分采'};
   const scope = {L1:'基础交接', L2:'指定入口', L3:'室内机位'};
   const cats = {pod:'签收回单 POD',release:'仓库放行',quote:'承运报价／委托',site:'现场条件',service:'技术服务',invoice:'费用凭据',other:'其他凭证'};
-  const names = {ready:'核验并锁机', dispatch:'确认派车', depart:'登记发车', pickup:'授权自提交接', station_receive:'登记入站交接',
+  const names = {pickup_gate:'核仓门提货条件',ready:'核验并锁机', dispatch:'确认派车', depart:'登记发车', pickup:'授权自提交接', station_receive:'登记入站交接',
     station_release:'授权第二程', deliver:'登记签收', exception:'挂起异常', resolve:'处理并恢复', service_complete:'确认技术启用',
-    settle:'核对并结算', note:'写协作记录', edit:'编辑订单', upload:'上传凭证', revise_window:'更改预约', unrelease:'撤回放行',
+    settle:'核对并结算', note:'写协作记录', edit:'编辑订单', upload:'上传凭证', revise_window:'更改预约', cancel:'取消未发订单',unrelease:'撤回放行',
     attempt:'登记本次到场',platform_receipt:'核对平台实收'};
   const operationKeys = ['ready','dispatch','pickup','depart','station_receive','station_release','deliver','resolve','service_complete','settle'];
   const help = {
@@ -31,7 +31,7 @@
   };
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const can = (o, key) => (o.allowed_actions || []).includes(key);
-  const routeText = o => o.pickup ? 'A · 仓口自提' : [o.route,routes[o.route]].filter(Boolean).join(' · ');
+  const routeText = o => o.pickup ? 'A · 仓口自提' : o.route==='A' ? ({amazon:'A · 原卡派送亚马逊',terminal:'A · 原卡派送经销商 / 终端'}[o.a_channel||o.channel_release?.channel]||'A · 原卡渠道待核') : [o.route,routes[o.route]].filter(Boolean).join(' · ');
   const issuedLine = r => r?`${r.date} · ${r.name} · 第 ${r.stop} / ${r.stops} 站`:'';
   const stageTag = o => `<span class="wf-status wf-${esc(o.status)}">${esc(stages[o.status] || o.status)}</span>`;
   const next = o => operationKeys.find(k => can(o,k));
@@ -94,7 +94,7 @@
     container.querySelector('input[type=search]').oninput=e=>{state.search=e.target.value;rows();};
     container.querySelectorAll('.wf-filters select').forEach(el=>el.onchange=()=>{state[el.name]=el.value;rows();});
     result.onclick=e=>{
-      const link=e.target.closest('[data-order]'); if(link) openOrder(ctx,link.dataset.order,link.dataset.start);
+      const link=e.target.closest('[data-order]'); if(link) ctx.openOrder(link.dataset.order,link.dataset.start);
       if(e.target.closest('[data-cmd="clear"]')) {filters.delete(view);mount(container,ctx,view);}
     };
   }
@@ -154,13 +154,14 @@
     A:'明确指定月台或入口及卸货责任。送平台仓时记录货件号、标签和有效仓约，现场交接与平台实收分别核对。',
     B:'从本台 SN 所在仓直接交付。核现场路线、人员、工具及可完成的已购动作。',
     C1:'一份主委托覆盖干线、接收站和第二程；主承方提供两段交接回执。',
-    C2:'分别确认干线、接收站和第二程。首段出发前取得接站回执与第二程委托依据。'};
+    C2:'分别确认干线、接收站和第二程。首段出发前落实站点接收，站内按 SN 签收后凭独立二程承接放行。'};
   function orderForm(ctx,o=null) {
     const editing=Boolean(o); const v=o||{};
     const {el,body}=dialog(editing?'编辑订单':'新建履约订单',editing?o.id:'ORDER INTAKE / F01');
+    if(editing)linkDrawer(el,ctx,o.id);
     const warehouses=(ctx.resources || []).filter(x=>x.type==='warehouse').map(x=>x.name).filter(Boolean);
-    const modes={pickup:'A · 客户到仓自提',A:'A · 普通卡派',B:'B · 原仓专业直送',C1:'C1 · 经站统包',C2:'C2 · 经站分采'};
-    const mode=v.pickup?'pickup':(v.route||'B');
+    const modes={'':'选择履约分支',pickup:'A · 客户到仓自提',amazon:'A · 原卡派送亚马逊',A:'A · 原卡派送经销商 / 终端',B:'B · 原仓专业直送',C1:'C1 · 经站统包',C2:'C2 · 经站分采'};
+    const mode=v.pickup?'pickup':v.route==='A'?({amazon:'amazon',terminal:'A'}[v.a_channel]||''):(v.route||'B');
     const whList='wf-warehouse-'+dialogSerial;
     body.innerHTML=`<form class="wf-form">${section('01','客户与终点',
       field('customer','客户 / 收货单位',v.customer,req)+field('crm_ref','CRM / 原订单关联号',v.crm_ref,{ph:'用于销售交接或旧单迁入'})+
@@ -169,10 +170,12 @@
       field('city','城市',v.city)+field('state','州代码',v.state,{extra:'pattern="[A-Za-z]{2}" title="两位州代码" maxlength="2"',ph:'TX'})+
       field('zip','目的 ZIP',v.zip,{req:true,extra:'pattern="[0-9]{5}(-[0-9]{4})?" inputmode="numeric"',ph:'75001'})+
       field('endpoint','合同约定交接点',v.endpoint,{req:true,ph:'例如一楼大厅东侧指定机位'})+
-      field('lat','终点纬度',v.lat,{type:'number',extra:'min="-90" max="90" step="any"',ph:'例如 32.7767'})+
+      field('location_precision','定位精度',v.location_precision||'unknown',{opts:{unknown:'待核',zip:'ZIP 代表点',street:'街址',dock:'已核装卸口'}})+
+      field('coordinate_ref','定位／现场校正凭据',v.coordinate_ref)+field('lat','终点纬度',v.lat,{type:'number',extra:'min="-90" max="90" step="any"',ph:'例如 32.7767'})+
       field('lng','终点经度',v.lng,{type:'number',extra:'min="-180" max="180" step="any"',ph:'例如 -96.7970'}))}
       ${section('02','货物与已购范围',
       field('warehouse','设备持货仓',v.warehouse,{req:true,extra:'list="'+whList+'"'})+`<datalist id="${whList}">${warehouses.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>`+
+      field('procurement_mode','运输采购方式',v.procurement_mode||'company',{opts:{company:'公司自主采购',platform:'平台指定承运',ltl:'普通 LTL 网络',brand_fleet:'批准内部用车'}})+field('pack_version','本次包装版本',v.pack_version||'')+
       field('mode','履约路径',mode,{req:true,opts:modes})+'<div class="wf-hint wf-full" data-route-hint></div>'+
       field('model','设备型号',v.model||'',{req:true,opts:{'':'选择型号',...Object.fromEntries(Array.from({length:7},(_,i)=>['M0'+(i+1),'M0'+(i+1)]))}})+
       field('quantity','台数',v.quantity||1,{req:true,type:'number',extra:'min="1" max="999" step="1"'})+
@@ -186,12 +189,13 @@
       field('notes','随单说明',v.notes,{area:true,full:true,ph:'硬性时窗、客户书面确认编号或待补资料'}))}
       ${formEnd(editing?'保存修改':'创建订单','cancel')}</form>`;
     const form=body.querySelector('form'), modeEl=form.elements.mode;
-    const update=()=>{body.querySelector('[data-route-hint]').textContent=routeNotes[modeEl.value];};
+    const update=()=>{body.querySelector('[data-route-hint]').textContent=routeNotes[modeEl.value==='amazon'?'A':modeEl.value]||'先选择本票交接对象。';};
     update();modeEl.onchange=update;
-    body.querySelector('[data-cmd=cancel]').onclick=()=>{el.close();if(editing)openOrder(ctx,o.id);};
+    body.querySelector('[data-cmd=cancel]').onclick=()=>{el.close();if(editing)ctx.openOrder(o.id);};
     submitter(form,async fd=>{
       const payload=Object.fromEntries(fd);const {mode}=payload;delete payload.mode;
-      payload.pickup=mode==='pickup';payload.route=payload.pickup?'A':mode;
+      payload.pickup=mode==='pickup';payload.route=payload.pickup||mode==='amazon'?'A':mode;
+      if(payload.route==='A'&&!payload.pickup)payload.a_channel=mode==='amazon'?'amazon':'terminal';
       if(payload.pickup && payload.level!=='L1')throw Error('仓口自提请选 L1 基础交接，并在合同终点中写明装车交接点。');
       if(payload.route==='A' && (payload.level==='L3' || fd.has('addon_l4')))throw Error('A 路径适配基础交接或入口交付。已购机位交付、专项搬运需确认专业承接路径。');
       if(payload.addon_l4 && !payload.site_note.trim())throw Error('L4 专项搬运需要填写现场条件及专项承接。');
@@ -201,11 +205,11 @@
       payload.quantity=Number(payload.quantity);payload.addon_l4=fd.has('addon_l4');payload.addon_l5=fd.has('addon_l5');payload.state=payload.state.toUpperCase();
       if(editing)payload.version=o.version;
       const res=await ctx.api(editing?'/api/orders/'+encodeURIComponent(o.id):'/api/orders',{method:editing?'PATCH':'POST',body:payload});
-      el.close();ctx.toast?.(editing?'修改已保存':'订单已创建');await refreshAfterSave(ctx);openOrder(ctx,res.order.id);
-    },editing?()=>openOrder(ctx,o.id):null);
+      el.close();ctx.toast?.(editing?'修改已保存':'订单已创建');await refreshAfterSave(ctx);ctx.openOrder(res.order.id);
+    },editing?()=>ctx.openOrder(o.id):null);
   }
 
-  const labels={customer:'客户',crm_ref:'CRM / 原订单关联号',contact:'现场联系人',address:'交付地址',city:'城市',state:'州',zip:'邮编',lat:'纬度',lng:'经度',
+  const labels={receiver_site:'指定收货点',appointment_ref:'仓库预约号',shipment_ref:'货件号',label_ref:'逐台标签凭据',receiving_terms:'平台接收条件',receiver_contact:'终端接收人',handoff_terms:'交接与卸货范围',customer:'客户',crm_ref:'CRM / 原订单关联号',contact:'现场联系人',address:'交付地址',city:'城市',state:'州',zip:'邮编',lat:'纬度',lng:'经度',
     warehouse:'持货仓',model:'型号',quantity:'台数',endpoint:'合同终点',level:'服务档',route:'路径',pickup:'客户自提',
     addon_l4:'专项搬运 L4',addon_l5:'技术启用 L5',site_note:'现场核验',delivery_actions:'已购作业',exclusions:'范围外责任',
     notes:'随单说明',owner:'建单人',status:'工序',sn:'设备 SN',release_ref:'验机 / 放行依据',driver:'执行司机',carrier:'承运团队',
@@ -277,6 +281,44 @@
     const matches=files.filter(x=>x.category===category);
     return matches.length?`<div class="wf-refs">${matches.map(x=>`<button type="button" data-download="${esc(x.id)}">↓ ${esc(x.name)}</button>`).join('')}</div>`:'';
   }
+  const commissionNames={'station-mandate':'确认首段接站条件',technical:'签发 T5 技术单','platform-instruction':'登记运输产品指令','second-leg':'确认 / 重选二程委托'};
+  function commissionCommands(o,role){
+    if(!['admin','procurement','dispatch'].includes(role))return '';
+    const available=[];
+    if(o.addon_l5&&(!o.technical_order&&['new','ready'].includes(o.status)||o.status==='delivered'&&!o.result_ref))available.push('technical');
+    if(!o.pickup&&o.procurement_mode&&o.procurement_mode!=='company'&&(o.procurement_mode!=='brand_fleet'||role==='admin')&&['new','ready'].includes(o.status))available.push('platform-instruction');
+    if(o.route==='C2'&&o.status==='ready'&&!o.station_mandate)available.push('station-mandate');
+    if(['C1','C2'].includes(o.route)&&['ready','at_station'].includes(o.status))available.push('second-leg');
+    return available.map(k=>btn(k,commissionNames[k])).join('');
+  }
+  function commissionForm(ctx,data,modal,cmd){
+    const {order:o}=data,{body}=modal;
+    const labels={station_supplier_id:'独立站管签约方',station_executor_id:'T3 接收站执行方 ID',station_acceptance_ref:'收储承接凭据',executor_id:'实际执行方 ID',acceptance_ref:'执行方接受凭据',scope:'本次授权动作',amount:'本段委托金额 USD',account_ref:'平台账户 / 内部部门号',instruction_ref:'本票批准指令号',carrier:'承运方名称',valid_until:'有效至',bol_ref:'BOL / PRO',pickup_ref:'授权提货号',identity_ref:'身份核验要求与凭据',allocation:'核准内部分摊 USD',cost_center:'分摊成本中心',supplier_id:'签约供应商',product:'采购产品',station_id:'实际接收 / 二程起仓',approved_ref:'批准人及凭据',quote_ref:'二程书面报价号',waiver_ref:'原二程免收依据（未取得留空）',storage_cost:'新增站费 USD',change_reason:'原委托改派 / 重签原因',condition_ref:'逐票条件证明'};
+    const mode=o.procurement_mode;
+    let keys=cmd==='station-mandate'?['station_id','station_supplier_id','station_executor_id','station_acceptance_ref']:cmd==='technical'?['supplier_id','executor_id','scope','acceptance_ref','amount',...(o.technical_order?['change_reason']:[])]:cmd==='platform-instruction'?
+      ['account_ref','instruction_ref','carrier','executor_id','acceptance_ref','valid_until',...(mode==='brand_fleet'?['cost_center','allocation']:['bol_ref','pickup_ref','identity_ref'])]:
+      ['supplier_id','executor_id','product','station_id',...(o.status==='ready'&&!o.station_mandate?['station_supplier_id','station_executor_id','station_acceptance_ref']:[]),'acceptance_ref','approved_ref','quote_ref','amount','valid_until','condition_ref',...(o.second_leg?['change_reason','waiver_ref','storage_cost']:[])];
+    const suppliers=(ctx.resources||[]).filter(x=>x.type==='supplier'),stations=(ctx.resources||[]).filter(x=>x.type==='warehouse');
+    const choose=items=>Object.fromEntries([['','请选择'],...items.map(r=>[r.id,r.name+' · '+r.id])]);
+    body.onclick=null;
+    body.innerHTML='<form class="wf-form"><h3>'+esc(commissionNames[cmd])+'</h3><p>'+esc(o.crm_ref||o.id)+' · '+esc(o.endpoint)+'</p><div class="wf-grid">'+keys.map(k=>{
+      const c={req:!['condition_ref','waiver_ref'].includes(k)};
+      if(['amount','allocation','storage_cost'].includes(k)){c.type='number';c.extra='min="0" step=".01"'}
+      if(k==='valid_until')c.type='date';
+      if(['supplier_id','station_supplier_id'].includes(k))c.opts=choose(suppliers);
+      if(k==='station_id')c.opts=choose(stations);
+      if(k==='product')c.opts={T2:'T2 专业末端',T4:'T4 专项作业',T1:'T1 普通运输'};
+      return field(k,labels[k],k==='storage_cost'?'0':k==='station_id'?o.station_mandate?.station_id||o.second_leg?.station_id||'':'',c)
+    }).join('')+'</div>'+formEnd('确认并记录委托版本')+'</form>';
+    const f=body.querySelector('form');
+    f.querySelector('[data-cmd=back]').onclick=()=>details(ctx,data,modal);
+    submitter(f,async fd=>{
+      const payload={...Object.fromEntries(fd),version:o.version};
+      if(cmd==='second-leg')payload.carrier=suppliers.find(s=>s.id===payload.supplier_id)?.name||'';
+      await ctx.api('/api/ops/folder/'+encodeURIComponent(o.id)+'/'+cmd,{method:'POST',body:payload});
+      await refreshAfterSave(ctx);await loadDetail(ctx,o.id,modal);
+    });
+  }
   function folderBody(ctx,data,focus){
     const {order:o,files=[],events=[],folder:f}=data;
     const panel=(key,title,badge,content)=>folderPanel(key,title,badge,content,focus);
@@ -294,34 +336,42 @@
     return panel('F01','客户承诺与现场',o.level+(o.addon_l4?' + L4':'')+(o.addon_l5?' + L5':''),
         kv(o,['crm_ref','customer','contact','endpoint','address','city','state','zip','lat','lng','delivery_actions','exclusions','site_note','original_window_start','original_window_end','original_timezone','notes'])+fileRefs(files,'site'))+
       panel('F02','库存与持货仓',assets?assets.length+' 台已关联':(o.sn?'已录 SN':'待锁机'),
+        (o.positioned_sns?.length?subnote('由 D 前置转入 · '+o.positioned_sns.join('、')):'')+
         kv(o,['warehouse','model','quantity','sn','release_ref'])+(assets?.length?list(assets,a=>`<b>${esc(a.sn)} · ${esc(assetNames[a.state]||a.state)}</b><small>${esc(a.model)} · 原仓 ${esc(a.warehouse)} / 库位 ${esc(a.bin)} · 入库批次 ${esc(a.batch)} · ${esc(a.evidence)}</small>`):'')+fileRefs(files,'release'))+
       panel('F03','选商与同范围报价',q?'已选报价':quotes?quotes.length+' 份关联报价':o.pickup?'仓口自提':'按权限可见',
         (q?subnote('中选 '+q.id+' · '+q.carrier+' · USD '+q.amount+' · 审批 '+q.approval_ref):o.checks?.price&&quotes?subnote('随单价格依据 · '+o.checks.price):'')+
         (quotes?.length?qLines:subnote(o.pickup?'仓口自提按约核仓口费用。':quotes?'尚无本票报价。':'报价明细由采购、调度与财务岗位查阅。'))+fileRefs(files,'quote'))+
       panel('F04','放行、派车与站序',o.release_route?'第 '+o.release_route.stop+' / '+o.release_route.stops+' 站':o.dispatch_ref?'已有委托号':'待确认',
-        subnote(routeNotes[o.pickup?'pickup':o.route]||'')+kv(o,['carrier','driver','dispatch_ref','handoff_ref','station_name','receipt_ref','custodian','release_route','window_start','window_end','timezone','checks']))+
-      panel('F05','到场、分段交接与签收',attempts.length+' 次到场 · '+pod+' 份 POD',
+        subnote(routeNotes[o.pickup?'pickup':o.route]||'')+
+        (o.channel_release?kv(o.channel_release,['receiver_site','appointment_ref','shipment_ref','label_ref','receiving_terms','receiver_contact','handoff_terms']):'')+
+        (o.chain_contract?subnote('主承 '+o.chain_contract.principal+' · 干线、站内、末端全价 USD '+o.chain_contract.amount+' · '+o.chain_contract.evidence):'')+
+        (o.station_mandate?subnote('书面接站 '+o.station_mandate.station_name+' · '+o.station_mandate.station_acceptance_ref+(o.second_leg?'':' · 待落实二程承接')):'')+
+        (o.second_leg?subnote('二程 '+o.second_leg.carrier+' · v'+o.second_leg.ordinal+' · 应付主体 '+(o.second_leg.payee_id||'待核')+' · '+o.second_leg.quote_ref):'')+
+        (o.c2_replacement?subnote('二程改派后预算 USD '+o.c2_replacement.budget+' · 待核争议 USD '+o.c2_replacement.disputed):'')+
+        (o.first_leg_receipt?subnote('首程已到站 · '+(o.first_leg_receipt.driver||o.first_leg_receipt.carrier)+' · '+o.first_leg_receipt.dispatch_ref):'')+kv(o,['carrier','driver','dispatch_ref','handoff_ref','station_name','receipt_ref','custodian','release_route','window_start','window_end','timezone','checks']))+
+      panel('F05','到场、分段交接与签收',(o.completed_sns?.length||0)+'/'+o.quantity+' 台完成 · '+attempts.length+' 次作业 · '+pod+' 份 POD',
+        (o.endpoint_receipt?subnote('交接终点 '+o.endpoint_receipt.endpoint+' · '+o.endpoint_receipt.receiver+' · '+o.endpoint_receipt.evidence):'')+
         kv(o,['signer','delivered_at','delivery_note','station_name','receipt_ref'])+work+rec+fileRefs(files,'pod')+
         `<div class="wf-refs">${f?.rights.attempt?btn('attempt','登记本次到场'):''}${f?.rights.receipt&&receipt?.state!=='closed'?btn('platform_receipt',receipt?'跟进平台实收':'登记平台实收 / 差异'):''}</div>`)+
       panel('F06','异常、改约与责任',ex.length+' 条可见记录'+(recovery.length?' · '+recovery.length+' 张工单':''),
         kv(o,['reason','next_step','resolution'])+(ex.length?list(ex,x=>`<b>${esc(names[x.action])} · ${esc(x.actor)}</b><small>${esc(timestamp(x.ts))}（查看地）</small>`):subnote('暂无可见异常记录。'))+casesHtml(recovery))+
       panel('F07','技术启用与客户恢复',o.result_ref?'已验收':o.addon_l5?'已购 L5':'未购 L5',
-        (o.result_ref?kv(o,['result_ref']):subnote(o.addon_l5?'物理签交后由授权岗位登记技术验收结果。':'本票无另购技术启用。'))+
+        (o.technical_order?subnote('独立技术单 '+o.technical_order.id+' · '+o.technical_order.executor_id+' · '+o.technical_order.acceptance_ref):'')+(o.result_ref?kv(o,['result_ref']):subnote(o.addon_l5?'物理签交后由授权岗位登记技术验收结果。':'本票无另购技术启用。'))+
         (o.service_units?.length?list(o.service_units,u=>`<b>${esc(u.sn)} · ${esc(u.result)}</b>${u.customer_ref?`<small>客户确认 · ${esc(u.customer_ref)}</small>`:''}`):'')+casesHtml(tech)+fileRefs(files,'service'))+
       panel('F08','成本、发票与核账',o.status==='settled'?'已核账':ctx.user.role==='driver'?'财务经办':'待核账',
-        (ctx.user.role==='driver'?subnote('财务核账依据按岗位查看。'):kv(o,['approved_cost','change_cost','change_ref','actual_cost','variance_cost','variance_ref','invoice_ref']))+fileRefs(files,'invoice'));
+        (ctx.user.role==='driver'?subnote('财务核账依据按岗位查看。'):kv(o,['approved_cost','change_cost','change_ref','actual_cost','variance_cost','variance_ref','invoice_ref','approved_variance','cost_expression']))+fileRefs(files,'invoice'));
   }
   function details(ctx,data,modal,tab='overview') {
     const {order:o,events=[],files=[]}=data,{body,el}=modal;
     if (!el.open) return;
     const primary=next(o);
     const step=handoff(o,data.folder,files);
-    const controls=['edit','upload','note','revise_window','unrelease','exception'].filter(k=>can(o,k));
+    const controls=['pickup_gate','edit','upload','note','revise_window','unrelease','exception','cancel'].filter(k=>can(o,k));
     const tabs={overview:'随单作业夹',evidence:'凭证 · '+files.length,log:'轨迹 · '+events.length};
     body.innerHTML=summary(o)+`<div class="wf-handoff"><div class="wf-handoff-body"><small>${esc(step[0])} · ${o.status==='settled'&&step[0]==='F08'?'归档岗位':'下一经办岗'} / ${esc(step[1])}</small><b>${esc(step[2])}</b><p>${esc(step[3])}</p></div>
       <div class="wf-handoff-actions">${data.folder?.rights.attempt?btn('attempt','登记到场'):''}${primary?btn(primary,names[primary],'wf-primary'):''}</div></div>`+
-      `<div class="wf-commands">${controls.map(k=>btn(k,names[k],k==='exception'?'wf-risk':'')).join('')}</div>
-      <div class="wf-tabs">${Object.entries(tabs).map(([k,v])=>`<button type="button" data-tab="${k}" aria-pressed="${tab===k}">${esc(v)}</button>`).join('')}</div><div class="wf-tab-body"></div>`;
+      `<div class="wf-commands">${commissionCommands(o,ctx.user.role)}${controls.map(k=>btn(k,names[k],k==='exception'?'wf-risk':'')).join('')}</div>
+      <div class="wf-tabs"><button type="button" data-packet>导出本版作业单</button>${Object.entries(tabs).map(([k,v])=>`<button type="button" data-tab="${k}" aria-pressed="${tab===k}">${esc(v)}</button>`).join('')}</div><div class="wf-tab-body"></div>`;
     const pane=body.querySelector('.wf-tab-body');
     if(tab==='log'){
       pane.innerHTML=events.length?`<ol class="wf-log">${events.map(e=>`<li><div><b>${esc(names[e.action] || (e.action==='create'?'创建订单':e.action))}</b> <small>${esc(e.actor)} · ${esc(timestamp(e.ts))}（查看地）</small></div><p>${recordNote(e)}</p></li>`).join('')}</ol>`:'<div class="wf-empty">当前身份暂无可见轨迹。</div>';
@@ -333,8 +383,48 @@
         (data.folderError?`<div class="wf-warning" role="alert">${esc(data.folderError)} <button data-reload>重新读取</button></div>`:
           folderBody(ctx,data,step[0]));
     }
+    if(tab==='overview'){
+      const lane=document.createElement('nav');lane.className='order-lane';lane.setAttribute('aria-label','本单岗位泳道');
+      const done=o.status==='settled',delivered=done||o.status==='delivered';
+      const stages=[['F01','销售','销售承诺',o.endpoint?'已记录':'缺终点'],['F02','仓管','逐台锁货',o.sn?'有 SN':'待实收'],['F03','采购','委托',o.pickup?'自提免采':o.selected_quote||o.platform_instruction?'已登记':'待确认'],['F04','调度 / 仓管','放货',o.pickup?(o.pickup_gate?'已验车':'待验车'):(o.issue_version?'签发 v'+o.issue_version:'待签发')],['F05','车组 / 仓管','逐台交付',delivered?'已交付':(o.completed_sns||[]).length+'/'+o.quantity+' 台'],['F06','订单专员','异常与变更',o.status==='exception'?'待处理':'按需'],['F07','技师','技术服务',o.addon_l5?(o.result_ref?'已复测':'待复测'):'未购'],['F08','财务','核账',done?'已核账':'待核']];
+      lane.innerHTML=stages.map(([k,r,t,state])=>'<button type="button" data-lane="'+k+'"><small>'+esc(r)+'</small><b>'+k+' '+t+'</b><span>'+esc(state)+'</span></button>').join('');
+      pane.prepend(lane);
+      if(data.shipments?.length){
+        const sea=document.createElement('section');sea.className='td-ocean';
+        sea.innerHTML='<b>关联船期与到仓批次</b>'+data.shipments.map(s=>{
+          const units=s.units.filter(u=>u.order_id===o.id||u.locked_order===o.id);
+          return '<p>'+esc([s.voyage,s.batch,s.warehouse].join(' · '))+'<br>'+esc(units.map(u=>u.sn).join(' / '))+
+            '<br>预报 '+units.length+' 台　·　实收 '+units.filter(u=>u.receipt).length+' 台　·　ASN '+esc(s.asn)+
+            '<br><button type="button" data-batch="'+esc(s.id)+'">查本批船期与收货回执 →</button></p>';
+        }).join('');
+        lane.after(sea);
+      }
+      if(data.shipmentError){const error=document.createElement('p');error.textContent='船期读取失败 · '+data.shipmentError;lane.after(error)}
+    }
+    const links=document.createElement('div');links.className='td-links';
+    if(ctx.user.role!=='supplier')links.innerHTML='<button type="button" data-focus-map>地图定位本票 ↗</button>';
+    const share=document.createElement('button');share.type='button';share.dataset.share='';share.textContent='复制本票链接';links.append(share);
+    body.querySelector('.wf-tabs').before(links);
     body.onclick=async e=>{
       const b=e.target.closest('button');if(!b)return;
+      if(b.hasAttribute('data-focus-map')){ctx.navigate('map?focus='+encodeURIComponent(o.id));return}
+      if(b.dataset.batch){ctx.navigate('ledger?batch='+encodeURIComponent(b.dataset.batch));return}
+      if(b.hasAttribute('data-share')){
+        try{await navigator.clipboard.writeText(location.href);ctx.toast('已复制本票链接')}
+        catch{const field=document.createElement('input');field.value=location.href;field.readOnly=true;field.setAttribute('aria-label','本票链接');b.replaceWith(field);field.select()}
+        return;
+      }
+      if(b.dataset.lane){const section=[...pane.querySelectorAll('details')].find(d=>d.querySelector('.wf-code')?.textContent===b.dataset.lane);if(section){section.open=true;section.scrollIntoView({block:'nearest'});section.querySelector('summary')?.focus()}return}
+      if(b.hasAttribute('data-packet')){
+        const latest=await ctx.api('/api/orders/'+encodeURIComponent(o.id));
+        if(latest.order.version!==o.version){ctx.toast('原单已更新，请刷新后导出新版');return}
+        const printable=document.createElement('div');
+        printable.innerHTML=folderBody(ctx,data,step[0]);
+        printable.querySelectorAll('button,input,select,textarea').forEach(x=>x.remove());
+        printable.querySelectorAll('details').forEach(x=>x.open=true);
+        const page='<!doctype html><meta charset="utf-8"><title>作业单 '+esc(o.id)+'</title><style>body{font:15px/1.6 sans-serif;max-width:900px;margin:30px auto;color:#143b35}details{margin:12px 0;break-inside:avoid}summary{font-weight:bold}small{display:block}table{border-collapse:collapse}td,th{padding:4px;border:1px solid #bbb}</style><h1>当前版本作业单</h1><p>'+esc(o.id)+' · '+esc(o.crm_ref||'')+' · v'+o.version+' · '+esc(ctx.user.name)+' · '+esc(new Date().toISOString())+'</p>'+printable.innerHTML;
+        const url=URL.createObjectURL(new Blob([page],{type:'text/html;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download=o.id+'-v'+o.version+'-作业单.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);return
+      }
       if(b.hasAttribute('data-reload'))loadDetail(ctx,o.id,modal);
       else if(b.dataset.tab)details(ctx,data,modal,b.dataset.tab);
       else if(b.dataset.download){
@@ -345,7 +435,8 @@
           const a=document.createElement('a');
           a.href='/api/files/'+encodeURIComponent(f.id);a.download=f.name;document.body.append(a);a.click();a.remove();
         }
-      }else if(['attempt','platform_receipt'].includes(b.dataset.cmd))folderForm(ctx,data,modal,b.dataset.cmd);
+      }else if(commissionNames[b.dataset.cmd])commissionForm(ctx,data,modal,b.dataset.cmd);
+      else if(['attempt','platform_receipt'].includes(b.dataset.cmd))folderForm(ctx,data,modal,b.dataset.cmd);
       else if(b.dataset.cmd)actForm(ctx,data,modal,b.dataset.cmd);
     };
   }
@@ -359,7 +450,7 @@
     const {el,body}=modal,{order:o,folder}=data;
     const isAttempt=cmd==='attempt',r=folder?.receipt;
     if(!folder?.rights[isAttempt?'attempt':'receipt'] || (!isAttempt && r?.state==='closed'))return;
-    const serials=String(o.sn||'').split(/[,，;；\r\n]+/).map(s=>s.trim()).filter(Boolean);
+    const serials=folder.pending_sns||[];
     const latest=folder.attempts.at(-1);
     const outcomeOptions={'':'按实际选择',success:resultNames.success,partial:resultNames.partial,failed:resultNames.failed};
     const qty={type:'number',req:true,extra:'min="0" max="'+Number(o.quantity)+'" step="1"'};
@@ -368,9 +459,9 @@
       <h3>${isAttempt?'登记第 '+(folder.attempts.length+1)+' 次实际到场':'核对平台实收'}</h3><p>${isAttempt?'记录每台 SN 在本次现场完成的动作。实际到场与作业结束均用订单当地时间。':'核对货件与逐台标签。仓口签收、平台接收数和运费各自留痕。'}</p></div>
       <div class="wf-hint">作业时区 · ${esc(o.timezone)}${isAttempt&&latest?' · 上次 '+esc(localTime(latest.arrival_local))+' / '+esc(resultNames[latest.outcome]):''}</div>
       <div class="wf-grid">${isAttempt?
-        field('arrival_local','实际到场','',{req:true,type:'datetime-local'})+field('finished_local','本次作业结束','',{req:true,type:'datetime-local'})+
+        field('arrival_local',o.pickup?'仓内交接开始':'实际到场','',{req:true,type:'datetime-local'})+field('finished_local','本次作业结束','',{req:true,type:'datetime-local'})+
         field('location','实际交接位置','',req)+field('evidence','现场记录 / 影像凭据号','',req)+
-        serials.map((sn,i)=>`<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('outcome'+i,'本次结果','',{opts:outcomeOptions,req:true})}${field('details'+i,'实际位置、已做 / 未做及原因','',req)}</div></div>`).join('')+
+        serials.map((sn,i)=>`<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('outcome'+i,'本次结果','',{opts:outcomeOptions,req:true})}${field('details'+i,'已做 / 未做动作及原因','',req)}${field('unit_location'+i,'实际位置，成功须到合同终点',o.endpoint,req)}${field('pod'+i,'本台签名或交付照片','',{opts:{'':'未上传或本次未送成',...Object.fromEntries((data.files||[]).filter(f=>f.category==='pod').map(f=>[f.id,f.name]))}})}</div></div>`).join('')+
         field('custodian','未完成时的实物保管人','')+field('next_step','未完成项、责任人及下次安排','') :
         (r?`<div class="wf-hint wf-full">货件 ${esc(r.shipment_ref)} · 原仓签 ${esc(r.signed_qty)} 台</div>`:field('shipment_ref','平台货件号','',req)+field('signed_qty','仓口签收台数',o.quantity,qty))+
         field('received_qty','平台当前接收台数',r?.received_qty??'',qty)+field('state','本次处理','open',{req:true,opts:{open:'继续跟进平台查询',closed:'已有明确结果 · 核结'}})+
@@ -392,7 +483,8 @@
     submitter(form,async fd=>{
       const p=Object.fromEntries(fd);
       if(isAttempt){
-        p.units=serials.map((sn,i)=>({sn,outcome:p['outcome'+i],details:p['details'+i]}));
+        p.release_version=o.issue_version;
+        p.units=serials.map((sn,i)=>({sn,outcome:p['outcome'+i],details:p['details'+i],location:p['unit_location'+i],pod_id:Number(p['pod'+i])}));
         for(let i=0;i<serials.length;i++){delete p['outcome'+i];delete p['details'+i];}
         if(p.units.some(u=>u.outcome!=='success') && (!p.custodian.trim()||!p.next_step.trim()))throw Error('有未完成项，请补实物保管人与下一步安排。');
       }else{
@@ -407,17 +499,29 @@
     if(!file?.size)throw Error('请选择附件。');
     if(file.size>5*1024*1024)throw Error('每份凭证上限 5 MiB。');
     return ctx.api('/api/orders/'+encodeURIComponent(o.id)+'/files',{method:'POST',body:{
-      version:o.version,category,name:file.name,base64:await base64(file)
+      version:o.version,release_version:o.issue_version,category,name:file.name,base64:await base64(file)
     }});
   }
   const rolesToFiles = role => role==='driver'?{pod:cats.pod,site:cats.site,other:cats.other}:cats;
   const checks={leg:'票号与本段委托',stock:'持货仓与 SN',package:'包装外廓及重量',vehicle:'车门、尾板与工具',
     endpoint:'合同交接点',site:'现场准入与通道',authority:'执行人与授权',window:'仓方与收货时窗',
     papers:'所需单据',price:'本段与全程报价',fallback:'失败及保管安排',release:'签发人及依据'};
+  const techPending=o=>String(o.sn||'').split(/[,，;；\r\n]+/).map(s=>s.trim()).filter(sn=>sn&&!(o.service_units||[]).some(u=>u.sn===sn&&u.state==='passed'));
   function actionFields(o,action,drivers,files,role,assets,plans) {
     const f=(k,c={})=>field(k,labels[k]||k,c.prefill?o[k]:'',{req:true,...c});
     const date=k=>f(k,{type:'datetime-local',prefill:true});
     const driver=()=>field('driver','司机账号','',{req:true,opts:{'':'选择实际执行的司机',...Object.fromEntries(drivers.map(d=>[d.username,d.name+' · '+d.username]))}});
+    const channel=o.a_channel||o.channel_release?.channel;
+    const channelOptions={'':'请选择',amazon:'亚马逊 / 平台仓',terminal:'经销商 / 终端'};
+    const channelSelect=()=>!channel?field('a_channel','本票实际原卡分支','',{req:true,opts:channelOptions}):'';
+    const releaseEvidence=()=>{
+      if(o.route==='C1')return field('all_legs_contract','主承书面包干凭据（干线、站内、末端与完整包价）','',{req:true,full:true});
+      if(o.route!=='A'||o.pickup)return '';
+      const keys=channel==='amazon'?['receiver_site','appointment_ref','shipment_ref','label_ref','receiving_terms']:
+        channel==='terminal'?['receiver_site','receiver_contact','handoff_terms']:['receiver_site','appointment_ref','shipment_ref','label_ref','receiving_terms','receiver_contact','handoff_terms'];
+      return '<div class="wf-hint wf-full">原卡交接资料 · '+esc(o.endpoint)+'。'+(channel?'':'旧票先选实际分支，再填写相应资料。')+'</div>'+
+        channelSelect()+keys.map(k=>field(k,labels[k],o.channel_release?.[k]||'',{req:!!channel})).join('');
+    };
     const planField=()=>field('route_id','关联已排线路（可选）','',{full:true,
       opts:{'':'独立派单',...Object.fromEntries(plans.map(p=>[p.id,p.name+' · '+p.date+' · 第 '+(p.order_ids.indexOf(o.id)+1)+' / '+p.order_ids.length+' 站']))},
       hint:plans.length?'签发后，司机可在本票查看线路名、日期和站序。':'暂无包含此票当前版本的同起点排线，可独立派单。'});
@@ -427,16 +531,19 @@
         <div>${assets.map(a=>`<label><input type="checkbox" data-sn="${esc(a.sn)}"> <b>${esc(a.sn)}</b> <small>${esc(a.bin||'')}</small></label>`).join('')}</div></div>`:
         '<div class="wf-full wf-warning">当前没有同仓同型号的合格设备。先到逐台库存登记实收、库位和验收依据。 <button type="button" data-inventory>查看逐台库存</button></div>')+
         f('sn',{area:true,full:true,ph:'从合格库存勾选，或逐行录入序列号',hint:'订单台数 '+o.quantity+'，提交时会再次核实每台库存。'})+f('release_ref',{full:true,ph:'仓库验机单或放行凭证号'});
-      case 'dispatch':return planField()+driver()+field('carrier',labels.carrier,o.selected_quote?.carrier||'',req)+f('dispatch_ref')+
+      case 'dispatch':return planField()+(['platform','ltl'].includes(o.procurement_mode)?'':driver())+field('carrier',labels.carrier,o.selected_quote?.carrier||o.platform_instruction?.carrier||'',req)+f('dispatch_ref')+
         field('approved_cost','批准全价（USD）',o.selected_quote?.amount??'',{req:true,type:'number',extra:'min="0" max="999999999" step=".01"',hint:o.selected_quote?'依据已签选报价 '+o.selected_quote.id:undefined})+
-        (['C1','C2'].includes(o.route)?f('handoff_ref',{full:true,ph:'接收人、站方与后续车组的确认依据'}):'')+date('window_start')+date('window_end')+
+        releaseEvidence()+(['C1','C2'].includes(o.route)?f('handoff_ref',{full:true,ph:'接收人、站方与后续车组的确认依据'}):'')+date('window_start')+date('window_end')+
         '<div class="wf-full wf-hint"><b>F04 发车前核验</b><br>逐项填实测结果、回执号或不适用原因。同一份放行单可引用对应行号。</div>'+
         Object.entries(checks).map(([k,v],i)=>field('check_'+k,String(i+1).padStart(2,'0')+' · '+v,k==='price'&&o.selected_quote?[o.selected_quote.id,o.selected_quote.ref,o.selected_quote.approval_ref].filter(Boolean).join(' / '):'',{req:true,extra:'minlength="3" maxlength="512"',ph:'凭据号、实测值或说明'})).join('');
-      case 'station_receive':return f('station_name')+f('custodian')+f('receipt_ref',{full:true});
-      case 'station_release':return planField()+driver()+f('carrier')+f('dispatch_ref',{full:true});
+      case 'station_receive':return f('station_name',{prefill:true})+f('custodian')+f('receipt_ref',{full:true})+
+        String(o.sn).split(/[,，;；\r\n]+/).filter(Boolean).map((sn,i)=>field('station_condition'+i,sn+' 实收状态','',req)+field('station_evidence'+i,sn+' 签收凭据','',req)).join('');
+      case 'pickup_gate':return Object.entries({collector:'授权提货人',authority_ref:'授权提货号',vehicle_ref:'实际车辆凭据',secure_ref:'直立固定与装车责任',package_height_cm:'本次带托高度 cm',door_cm:'车辆净开口 cm',gross_kg:'实物重量 kg',payload_kg:'车辆载重 kg'}).map(([k,v])=>field(k,v,'',{req:true,type:/_(cm|kg)$/.test(k)?'number':'text',extra:/_(cm|kg)$/.test(k)?'min=".01" step=".01"':''})).join('');
+      case 'station_release':return planField()+driver()+field('carrier','二程合同承运方',o.second_leg?.carrier||'',req)+f('dispatch_ref',{full:true});
       case 'pickup':case 'deliver':{
         const pod=files.filter(x=>x.category==='pod');
-        return (action==='pickup'?f('dispatch_ref',{ph:'本次有效的授权提货号'})+
+        return (action==='deliver'&&['A','C1'].includes(o.route)?
+          (o.route==='A'?channelSelect():'')+field('endpoint_receipt_ref',channel==='amazon'?'平台仓 / 合作仓实际交接回执':'合同终点实际交接回执','',{req:true,full:true}):'')+(action==='pickup'?f('dispatch_ref',{ph:'本次有效的授权提货号'})+
           field('approved_cost','仓口批准费（USD）','0',{req:true,type:'number',extra:'min="0" max="999999999" step=".01"'}):'')+f('signer')+
           f('delivered_at',{type:'datetime-local',hint:zoneText(o)})+
           f('delivery_note',{area:true,full:true,ph:'逐台 SN、签收位置、已完成动作及实物状态'})+
@@ -446,9 +553,9 @@
       case 'exception':return f('reason',{area:true,full:true,ph:'中断环节、发现时刻和已知事实'})+f('custodian',{full:true,ph:'当前位置与实际保管人'})+f('next_step',{area:true,full:true,ph:'下一位经办人、待办及回复时限'});
       case 'resolve':return f('resolution',{area:true,full:true,ph:'处置经过、批准人、客户确认和所恢复的工作'});
       case 'service_complete':{
-        const serials=String(o.sn||'').split(/[,，;；\r\n]+/).map(x=>x.trim()).filter(Boolean);
-        return f('result_ref',{full:true,ph:'授权人员、技术验收结论及客户签认的总回执号'})+(serials.length>1?serials.map((sn,i)=>
-          `<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('test_result'+i,'逐台复测结果','',req)}${field('customer_ref'+i,'客户确认号','',req)}</div></div>`).join(''):'');
+        const serials=techPending(o);
+        return f('result_ref',{full:true,ph:'授权人员、技术验收结论及客户签认的总回执号'})+(serials.length?serials.map((sn,i)=>
+          `<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('tech_state'+i,'逐台技术状态','passed',{opts:{passed:'已通过',parts_pending:'缺件待复测'}})}${field('test_result'+i,'逐台复测结果','',req)}${field('customer_ref'+i,'客户确认号','',req)}</div></div>`).join(''):'');
       }
       case 'settle':return `<div class="wf-hint wf-full"><b>已批预算 · USD ${esc(o.approved_cost ?? '待核')}</b><br>核对原委托与获批变更，差异须注明处理依据。</div>`+
         f('actual_cost',{type:'number',extra:'min="0" max="999999999" step="0.01"',ph:'0.00'})+f('invoice_ref')+
@@ -456,7 +563,7 @@
         field('change_ref','变更审批号','',{ph:'有批准调整时必填'})+field('variance_ref','结算差异处置依据','',{full:true,ph:'实结与调整后预算不同时必填'});
       case 'note':return f('note',{area:true,rows:4,full:true});
       case 'revise_window':return date('window_start')+date('window_end')+f('reason',{area:true,full:true,ph:'说明改约提出方、确认人、授权依据'});
-      case 'unrelease':return f('reason',{area:true,full:true});
+      case 'cancel':case 'unrelease':return f('reason',{area:true,full:true});
       case 'upload':return field('category','凭证类别','pod',{req:true,full:true,opts:rolesToFiles(role)})+upload(true);
       case 'depart':return `<div class="wf-full">${facts(o,'将按以下委托发车',['warehouse','sn','carrier','driver','dispatch_ref','release_route','handoff_ref','window_start','window_end'])}</div>`;
       default:return '';
@@ -498,9 +605,11 @@
     }
     submitter(form,async fd=>{
       const payload=Object.fromEntries(fd);delete payload.file;
-      if(action==='service_complete' && Number(o.quantity)>1){
-        const serials=String(o.sn).split(/[,，;；\r\n]+/).map(x=>x.trim()).filter(Boolean);
-        payload.service_units=serials.map((sn,i)=>({sn,result:fd.get('test_result'+i),customer_ref:fd.get('customer_ref'+i)}));
+      if(['deliver','depart'].includes(action))payload.release_version=o.issue_version;
+      if(action==='station_receive')payload.units=String(o.sn).split(/[,，;；\r\n]+/).map(s=>s.trim()).filter(Boolean).map((sn,i)=>({sn,condition:fd.get('station_condition'+i),evidence:fd.get('station_evidence'+i)}));
+      if(action==='service_complete'){
+        const serials=techPending(o);
+        payload.service_units=serials.map((sn,i)=>({sn,state:fd.get('tech_state'+i),result:fd.get('test_result'+i),customer_ref:fd.get('customer_ref'+i)}));
         for(let i=0;i<serials.length;i++){delete payload['test_result'+i];delete payload['customer_ref'+i];}
       }
       if(payload.route_id){
@@ -539,9 +648,13 @@
   async function loadDetail(ctx,id,modal,action='',tab='overview'){
     const {el,body}=modal;
     try {
-      const [orderRead,folderRead]=await Promise.allSettled([ctx.api('/api/orders/'+encodeURIComponent(id)),ctx.api('/api/ops/folder/'+encodeURIComponent(id))]);
+      const reads=[ctx.api('/api/orders/'+encodeURIComponent(id)),ctx.api('/api/ops/folder/'+encodeURIComponent(id))];
+      if(window.TicketDesk.mayReadSea(ctx.user.role))reads.push(ctx.api('/api/supply/shipments'));
+      const [orderRead,folderRead,seaRead]=await Promise.allSettled(reads);
       if(orderRead.status!=='fulfilled')throw orderRead.reason;
       const result=orderRead.value;
+      if(seaRead?.status==='fulfilled')result.shipments=seaRead.value.shipments.filter(s=>s.units.some(u=>u.order_id===id||u.locked_order===id));
+      if(seaRead?.status==='rejected')result.shipmentError=msg(seaRead.reason);
       if(folderRead.status!=='fulfilled')result.folderError='关联凭据未能读取。'+msg(folderRead.reason);
       else if(result.order.version!==folderRead.value.version)result.folderError='其他岗位刚更新了订单，请重新读取随单资料。';
       else result.folder=folderRead.value;
@@ -554,10 +667,15 @@
       body.querySelector('button').onclick=()=>loadDetail(ctx,id,modal,action,tab);
     }
   }
+  function linkDrawer(el,ctx,id){
+    el.classList.add('wf-order-drawer');
+    el.addEventListener('close',()=>ctx.closeTicket?.(id),{once:true});
+  }
   function openOrder(ctx,id,action){
     const modal=dialog(String(id),'FULFILLMENT RECORD / 订单档案');
+    linkDrawer(modal.el,ctx,id);
     modal.body.innerHTML='<div class="wf-empty">正在读取订单及可见凭证…</div>';
     return loadDetail(ctx,id,modal,action);
   }
-  window.Workflow={mount,openOrder,newOrder:ctx=>orderForm(ctx)};
+  window.Workflow={mount,openOrder,closeOrder:()=>active?.open&&active.close(),newOrder:ctx=>orderForm(ctx)};
 })();

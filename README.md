@@ -1,3 +1,7 @@
+# HAHA Logistics V12
+
+[打开我的待办](https://cscpengyuyan.github.io/haha-logistics-dispatch/v12/#dock) · [达拉斯三站道路试排](https://cscpengyuyan.github.io/haha-logistics-dispatch/v12/#road) · [员工服务部署与迁移](docs/V12-DEPLOY.md)
+
 # HAHA Logistics V8
 
 美国物流调度工作台：围绕订单、库存、预约、时区与放行条件组织完整工作流。

@@ -9,5 +9,8 @@
   "scripts": {
     "test": "node --test --test-reporter=spec tests/*.test.*",
     "start:server": "node server/server.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
   }
 }

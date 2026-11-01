@@ -4,6 +4,7 @@ import math
 import re
 import uuid
 from decimal import Decimal
+import supply
 import lifecycle
 import review
 import folder
@@ -15,15 +16,15 @@ COSTS = ("origin_cost","station_cost","delivery_cost","special_cost","other_cost
 
 EDITORS = {
     "warehouse": {"warehouse", "dispatch"}, "crew": {"dispatch"}, "vehicle": {"dispatch"},
-    "supplier": {"dispatch"}, "inbound": {"warehouse"}, "quote": {"dispatch", "finance"}
+    "supplier": {"dispatch","procurement"}, "inbound": {"warehouse"}, "quote": {"dispatch", "procurement"}
 }
 FIELDS = {
-    "warehouse": ("address","lat","lng","timezone","evidence","notes"),
-    "vehicle": ("capacity_units","door_cm","payload_kg","equipment","evidence","notes"),
-    "crew": ("capacity_units","coverage","equipment","evidence","notes"),
+    "warehouse": ("address","zip","lat","lng","timezone","evidence","notes"),
+    "vehicle": ("floor_length_cm","floor_width_cm","door_width_cm","truck_length_m","truck_width_m","truck_height_m","gross_t","axle_load_t","capacity_units","door_cm","payload_kg","equipment","lift_capacity_kg","tie_slots","executor_id","evidence","notes"),
+    "crew": ("capacity_units","coverage","equipment","headcount","tools","qualified_until","executor_id","evidence","notes"),
     "supplier": ("address","coverage","model","ability","qualification","evidence","notes"),
     "inbound": ("stage","warehouse","batch","serials","custodian","evidence","notes"),
-    "quote": ("order_id","carrier","path","scope","comparison_ref","amount","valid_until","evidence","notes")+COSTS,
+    "quote": ("order_id","carrier","path","scope","comparison_ref","amount","valid_until","evidence","notes","supplier_id","executor_id","product","accepted_ref","current_ref","condition_ref")+COSTS,
 }
 REQUIRED = {
     "warehouse": ("address","timezone"), "vehicle": ("capacity_units",), "crew": ("coverage",),
@@ -31,10 +32,12 @@ REQUIRED = {
     "quote": ("order_id","carrier","path","scope","valid_until","evidence"),
 }
 def init_db(db):
+    supply.init_db(db)
     lifecycle.init_db(db)
     review.init_db(db)
     folder.init_db(db)
     db.executescript("""
+    CREATE TABLE IF NOT EXISTS road_plans(id TEXT PRIMARY KEY,created INTEGER NOT NULL,signature TEXT NOT NULL,data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS registry(id TEXT PRIMARY KEY,type TEXT NOT NULL,version INTEGER NOT NULL,data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS registry_log(id INTEGER PRIMARY KEY,item TEXT NOT NULL,version INTEGER NOT NULL,actor TEXT NOT NULL,ts TEXT NOT NULL,snapshot TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS v8_links(old_id TEXT PRIMARY KEY,order_id TEXT NOT NULL REFERENCES orders(id));
@@ -45,7 +48,7 @@ def visible_type(kind,user):
     if user["role"]=="driver":
         return kind=="warehouse"
     if kind in ("quote","supplier"):
-        return user["role"] in ("admin","dispatch","finance")
+        return user["role"] in ("admin","dispatch","finance","procurement")
     if kind in ("inbound","route"):
         return user["role"] in ("admin","warehouse","dispatch","finance","sales")
     return True
@@ -56,6 +59,19 @@ def record(row):
 def list_records(db, routes, user):
     pred="=" if routes else "<>"
     found=[record(r) for r in db.execute(f"SELECT * FROM registry WHERE type {pred} 'route' ORDER BY rowid DESC") if visible_type(r["type"],user)]
+    if routes:
+        status={row[0]:(row[1],row[2],row[3],row[4]) for row in db.execute(
+            "SELECT id,status,version,json_extract(data,'$.release_route.id'),json_extract(data,'$.release_route.route_version') FROM orders")}
+        for r in found:
+            items=[status.get(oid,("missing",0,None,None)) for oid in r.get("order_ids",[])]
+            assigned=[state for state,_,rid,version in items if (rid,version)==(r["id"],r["version"])]
+            stale=any(r.get("order_versions",{}).get(oid)!=status.get(oid,(None,0))[1] for oid in r.get("order_ids",[]))
+            if assigned:
+                finished={"delivered","settled","closed"}
+                r["phase"]="历史完成" if len(assigned)==len(items) and all(x in finished for x in assigned) else "执行中" if any(x!="dispatched" for x in assigned) else "已签发"
+            else:
+                r["phase"]="待重新核验" if stale else "已核可行" if r.get("check_result") and not r["check_result"]["issues"] else "草案"
+            if user["role"] not in ("admin","dispatch","finance","procurement"):r.pop("cost_scenario",None)
     if user["role"]=="driver":
         return [{k:v for k,v in x.items() if k in {"id","name","type","lat","lng"}} for x in found]
     return found
@@ -98,11 +114,17 @@ def save_resource(db,body,user):
             if k in REQUIRED[kind]:raise ApiError(400,"缺少字段 "+k)
             continue
         limits={"lat":(-90,90),"lng":(-180,180),"capacity_units":(1,999),"door_cm":(1,1000),"payload_kg":(1,100000),"amount":(0,100000000)}
-        if k in COSTS: data[k]=number(v,k,0,100000000)
+        if k in {"floor_length_cm","floor_width_cm","door_width_cm"}: data[k]=number(v,k,1,3000)
+        elif k in {"truck_length_m","truck_width_m","truck_height_m","gross_t","axle_load_t"}: data[k]=number(v,k,0.01,200)
+        elif k in {"headcount","tie_slots","lift_capacity_kg"}: data[k]=number(v,k,0,100000)
+        elif k in COSTS: data[k]=number(v,k,0,100000000)
         else: data[k]=number(v,k,*limits[k]) if k in limits else string(v,k)
+    if kind=="crew" and data.get("qualified_until"):
+        iso_date(data["qualified_until"])
     if "capacity_units" in data and not data["capacity_units"].is_integer():raise ApiError(400,"载台数必须是整数")
     if ("lat" in data)!=("lng" in data):raise ApiError(400,"经纬度须成对提供")
     if kind=="warehouse":
+        if data.get("zip") and not re.fullmatch(r"[0-9]{5}",data["zip"]):raise ApiError(400,"请登记五位仓址 ZIP")
         if data["timezone"] not in ZONES:raise ApiError(400,"仓库时区无效")
         old=db.execute("SELECT id FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')=?",(data['name'],)).fetchone()
         if old and old[0]!=body.get("id"):raise ApiError(409,"仓库名称已存在")
@@ -110,7 +132,8 @@ def save_resource(db,body,user):
             old=db.execute("SELECT json_extract(data,'$.name') FROM registry WHERE type='warehouse' AND id=?",(body['id'],)).fetchone()
             if old and old[0]!=data["name"]:raise ApiError(400,"已登记的仓名作为订单关联键，请保留原名")
     if kind=="quote":
-        get_order(db,data["order_id"],user)
+        order=get_order(db,data["order_id"],user)
+        data["scope_snapshot"]=review.scope_snapshot(order)
         if data["path"] not in {"A","B","C1","C2"}:raise ApiError(400,"报价路径无效")
         iso_date(data["valid_until"])
         if all(k in data for k in COSTS):
@@ -126,44 +149,40 @@ def save_resource(db,body,user):
     if kind=="supplier" and data["qualification"] not in {"S0","S1","S2","S3","SX"}:raise ApiError(400,"供应商准入状态无效")
     return {"resource":save(db,kind,data,body,user)}
 
-def save_route(db,body,user):
+def save_route(db,body,user,first_leg=False):
+    import routing
     if user["role"] not in {"admin","dispatch"}:raise ApiError(403,"仅调度可保存排线")
     ids=body.get("order_ids")
     if not isinstance(ids,list) or not 1<=len(ids)<=60 or not all(type(x) is str for x in ids) or len(set(ids))!=len(ids):
         raise ApiError(400,"路线须包含 1–60 个不重复订单")
-    name=required(body,"name",140)
-    warehouse=required(body,"warehouse",140)
     orders=[get_order(db,i,user) for i in ids]
-    if body.get("order_versions")!={o["id"]:o["version"] for o in orders}:
+    versions={o["id"]:o["version"] for o in orders}
+    if body.get("order_versions")!=versions:
         raise ApiError(409,"排线期间订单版本已变更，请刷新并重新核对收货窗口")
-    def at_origin(o):
-        if o.get("lat") is None or o.get("lng") is None or o.get("pickup"):
-            return False
-        if o["route"] in ("C1","C2"):
-            return o["status"]=="at_station" and o.get("station_name")==warehouse
-        return o["status"]=="ready" and o["warehouse"]==warehouse
-    if not all(at_origin(o) for o in orders):
-        raise ApiError(409,"请核对定位、实际起点及作业段。经站单只可从已签收站点排第二程")
-    origin=db.execute("SELECT data FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')=?",(warehouse,)).fetchone()
-    if not origin or any(json.loads(origin[0]).get(k) is None for k in ("lat","lng")):
-        raise ApiError(400,"出发仓点须先登记经纬度")
+    if body.get("id") and routing.signed_orders(db, body["id"],body.get("version")):
+        raise ApiError(409,"该版已有正式签发，请为未完成站点新建草案")
     start=string(body.get("start_time","08:00"),"发车时刻",5)
     if not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d",start):raise ApiError(400,"发车时刻无效")
-    zone=body.get("timezone","America/Chicago")
-    if zone not in ZONES:raise ApiError(400,"请核对出发时区")
+    timezone=body.get("timezone","America/Chicago")
+    if timezone not in ZONES:raise ApiError(400,"请核对出发时区")
     minutes=number(body.get("service_minutes",45),"逐站作业分钟",1,720)
     if not minutes.is_integer():raise ApiError(400,"逐站作业分钟须为整数")
-    rid=string(body.get("resource_id") or "","运力编号",100)
-    if rid:
-        row=db.execute("SELECT * FROM registry WHERE id=? AND type IN ('vehicle','crew')",(rid,)).fetchone()
-        if not row:raise ApiError(400,"运力记录不存在")
-        cap=record(row).get("capacity_units")
-        if cap and sum(o["quantity"] for o in orders)>cap:raise ApiError(400,"所选订单台数超过车组核定载台数")
     basis=body.get("road_basis","estimate")
-    if basis not in ("estimate","demo_cache","private_osrm"):raise ApiError(400,"里程来源无效")
-    data={"name":name,"warehouse":warehouse,"date":iso_date(body.get("date")),"order_ids":ids,"road_basis":basis,
-          "order_versions":{o["id"]:o["version"] for o in orders},"resource_id":rid,"start_time":start,
-          "timezone":zone,"service_minutes":minutes,"notes":string(body.get("notes") or "","备注")}
+    if basis not in ("estimate","demo_cache","private_osrm","carrier","valhalla_truck"):raise ApiError(400,"里程来源无效")
+    checks,stops=routing.facts(body,ids)
+    warehouse=required(body,"warehouse",140)
+    data={"name":required(body,"name",140),"warehouse":warehouse,"warehouse_id":routing.origin_resource(db,warehouse).get("id"),
+          "date":iso_date(body.get("date")),"order_ids":ids,"road_basis":basis,"order_versions":versions,
+          "resource_id":string(body.get("resource_id") or "","车辆编号",100),"crew_id":string(body.get("crew_id") or "","班组编号",100),
+          "executor_id":string(body.get("executor_id") or "","执行方 ID",100),"start_time":start,"timezone":timezone,"service_minutes":minutes,"notes":string(body.get("notes") or "","备注"),
+          "checks":checks,"stops":stops,"first_leg":first_leg}
+    scenario=body.get("cost_scenario",{})
+    if not isinstance(scenario,dict):raise ApiError(400,"试算金额格式有误")
+    data["cost_scenario"]={k:number(scenario[k],"试算金额",0,100000000) for k in ("original","transport","extra","coordination","incentive") if scenario.get(k) not in (None,"")}
+    data["first_leg_ids"]=[o["id"] for o in orders if o["route"] in ("C1","C2") and o["status"]=="ready"]
+    if basis=="valhalla_truck":
+        routing.attach_road(db,data,body.get("road_id"))
+    data["check_result"]=routing.check_route(db,data,orders)
     return {"route":save(db,"route",data,body,user)}
 
 def import_v8(db,body,user):
@@ -178,7 +197,7 @@ def import_v8(db,body,user):
     return {"order":order}
 
 def award_quote(db,body,user):
-    if user["role"] not in {"admin","dispatch"}:raise ApiError(403,"仅主管或调度可确认中选委托")
+    if user["role"] not in {"admin","dispatch","procurement"}:raise ApiError(403,"仅采购或调度可确认中选委托")
     row=db.execute("SELECT * FROM registry WHERE id=? AND type='quote'",(required(body,"id",100),)).fetchone()
     if not row:raise ApiError(404,"报价不存在")
     q=record(row)
@@ -186,17 +205,40 @@ def award_quote(db,body,user):
     o=get_order(db,q["order_id"],user)
     check_version(o,body)
     if o["status"] not in ("new","ready") or o.get("pickup"):raise ApiError(409,"此票当前不可选择运输委托")
+    review.validate_quote(o,q)
+    import supply
+    capabilities=supply.assert_eligible(db,q,o)
     if q["path"]!=o["route"]:raise ApiError(400,"中选路径须与订单一致，请先核对分单")
     if q["valid_until"]<now()[:10]:raise ApiError(400,"报价已过期，请重新询价")
     if not q.get("comparison_ref") or not all(k in q for k in COSTS):raise ApiError(400,"中选前请补齐询价版本和五行全程费用")
     approval=required(body,"approval_ref",300)
     o["selected_quote"]={k:q[k] for k in ("id","version","carrier","amount","path","evidence","scope","valid_until","comparison_ref")+COSTS}
-    o["selected_quote"].update(ref=q["evidence"],approval_ref=approval)
+    o["selected_quote"].update({k:q.get(k) for k in ("supplier_id","executor_id","accepted_ref","condition_ref","product","scope_snapshot")})
+    o["selected_quote"].update(capability_snapshot=capabilities,ref=q["evidence"],approval_ref=approval)
     return {"order":save_order(db,o,user,"award_quote","中选 "+q["name"]+" · "+str(q["amount"])+" USD · "+approval)}
 
 def handle(db,method,path,body,user):
+    if method=="GET" and path=="/api/ops/map-capabilities":
+        from routing import capability_sites
+        return capability_sites(db,user)
+    if path.startswith("/api/settlement/"):
+        import settlement
+        return settlement.handle(db,method,path,body,user)
+    if path=="/api/billing":
+        import billing
+        return billing.handle(db,method,body,user)
+    if path.startswith("/api/team/"):
+        import team
+        return team.handle(db,path,method,body,user)
+    if path.startswith("/api/gate/"):
+        import gate
+        return gate.handle(db,method,path,body,user)
+    if path.startswith("/api/supply/"):
+        return supply.handle(db,method,path,body,user)
     if path.startswith("/api/ops/folder/"):
         return folder.handle(db,method,path,body,user)
+    if method=="GET" and path.startswith("/api/ops/compare/"):
+        return review.comparison(db,path.rsplit("/",1)[1],user)
     if path.startswith("/api/review/"):
         return review.handle(db,method,path,body,user)
     if path.startswith("/api/lifecycle/"):
@@ -222,7 +264,7 @@ def seed_demo(db):
         ("Dallas","Dallas, TX · 城市级演练仓点",32.83,-96.91,"America/Chicago"),
         ("New Jersey","Newark, NJ · 城市级演练仓点",40.735,-74.172,"America/New_York"),
         ("Fife","Fife, WA · 城市级演练仓点",47.237,-122.36,"America/Los_Angeles")]:
-        save_resource(db,dict(type="warehouse",name=name,address=addr,lat=lat,lng=lng,timezone=zone,notes="演练坐标，不代表实际库址。"),user)
+        save_resource(db,dict(type="warehouse",name=name,address=addr,zip={"Dallas":"75201","New Jersey":"07102","Fife":"98424"}[name],lat=lat,lng=lng,timezone=zone,notes="演练坐标，不代表实际库址。"),user)
     save_resource(db,dict(type="vehicle",name="DFW · 演练尾板车 01",capacity_units=6,door_cm=235,payload_kg=1600,equipment="演练双人车组、尾板及固定件",evidence="DEMO-VEH-01"),user)
     save_resource(db,dict(type="supplier",name="Metro · 演练服务商",address="Dallas 演练点",coverage="75201、76010",model="M01、M02",ability="T2 专业末端",qualification="S2",evidence="DEMO-SUP-01",notes="虚构的限定试单示例"),user)
     save_resource(db,dict(type="inbound",name="DFW 演练收货批",batch="DEMO-ASN-01",warehouse="Dallas",stage="S04",custodian="演练仓管",evidence="DEMO-GRN-01",serials="DEMO-1-1、DEMO-1-2"),user)
@@ -230,10 +272,25 @@ def seed_demo(db):
     if ticket:
         expiry=json.loads(ticket["data"])["window_end"][:10]
         for kind,path,amount,ref in [("现行车组","B",565,"Q-A"),("备选经站统包","C1",610,"Q-B")]:
-            save_resource(db,dict(type="quote",name=kind+" · 虚构报价",carrier=kind,path=path,order_id=ticket["id"],scope="同仓两台 M01，原窗口到指定一层机位，包含提货、搬运、签交",comparison_ref="DEMO-RFQ-01",amount=amount,origin_cost=110,station_cost=0 if path=="B" else 45,delivery_cost=420,special_cost=35,other_cost=0,valid_until=expiry,evidence="DEMO-"+ref,notes="演练数字，不作为对客报价"),user)
+            import supply
+            supplier=save_resource(db,dict(type="supplier",name=kind+" · 演练主体",address="DFW TEST",coverage="75201",
+                ability="T2",qualification="S3",evidence="DEMO-CREDENTIAL-"+ref),user)["resource"]
+            warehouse_id=db.execute("SELECT id FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')='Dallas'").fetchone()[0]
+            executor="DEMO-EXEC-"+ref
+            supply.qualify(db,dict(supplier_id=supplier["id"],executor_id=executor,product="T2",warehouse_id=warehouse_id,zip="75201",
+                model="M01",action="L3",decision="Y",valid_until=expiry,insurance_until=expiry,evidence="DEMO-CAP-"+ref),user)
+            save_resource(db,dict(type="quote",supplier_id=supplier["id"],executor_id=executor,product="T2",
+                accepted_ref="DEMO-ACCEPT-"+ref,current_ref="DEMO-CURRENT" if path=="B" else "",name=kind+" · 虚构报价",carrier=kind,path=path,order_id=ticket["id"],scope="同仓两台 M01，原窗口到指定一层机位，包含提货、搬运、签交",comparison_ref="DEMO-RFQ-01",amount=amount,origin_cost=110,station_cost=0 if path=="B" else 45,delivery_cost=420,special_cost=35,other_cost=0,valid_until=expiry,evidence="DEMO-"+ref,notes="演练数字，不作为对客报价"),user)
 
 def upgrade_demo_quotes(db):
-    """Populate cost lines only on the original, unedited synthetic samples."""
+    """Upgrade only a confirmed demo DB; never grant synthetic accounts in internal mode."""
+    mode=db.execute("SELECT value FROM metadata WHERE key='mode'").fetchone()
+    if not mode or mode[0]!="demo":
+        return
+    from demo_seed import DEMO_NAMES
+    for username,name in DEMO_NAMES.items():
+        db.execute("INSERT OR IGNORE INTO users(username,name,role,passhash) VALUES(?,?,?,'!')",
+                   (username,name,"driver" if username=="driver_alt" else username))
     for row in db.execute("SELECT * FROM registry WHERE type='quote' AND version=1").fetchall():
         q=record(row)
         fixture={"DEMO-Q-A":("B",565,0),"DEMO-Q-B":("C1",610,45)}.get(q.get("evidence"))

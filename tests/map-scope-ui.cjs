@@ -1,0 +1,33 @@
+const {chromium}=require('playwright'),{spawn}=require('node:child_process'),rl=require('node:readline'),assert=require('node:assert/strict');
+(async()=>{
+ const src=spawn(process.env.PYTHON||'python',['-B','tests/test_routing.py','serve'],{windowsHide:true}),lines=rl.createInterface({input:src.stdout});
+ src.stderr.pipe(process.stderr);let b;
+ try{const f=JSON.parse(await new Promise((r,j)=>{lines.once('line',r);src.once('exit',()=>j(Error('fixture stopped')))}));b=await chromium.launch({channel:'msedge',headless:true});
+ const c=await b.newContext({viewport:{width:1366,height:768},timezoneId:'America/Chicago'}),p=await c.newPage();p.setDefaultTimeout(15000);
+ await c.request.post(f.url+'/api/demo-login',{data:{username:'dispatch'}});
+ await p.goto(f.url+'/v12/#map');
+ await p.locator('[data-act=capLayer][data-key=supplier]').click();
+ await p.locator('.dm-cap-list').waitFor();
+ await p.locator('[data-act=capLayer][data-key=crew]').click();
+ const listing=await p.locator('.dm-cap-list').innerText();
+ assert.match(listing,/供应商/);assert.match(listing,/班组/);assert.match(listing,/ZIP 75201/);assert.match(listing,/未定位/);
+ assert.ok(await p.locator('.dm-scope-marker').count());
+ await p.locator('[data-box=capabilities]').scrollIntoViewIfNeeded();await p.screenshot({path:'docs/evidence/map/qualified-sites.png'});
+ await p.locator('[data-field=routeLoad]').selectOption(f.routes[2]);
+ assert.match(await p.locator('[data-box=decision]').innerText(),/2 站 · 2 票/);
+ const merge=p.locator('[data-act=mergeStop]').first();await merge.click();
+ assert.match(await p.locator('[data-box=message]').innerText(),/凭据/);
+ await p.locator('.dm-checks summary').first().click();
+ await p.locator('[data-leg="'+f.orders[3]+'"][data-prop=merge_ref]').fill('SIM-WRITTEN-DOCK');
+ await p.locator('[data-leg="'+f.orders[3]+'"][data-prop=merge_ref]').press('Tab');
+ await p.locator('[data-act=mergeStop]').first().click();
+ assert.match(await p.locator('[data-box=decision]').innerText(),/1 站 · 2 票/);
+ assert.deepEqual(await p.locator('.dm-stops>li .dm-num').allTextContents(),['1','1']);
+ const sent=p.waitForResponse(r=>r.url().endsWith('/api/ops/routes')&&r.request().method()==='POST');await p.locator('[data-act=save]').click();
+ const response=await sent;assert.equal(response.status(),200);const {route}=await response.json();
+ assert.equal(route.check_result.stop_count,1);assert.equal(route.check_result.timeline.length,2);
+ await p.locator('.dm-checks summary').first().click();
+ await p.locator('.dm-stops').scrollIntoViewIfNeeded();await p.screenshot({path:'docs/evidence/map/confirmed-shared-stop.png'});
+ console.log(JSON.stringify({capacity:'registered warehouse plus unlocated list',zips:'exact',shared_stop:1,orders:2,sns:route.check_result.timeline.map(t=>t.sns),service_minutes:route.check_result.timeline.map(t=>t.service_minutes)}));
+ }finally{if(b)await b.close();src.stdin.end('\n');lines.close()}
+})().catch(e=>{console.error(e);process.exitCode=1});

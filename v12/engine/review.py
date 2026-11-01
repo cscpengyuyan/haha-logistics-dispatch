@@ -7,7 +7,7 @@ from core import ApiError, encode, get_order, now, required, unpack
 
 READ = {"admin","dispatch","finance"}
 SCOPE = ("warehouse","model","quantity","zip","address","endpoint","level","addon_l4","addon_l5",
-         "delivery_actions","exclusions","site_note","window_start","window_end","timezone")
+         "pack_version","procurement_mode","delivery_actions","exclusions","site_note","window_start","window_end","timezone")
 CENT=Decimal("0.01")
 
 
@@ -40,6 +40,49 @@ def required_quote(db,oid,qid):
     return {**q,"id":row["id"],"version":row["version"]}
 
 
+def scope_snapshot(order):
+    scope={key: order.get(key) for key in SCOPE}
+    if order.get("a_channel"):
+        scope["a_channel"]=order["a_channel"]
+    return scope
+
+
+def validate_quote(order, quote):
+    """Both quotation comparison and release evaluate the saved enquiry scope."""
+    if quote.get("scope_snapshot") != scope_snapshot(order):
+        raise ApiError(409, "询价时的订单范围已变或旧版缺少范围，请重新确认本票报价")
+    if quote.get("valid_until", "") < max(now()[:10], str(order.get("window_end") or "")[:10]):
+        raise ApiError(409, "报价已过期或不覆盖作业窗口，请重新询价")
+    if quote.get("pricing_status") != "itemized" or not all(quote.get(key) for key in
+            ("evidence", "comparison_ref", "scope", "executor_id", "accepted_ref")):
+        raise ApiError(409, "待补五行费用、实际执行方和书面承接凭据")
+
+
+def comparison(db, oid, user):
+    if user["role"] not in READ | {"procurement"}:
+        raise ApiError(403, "此岗位不能查询报价")
+    order = get_order(db, oid, user)
+    row = db.execute("SELECT version,data FROM review_baselines WHERE order_id=? ORDER BY version DESC LIMIT 1",(oid,)).fetchone()
+    main = json.loads(row["data"])["main"] if row else None
+    rows = []
+    for candidate in db.execute("SELECT * FROM registry WHERE type='quote' AND json_extract(data,'$.order_id')=? ORDER BY rowid",(oid,)):
+        q = {**json.loads(candidate["data"]), "id":candidate["id"], "version":candidate["version"]}
+        reason = ""
+        try:
+            validate_quote(order, q)
+            import supply
+            supply.assert_eligible(db,q,order)
+        except ApiError as error:
+            reason = str(error)
+        rows.append(dict(q, excluded=reason))
+    current = next((q for q in rows if main and q["id"] == main["id"] and q["version"] == main["version"]
+                    and not q["excluded"] and q.get("current_ref")), None)
+    for q in rows:
+        comparable = current and not q["excluded"] and all(current[k]==q[k] for k in ("comparison_ref","scope"))
+        q["difference"] = dollars(decimal(q["amount"])-decimal(current["amount"])) if comparable else None
+    return {"current":current["id"] if current else None, "quotes":rows, "baseline_version":row["version"] if row else 0}
+
+
 def lock_baseline(db,body,user):
     if user["role"] not in {"admin","finance"}:raise ApiError(403,"基线须由财务或管理员锁定")
     oid=required(body,"order_id")
@@ -53,6 +96,12 @@ def lock_baseline(db,body,user):
         raise ApiError(400,"原方案窗口未确认，暂不能锁定比较基线")
     main=required_quote(db,oid,required(body,"main_id"))
     alt=required_quote(db,oid,required(body,"alt_id"))
+    if not main.get("current_ref"):
+        raise ApiError(400,"现行可执行方案须有已确认的原委托或协议依据")
+    for quote in (main, alt):
+        validate_quote(order,quote)
+        import supply
+        supply.assert_eligible(db,quote,order)
     if main["id"]==alt["id"] or (main["carrier"],main["path"])==(alt["carrier"],alt["path"]):
         raise ApiError(400,"请选择不同的实际可执行方案")
     for key in ("comparison_ref","scope"):
@@ -103,7 +152,7 @@ def query(db,body,user):
     whs=set();rows=[];summary=Counter();actual=Decimal(0);baseline_pairs=Decimal(0);settled_pairs=Decimal(0)
     for row in db.execute("SELECT * FROM orders ORDER BY rowid DESC"):
         o=unpack(row);oid=o["id"]
-        if o.get("pickup"):continue
+        if o.get("pickup") or o.get("order_kind")=="repair_redelivery":continue
         whs.add(o["warehouse"])
         if body.get("warehouse") and o["warehouse"]!=body["warehouse"]:continue
         if body.get("zip") and not o["zip"].startswith(body["zip"].strip()):continue
@@ -132,20 +181,21 @@ def query(db,body,user):
                 timing="unissued" if not issued else "unknown"
             if outcome!="unknown":summary["outcome_known"]+=1;summary["first_success"]+=outcome=="success"
         delivered=bool(oid in has_pod and o.get("signer") and o.get("delivered_at") and o.get("delivery_note"))
-        units=o["quantity"] if delivered else 0
+        units=len(o.get("completed_sns", []))
         summary["success_units"]+=units
         paid=o.get("actual_cost") if o["status"]=="settled" and o.get("invoice_ref") and delivered else None
         if paid is not None:summary["settled"]+=1;actual+=decimal(paid)
         baseline=current_baselines.get(oid);match="missing";quote_delta=None;actual_delta=None;original_price=None;backup_price=None
         if baseline:
             data=json.loads(baseline["data"])
-            if data["scope"]!={k:o.get(k) for k in SCOPE}:match="scope_changed"
+            if issued and baseline["version"]!=o.get("financial_baseline_version"):match="unverified"
+            elif data["scope"]!={k:o.get(k) for k in SCOPE}:match="scope_changed"
             elif issued and min(data["main"]["valid_until"],data["alt"]["valid_until"])<issued[:10]:match="expired"
             else:
                 match="matched";summary["pairs"]+=1
                 original_price=data["main"]["amount"];backup_price=data["alt"]["amount"]
                 quote_delta=dollars(decimal(original_price)-decimal(backup_price));baseline_pairs+=decimal(quote_delta)
-                if paid is not None:
+                if paid is not None and o.get("same_conditions_ref") and o.get("paid_ref") and not o.get("training"):
                     summary["settled_pairs"]+=1
                     actual_delta=dollars(decimal(original_price)-decimal(paid));settled_pairs+=decimal(actual_delta)
         rows.append({"id":oid,"warehouse":o["warehouse"],"zip":o["zip"],"level":o["level"],"route":o["route"],
@@ -162,6 +212,7 @@ def query(db,body,user):
             "order_version":o["version"]})
     totals={k:summary[k] for k in ("orders","plan_units","success_units","due","no_window","undispatched","due_unissued",
         "timed","on_time","outcome_known","first_success","settled","pairs","settled_pairs","no_basis_date")}
+    totals["cost_per_plan"]=dollars(actual/summary["plan_units"]) if summary["plan_units"] and summary["settled"]==summary["orders"] else None
     totals.update(pending=summary["orders"]-summary["settled"],actual=dollars(actual) if summary["settled"] else None,
         cost_per_success=dollars(actual/summary["success_units"]) if summary["success_units"] and summary["settled"]==summary["orders"] else None,
         quote_diff=dollars(baseline_pairs) if summary["pairs"] else None,settled_diff=dollars(settled_pairs) if summary["settled_pairs"] else None)

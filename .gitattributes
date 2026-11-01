@@ -1,0 +1,6 @@
+*.pmtiles binary
+*.gph binary
+*.pbf binary
+*.wasm binary
+*.whl binary
+*.zip binary

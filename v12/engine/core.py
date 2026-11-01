@@ -9,13 +9,14 @@ import sqlite3
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 
-ROLES = ("admin", "sales", "warehouse", "dispatch", "driver", "finance", "service")
+ROLES = ("admin", "sales", "warehouse", "dispatch", "driver", "finance", "service", "procurement", "supplier")
 ZONES = {"America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
          "America/Phoenix", "America/Anchorage", "Pacific/Honolulu", "America/Detroit",
          "America/Indiana/Indianapolis", "America/Boise", "America/Adak", "UTC"}
 TEXT_FIELDS = {"customer", "address", "zip", "city", "state", "warehouse", "model", "level",
                "route", "endpoint", "contact", "timezone", "window_start", "window_end", "notes",
-               "site_note", "delivery_actions", "exclusions", "crm_ref"}
+               "site_note", "delivery_actions", "exclusions", "crm_ref","pack_version","procurement_mode","location_precision","coordinate_ref"}
+TEXT_FIELDS.add("a_channel")
 FLAGS = {"addon_l4", "addon_l5", "pickup"}
 FIELDS = TEXT_FIELDS | FLAGS | {"quantity", "lat", "lng"}
 REQUIRED = {"customer", "address", "zip", "model", "endpoint", "warehouse"}
@@ -133,8 +134,18 @@ def normalize_input(data, body):
         raise ApiError(400, "仓内自提的合同终点为 L1 仓口交接")
     if data["route"] == "A" and (data["level"] == "L3" or data["addon_l4"]):
         raise ApiError(400, "机位或复杂搬运请按 B 或 C 路径确认专业承接方")
+    if data["route"] != "A" or data.get("pickup"):
+        data.pop("a_channel",None)
+    elif data.get("a_channel") not in {None,"","amazon","terminal"}:
+        raise ApiError(400,"原卡派送须选择亚马逊或经销商／终端")
     if data["timezone"] not in ZONES:
         raise ApiError(400, "请选择有效美国当地时区")
+    if data.get("location_precision") not in {None,"","unknown","zip","street","dock"}:
+        raise ApiError(400,"定位精度请选择未核、ZIP 代表点、街址或已核装卸口")
+    if data.get("location_precision")=="dock" and ((data.get("lat"),data.get("lng"))==(0,0) or data.get("lat") is None or data.get("lng") is None or not data.get("coordinate_ref")):
+        raise ApiError(400,"已核装卸口须有有效坐标和现场定位依据")
+    if data.get("procurement_mode","company") not in {"company","platform","ltl","brand_fleet"}:
+        raise ApiError(400,"无效采购分支")
     windows(data)
 
 
@@ -147,17 +158,18 @@ def actions(order, role):
     status = order["status"]
     admin = role == "admin"
     available = ["note", "upload"] if status != "settled" else []
+    if status in ("new","ready") and (admin or role in {"sales","warehouse"}) and not order.get("completed_sns") and order.get("order_kind")!="repair_redelivery": available.append("cancel")
     if status == "new":
         if admin or role in {"sales", "dispatch"}:
             available.append("edit")
         if admin or role == "warehouse":
             available.append("ready")
     if status == "ready":
-        if admin or role == "warehouse":
+        if (admin or role == "warehouse") and not order.get("completed_sns") and order.get("order_kind")!="repair_redelivery":
             available.append("unrelease")
         if order.get("pickup"):
             if admin or role == "warehouse":
-                available.append("pickup")
+                available.extend(["pickup_gate","pickup"])
         elif admin or role == "dispatch":
             available.append("dispatch")
     if status == "dispatched" and (admin or role in {"driver", "dispatch"}):
@@ -165,9 +177,9 @@ def actions(order, role):
     transfer = order.get("route") in {"C1", "C2"}
     if status == "in_transit" and transfer and (admin or role == "warehouse"):
         available.append("station_receive")
-    if status == "at_station" and (admin or role in {"warehouse", "dispatch"}):
+    if status == "at_station" and (admin or role == "dispatch"):
         available.append("station_release")
-    if (status == "in_transit" and not transfer or status == "last_mile") and (admin or role == "driver"):
+    if (status == "in_transit" and not transfer or status == "last_mile") and (admin or role == "driver" or (role=="dispatch" and order.get("procurement_mode") in {"platform","ltl"} and status=="in_transit")):
         available.append("deliver")
     if status in ACTIVE and role != "finance":
         available.append("exception")
@@ -195,6 +207,10 @@ def create_order(db, body, user):
             "addon_l5": False, "pickup": False, "lat": None, "lng": None,
             "owner": user["username"], "created_at": timestamp, "updated_at": timestamp}
     normalize_input(data, body)
+    wh=db.execute("SELECT id FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')=?",(data["warehouse"],)).fetchone()
+    if wh:data["warehouse_id"]=wh[0]
+    mode=db.execute("SELECT value FROM metadata WHERE key='mode'").fetchone()
+    data["training"]=bool(mode and mode[0]=="demo")
     data["original_window_start"] = data.get("window_start", "")
     data["original_window_end"] = data.get("window_end", "")
     data["original_timezone"] = data["timezone"]
@@ -221,8 +237,9 @@ def get_order(db, oid, user):
 def present(order, user):
     result = dict(order, allowed_actions=actions(order, user["role"]))
     if user["role"] == "driver":
+        result.pop("chain_contract",None)
         for key in ("approved_cost", "actual_cost", "invoice_ref", "notes", "change_cost",
-                    "variance_cost", "variance_ref", "change_ref", "checks", "selected_quote"):
+                    "variance_cost", "variance_ref", "change_ref", "checks", "selected_quote","technical_order","second_leg","second_leg_history","platform_instruction","usa_lines","paid_ref","same_conditions_ref","cost_expression","c2_replacement","approved_variance","station_mandate","first_leg_receipt","station_receipts","internal_instruction","technical_history"):
             result.pop(key, None)
     return result
 
@@ -263,11 +280,17 @@ def edit_order(db, oid, body, user):
     check_version(order, body)
     old = dict(order)
     normalize_input(order, body)
+    if order.get("positioned_sns") and (old["warehouse"]!=order["warehouse"] or old["model"]!=order["model"] or
+            order["quantity"]<len(order["positioned_sns"])):
+        raise ApiError(409,"该单已关联前置实物，变更持货仓、型号或减少已售台数须先取消并重新核定")
+    if old.get("warehouse") != order["warehouse"]:
+        wh=db.execute("SELECT id FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')=?",(order["warehouse"],)).fetchone()
+        order["warehouse_id"]=wh[0] if wh else None
     for field in ("window_start", "window_end"):
         if not order.get("original_" + field) and order.get(field):
             order["original_" + field] = order[field]
             order["original_timezone"] = order["timezone"]
-    diff = {k: [old.get(k), order[k]] for k in body if k != "version" and old.get(k) != order.get(k)}
+    diff = {k: [old.get(k), order.get(k)] for k in body if k != "version" and old.get(k) != order.get(k)}
     if set(diff)-{"notes","crm_ref","contact"} and order.pop("selected_quote",None):
         diff["中选委托"]=["已选","变更范围后须复核"]
     return save(db, order, user, "edit", encode(diff))
@@ -283,7 +306,27 @@ def copy_fields(order, body, *keys):
         order[key] = required(body, key)
 
 
+def record_branch_release(order, body):
+    if order["route"] == "C1":
+        principal=order.get("selected_quote") or {}
+        if not principal.get("supplier_id") or principal.get("path")!="C1" or principal.get("amount")!=order["approved_cost"] or principal.get("carrier")!=order.get("carrier"):
+            raise ApiError(409,"C1 须选定一份覆盖干线、站内和末端的主承全程报价")
+        order["chain_contract"]=dict(principal=principal["supplier_id"],amount=order["approved_cost"],
+            quote_id=principal["id"],evidence=required(body,"all_legs_contract",300))
+    if order["route"] == "A" and not order.get("pickup"):
+        channel=order.get("a_channel") or body.get("a_channel")
+        if channel not in {"amazon","terminal"}:
+            raise ApiError(409,"请确认本票原卡派送亚马逊仓，或经销商／终端")
+        fields=("receiver_site","appointment_ref","shipment_ref","label_ref","receiving_terms") if channel=="amazon" else ("receiver_site","receiver_contact","handoff_terms")
+        order["channel_release"]={k:required(body,k,300) for k in fields}
+        order["channel_release"].update(channel=channel,endpoint=order["endpoint"])
+
+
 def assign_driver(db, order, body):
+    if order.get("procurement_mode") in {"platform","ltl"} and order["status"]!="at_station":
+        copy_fields(order,body,"carrier","dispatch_ref")
+        order.pop("driver",None)
+        return
     copy_fields(order, body, "driver", "carrier", "dispatch_ref")
     if not db.execute("SELECT 1 FROM users WHERE username=? AND role='driver' AND active=1", (order["driver"],)).fetchone():
         raise ApiError(400, "请选择已启用的司机账号")
@@ -312,32 +355,9 @@ def preflight(body):
     return checks
 
 
-def sign_route(db, order, body, origin):
-    """Snapshot only this ticket's stop from the verified draft under the release transaction."""
-    rid = body.get("route_id")
-    version = body.get("route_version")
-    if rid in (None, "") and version in (None, ""):
-        order.pop("release_route", None)
-        return
-    rid = required(body, "route_id", 100)
-    row = db.execute("SELECT version,data FROM registry WHERE type='route' AND id=?", (rid,)).fetchone()
-    if not row or type(version) is not int or version != row["version"]:
-        raise ApiError(409, "地图批次不存在或版本已变，请重读批次再签发")
-    route = json.loads(row["data"])
-    ids = route["order_ids"]
-    if order["id"] not in ids or route["order_versions"].get(order["id"]) != order["version"]:
-        raise ApiError(409, "地图批次未包含当前版本的本票，请重新排线")
-    if origin != route["warehouse"]:
-        raise ApiError(409, "地图批次出发点与实际出发仓／站不一致")
-    windows(order, require=True)
-    if not order["window_start"][:10] <= route["date"] <= order["window_end"][:10]:
-        raise ApiError(409, "本地多站批次的作业日期不在本单约定窗口内，请核对日期")
-    order["release_route"] = {
-        "id": rid, "route_version": version, "name": route["name"], "date": route["date"],
-        "stop": ids.index(order["id"]) + 1, "stops": len(ids), "warehouse": origin,
-        "resource_id": route.get("resource_id", ""), "start_time": route["start_time"],
-        "timezone": route["timezone"], "issued_at": now()
-    }
+def sign_route(db, order, body, origin, user=None):
+    import routing
+    routing.release(db, order, body, origin, user)
 
 
 def apply_action(db, oid, body, user):
@@ -356,13 +376,28 @@ def apply_action(db, oid, body, user):
         serials = [s.strip().upper() for s in re.split(r"[,，;；\r\n]+", order["sn"]) if s.strip()]
         if len(set(serials)) != order["quantity"] or len(serials) != order["quantity"]:
             raise ApiError(400, "请逐台录入不同 SN，并与订单台数核齐")
+        order["sn"]=", ".join(serials)
         lifecycle.reserve(db, order, serials, user)
         try:
             db.executemany("INSERT INTO sn_locks VALUES(?,?)", [(s, oid) for s in serials])
         except sqlite3.IntegrityError:
             raise ApiError(409, "存在已由其他订单锁定的 SN，请核对库存")
         order["status"] = "ready"
+    elif action == "cancel":
+        import gate
+        reason=required(body,"reason");history=list(order.get("cancelled_serials",[]))
+        if order["status"]=="ready":
+            history=sorted(r[0] for r in db.execute("SELECT sn FROM sn_locks WHERE order_id=?",(oid,)))
+            lifecycle.move(db,order,"available",user,reason)
+            db.execute("DELETE FROM sn_locks WHERE order_id=?",(oid,))
+        g=gate.active(db,oid,1)
+        if g and g["state"] not in {"released","revoked","refused"}:
+            gate.update(db,g,"revoked",reason=reason)
+            gate.log(db,oid,1,"cancel",user,dict(grant=g['id'],reason=reason))
+        order.update(status="cancelled",reason=reason,cancelled_serials=history)
+        order.pop("sn",None)
     elif action == "unrelease":
+        order.pop("pickup_gate",None)
         copy_fields(order, body, "reason")
         lifecycle.move(db, order, "available", user, order["reason"])
         db.execute("DELETE FROM sn_locks WHERE order_id=?", (oid,))
@@ -373,48 +408,77 @@ def apply_action(db, oid, body, user):
         assign_driver(db, order, body)
         order["checks"] = preflight(body)
         order["approved_cost"] = float(money(body.get("approved_cost")))
-        quote=order.get("selected_quote")
-        if quote and (order["approved_cost"]!=quote["amount"] or order["carrier"]!=quote["carrier"] or quote["path"]!=order["route"]):
-            raise ApiError(400,"承运方、路径和预算应与已选委托一致。变更时请先复核并选择新版报价")
+
         if order["route"] in {"C1", "C2"}:
             copy_fields(order, body, "handoff_ref")
         for field in ("window_start", "window_end"):
             if field in body:
                 order[field] = required(body, field)
         windows(order, require=True)
-        if order["route"] in {"C1","C2"} and body.get("route_id"):
-            raise ApiError(400, "经站订单须在站方签收后关联第二程地图批次")
-        sign_route(db, order, body, order["warehouse"])
+        record_branch_release(order,body)
+        assert_commission(db,order)
+        import gate
+        if order.get("procurement_mode") in {"ltl","platform"}:
+            gate.issue_network(db,order,user)
+        else:
+            sign_route(db, order, body, order["warehouse"], user)
+            gate.issue(db,order,body,user,1)
+        order["issue_version"]=order["version"]+1
         if order["addon_l4"] and not order.get("site_note"):
             raise ApiError(400, "特殊通道须填写现场核验信息")
         for field in ("window_start", "window_end"):
             if not order.get("original_" + field):
                 order["original_" + field] = order[field]
                 order["original_timezone"] = order["timezone"]
+        import review
+        report=review.comparison(db,oid,user)
+        order["financial_baseline_version"]=report["baseline_version"] if report["current"] else None
         order["status"] = "dispatched"
     elif action == "depart":
+        import gate
+        gate.require_released(db,order)
+        check_issue(order,body)
+        assert_commission(db,order)
         lifecycle.move(db, order, "transit", user, order["dispatch_ref"])
         order["status"] = "in_transit"
     elif action == "station_receive":
+        import folder
+        folder.station_receipts(db,order,body)
         copy_fields(order, body, "station_name", "custodian", "receipt_ref")
         lifecycle.move(db, order, "station", user, order["receipt_ref"])
         order["status"] = "at_station"
+    elif action == "pickup_gate":
+        record_pickup_gate(order,body)
     elif action == "station_release":
+        import folder,gate
+        folder.assert_second_leg(db,order,body)
         assign_driver(db, order, body)
-        sign_route(db, order, body, order["station_name"])
-        order["custodian"] = order["driver"]
-        lifecycle.move(db, order, "transit", user, order["dispatch_ref"])
-        order["status"] = "last_mile"
+        sign_route(db,order,body,order["station_name"],user)
+        gate.issue(db,order,body,user,2)
+        order["issue_version"]=order["version"]+1
+        order["station_pending"]=True
+        # Signing does not move stock out of the station. The dock must verify actuals.
     elif action in {"deliver", "pickup"}:
         import folder
-        folder.assert_attempt_resolved(db,oid)
+        folder.assert_attempt_resolved(db,order)
+        if action=="deliver":check_issue(order,body)
         copy_fields(order, body, "signer", "delivered_at", "delivery_note")
         localtime(order["delivered_at"], "delivered_at")
         require_pod(db, oid)
+        if action=="deliver" and order["route"] in {"A","C1"}:
+            channel=(order.get("channel_release") or {}).get("channel") or order.get("a_channel")
+            if order["route"]=="A" and not channel:
+                channel=required(body,"a_channel",20)
+                if channel not in {"amazon","terminal"}:
+                    raise ApiError(400,"请选择历史票的实际平台仓或终端收货分支")
+            order["endpoint_receipt"]=dict(channel=channel or "C1",receiver=order["signer"],endpoint=order["endpoint"],
+                evidence=required(body,"endpoint_receipt_ref",300),at=order["delivered_at"])
         if action == "pickup":
+            gate=order.get("pickup_gate",{})
+            if body.get("dispatch_ref")!=gate.get("authority_ref") or order["signer"]!=gate.get("collector"):
+                raise ApiError(409,"请核对本次授权提货人和提货号")
             copy_fields(order, body, "dispatch_ref")
             order["approved_cost"] = float(money(body.get("approved_cost",0)))
-        lifecycle.move(db, order, "delivered", user, order["delivery_note"])
         order["status"] = "delivered"
     elif action == "exception":
         copy_fields(order, body, "reason", "custodian", "next_step")
@@ -442,8 +506,15 @@ def apply_action(db, oid, body, user):
                 order.pop(key,None)
     elif action == "service_complete":
         import folder
-        copy_fields(order, body, "result_ref")
+        if not order.get("technical_order"):
+            raise ApiError(409,"缺少独立技术委托，先核 T5 执行与授权范围")
+        import supply
+        if supply.assert_eligible(db,order["technical_order"],dict(order,level="L5",addon_l4=False))!=order["technical_order"].get("capability_snapshot"):
+            raise ApiError(409,"技术资格已过版，请重签技术委托")
         order["service_units"] = folder.service_units(order, body)
+        complete = sum(r["state"]=="passed" for r in order["service_units"])==order["quantity"]
+        order["technical_order"]["state"]="completed" if complete else "open"
+        if complete:copy_fields(order,body,"result_ref")
     elif action == "settle":
         copy_fields(order, body, "invoice_ref")
         require_pod(db, oid)
@@ -458,10 +529,25 @@ def apply_action(db, oid, body, user):
             copy_fields(order, body, "variance_ref")
         order["change_cost"] = float(change)
         order["variance_cost"] = float(amount-approved-change)
+        lines=body.get("usa_lines")
+        if lines is not None:
+            if not isinstance(lines,dict) or set(lines)!={"origin","delivery_wait","technical"}:
+                raise ApiError(400,"结算行须列原仓、配送含等待、技术")
+            checked={k:money(v) for k,v in lines.items()}
+            if sum(checked.values())!=amount:
+                raise ApiError(409,"费用行之和与美国段账单不符")
+            order["usa_lines"]={k:float(v) for k,v in checked.items()}
+            order["cost_expression"]=f"K＋T＋{amount.normalize():f} 待结"
+        for key in ("same_conditions_ref","paid_ref"):
+            if body.get(key):order[key]=required(body,key)
+        order["approved_variance"]=float(amount-approved)
         order["actual_cost"] = float(amount)
         order["status"] = "settled"
     note = required(body, "note") if action == "note" else encode(
         {k: v for k, v in order.items() if before.get(k) != v})
+    if before.get("release_route") and not order.get("release_route"):
+        import routing
+        routing.cancel_booking(db,oid)
     return save(db, order, user, action, note)
 
 
@@ -472,6 +558,10 @@ def add_file(db, oid, body, user):
     category = required(body, "category", 20)
     if category not in FILE_CATEGORIES or (user["role"] == "driver" and category not in {"other", "pod", "site"}):
         raise ApiError(400, "附件类别不可用")
+    if user["role"]=="driver" and category=="pod":
+        import gate
+        check_issue(order,body)
+        gate.require_released(db,order)
     name = required(body, "name", 180)
     if re.search(r'[\\/\x00-\x1f\x7f]', name):
         raise ApiError(400, "文件名无效")
@@ -489,6 +579,8 @@ def add_file(db, oid, body, user):
     if not mime:
         raise ApiError(400, "附件只支持 PDF、JPEG、PNG")
     ts = now()
+    prior=db.execute("SELECT id,name,category,ts FROM files WHERE order_id=? AND category=? AND content=?",(oid,category,raw)).fetchone()
+    if prior:return {"order":present(order,user),"file":dict(prior)}
     fid = db.execute("INSERT INTO files(order_id,name,category,mime,ts,actor,content) VALUES(?,?,?,?,?,?,?)",
                      (oid,name,category,mime,ts,user["username"],raw)).lastrowid
     return {"order": save(db, order, user, "upload", f"{category} · {name}"),
@@ -503,3 +595,63 @@ def order_detail(db, oid, user):
         files = [f for f in files if f["category"] in {"pod", "site", "release"}]
         events = [e for e in events if e["action"] in {"depart","station_release","station_receive","deliver","exception","resolve"}]
     return {"order": present(order, user), "events": events, "files": files}
+
+
+def check_issue(order, body):
+    if type(body.get("release_version")) is not int or body["release_version"] != order.get("issue_version"):
+        raise ApiError(409, "签发版已变或缺失，刷新本票并核对新授权后再扫码作业")
+
+
+def assert_commission(db, order):
+    import review
+    if order["route"]=="C1" and not order.get("second_leg"):
+        raise ApiError(409,"缺少本票二程书面委托，请先落实接收站及后续执行方")
+    if order["route"] in {"C1","C2"}:
+        import folder
+        if not order.get("station_mandate"):
+            raise ApiError(409,"首段待补接站库址、具名接收方和书面收储承接")
+        folder.assert_station_authority(db,order)
+    mode=order.get("procurement_mode","company")
+    if mode in {"platform","ltl","brand_fleet"}:
+        item=order.get("platform_instruction",{})
+        if (not item.get("instruction_ref") or item.get("scope_snapshot")!=review.scope_snapshot(order)
+                or item.get("valid_until","")<max(now()[:10],order["window_end"][:10])
+                or item.get("carrier")!=order.get("carrier")):
+            raise ApiError(409,"缺少本票有效承运指令或实际执行方不符，请复核")
+        if mode=="brand_fleet" and item["allocation"]!=order["approved_cost"]:
+            raise ApiError(409,"批准分摊与本次内部用车金额不一致")
+        order["executor_id"]=item["executor_id"]
+        if mode!="ltl" and order["route"]!="C1":
+            return
+        if item["executor_id"]!=order.get("selected_quote",{}).get("executor_id"):
+            raise ApiError(409,"普通 LTL 的承运凭据须与本票中选方一致")
+    quote=order.get("selected_quote")
+    if not quote:
+        raise ApiError(409,"缺少本票中选运输委托，请先核实报价、执行方接受和审批凭据")
+    q=review.required_quote(db,order["id"],quote["id"])
+    if quote["version"]!=q["version"] or not quote.get("approval_ref"):
+        raise ApiError(409,"中选委托已过版，请重新核实回价并签发")
+    review.validate_quote(order,q)
+    import supply
+    if supply.assert_eligible(db,q,order)!=quote.get("capability_snapshot"):
+        raise ApiError(409,"中选时的执行资格已过版或缺档，请重新确认委托")
+    if order["approved_cost"]!=q["amount"] or order["carrier"]!=q["carrier"] or q["path"]!=order["route"]:
+        raise ApiError(409,"承运方、路径和预算应与本票中选委托一致")
+    order["executor_id"]=q["executor_id"]
+
+
+def record_pickup_gate(order,body):
+    gate={k:required(body,k) for k in ("collector","authority_ref","vehicle_ref","secure_ref")}
+    for key in ("package_height_cm","door_cm","gross_kg","payload_kg"):
+        try:value=float(body.get(key))
+        except (TypeError,ValueError,OverflowError):value=0
+        if not math.isfinite(value) or value<=0:
+            raise ApiError(400,"请记录本次实测包装高度、车门净开口、货重及车辆载重")
+        gate[key]=value
+    if gate["package_height_cm"]>gate["door_cm"] or gate["gross_kg"]>gate["payload_kg"]:
+        order.update(status="exception",previous_status="ready",custodian=order["warehouse"],
+                     reason="F06 仓门禁装：开口或载荷不足",next_step="更换车辆，重新核提货人与签发依据")
+        order.pop("pickup_gate",None)
+        order["rejected_pickup"]=gate
+    else:
+        order["pickup_gate"]=gate

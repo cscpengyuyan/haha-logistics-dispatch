@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
-  const w=new Worker('./demo-worker.js?v=7ce145208e05'),pending=new Map();let counter=0,failed='';
-  w.onmessage=e=>{const v=e.data,p=pending.get(v.id);if(!p)return;pending.delete(v.id);if(v.error){const err=Error(v.error);err.status=v.status;p.reject(err)}else p.resolve(v.value)};
+  const w=new Worker('./demo-worker.js?v=c70036c0047e'),pending=new Map();let counter=0,failed='';
+  w.onmessage=e=>{const v=e.data;if(v.progress){const n=document.querySelector('#boot-progress');if(n)n.textContent=v.progress;return}const p=pending.get(v.id);if(!p)return;pending.delete(v.id);if(v.error){const err=Error(v.error);err.status=v.status;p.reject(err)}else p.resolve(v.value)};
   w.onerror=e=>{failed='公开演练运行库未能启动，请刷新后重试。';for(const p of pending.values())p.reject(Error(failed));pending.clear()};
   window.PublicDemo={async api(path,opts={}){
     if(failed)throw Error(failed);const id=++counter,username=sessionStorage.getItem('haha-v12-role')??'admin';

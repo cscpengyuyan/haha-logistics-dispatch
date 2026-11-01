@@ -8,3 +8,12 @@ server/data/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+__pycache__/
+*.py[cod]
+/data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+*.key
+*.pem

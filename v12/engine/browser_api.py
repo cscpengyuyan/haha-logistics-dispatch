@@ -20,6 +20,11 @@ def connect_demo():
     db.execute("PRAGMA foreign_keys=ON")
     fresh=not db.execute("SELECT 1 FROM sqlite_master WHERE name='orders'").fetchone()
     core.core_schema(db)
+    with db:
+        mode=db.execute("SELECT value FROM metadata WHERE key='mode'").fetchone()
+        if mode and mode[0]!="demo":
+            raise core.ApiError(409,"此浏览器仅可打开演练库，请核对备份来源")
+        db.execute("INSERT OR IGNORE INTO metadata(key,value) VALUES('mode','demo')")
     operations.init_db(db)
     if fresh:
         with db:
@@ -27,6 +32,8 @@ def connect_demo():
     else:
         with db:
             operations.upgrade_demo_quotes(db)
+    import practice
+    with db: practice.provision_training(db)
 
 def call(path,method,body,username):
     users=[dict(x) for x in db.execute("SELECT id,username,role,name FROM users ORDER BY id")]
@@ -38,8 +45,14 @@ def call(path,method,body,username):
         return {"user":u}
     if path=="/api/logout":return {"ok":True}
     if not user:raise core.ApiError(401,"请先选择演练岗位")
-    if path=="/api/drivers":return {"drivers":[u for u in users if u["role"]=="driver"]}
+    if path=="/api/drivers":return {"drivers":[u for u in users if u["role"]=="driver"] if user["role"] in {"admin","warehouse","dispatch","procurement"} else []}
     with db:
+        import partner
+        limited=partner.restrict(db,path,method,body,user)
+        if limited is not None:return limited
+        if path=="/api/practice/dfw":
+            import practice
+            return practice.handle(db,method,body,user)
         if path=="/api/orders":
             if method=="GET":return {"orders":core.list_orders(db,user)}
             if method=="POST":return {"order":core.create_order(db,body,user)}

@@ -5,7 +5,7 @@
   const usd=x=>x==null?'待核':new Intl.NumberFormat('zh-CN',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(x);
   const rate=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
   const txt={on_time:'原窗内到场',outside:'原窗外到场',not_due:'未到期',unknown:'待核',no_window:'缺原窗',unissued:'到期未派',
-    success:'首次送成',partial:'首次部分完成',failed:'首次失败',missing:'未锁基线',matched:'同口径已锁',scope_changed:'范围已变 · 待核',expired:'基线已过期'};
+    success:'首次送成',partial:'首次部分完成',failed:'首次失败',missing:'未锁基线',matched:'同口径已锁',unverified:'签发时基线版本待核',scope_changed:'范围已变 · 待核',expired:'基线已过期'};
   const csvCell=v=>{
     let s=String(v??'');
     if(/^[\s]*[=+@-]/.test(s)&&!/^[-+]?\d+(\.\d+)?$/.test(s))s="'"+s;
@@ -27,9 +27,11 @@
       const qs=(ctx.resources||[]).filter(v=>v.type==='quote'&&v.order_id===r.id&&v.comparison_ref&&v.evidence&&v.amount!=null&&v.pricing_status!=='incomplete');
       if(qs.length<2){ctx.toast?.('请先在海运与采购登记同票、同范围版本的两份有效书面全价。');return}
       shutdown();dialog=document.createElement('dialog');dialog.className='rv-dialog';
-      const list=qs.map(q=>opt(q.id,q.carrier+' · '+q.path+' · '+usd(q.amount)+' · '+q.comparison_ref)).join('');
-      dialog.innerHTML='<form><div class="rv-eyebrow">BASELINE SNAPSHOT</div><h2>锁定首派前比较基线</h2><p>'+esc(r.id)+' · 保留同范围主供原路径与备选方案的完整报价版本。</p><label>原路径可执行全价<select required name="main">'+list+'</select></label><label>备选方案全价<select required name="alt">'+list+'</select></label><label>复核凭据与范围说明<textarea required maxlength="600" name="confirmation" placeholder="说明首台/加台、多点折扣、终点、动作、原窗和全程成本口径的核验依据"></textarea></label><p class="rv-error" role="alert"></p><footer><button type="button" data-close>取消</button><button type="submit" class="primary">确认并留存版本</button></footer></form>';
-      document.body.append(dialog);dialog.showModal();const f=dialog.querySelector('form');f.elements.alt.selectedIndex=1;
+      const confirmed=qs.filter(q=>q.current_ref);
+      const mains=opt('','请选择有原委托依据的报价')+confirmed.map(q=>opt(q.id,q.carrier+' / '+q.current_ref)).join('');
+      const list=opt('','请选择另一份同范围报价')+qs.map(q=>opt(q.id,q.carrier+' · '+q.path+' · '+usd(q.amount)+' · '+q.comparison_ref)).join('');
+      dialog.innerHTML='<form><div class="rv-eyebrow">BASELINE SNAPSHOT</div><h2>锁定首派前比较基线</h2><p>'+esc(r.id)+' · 保留同范围主供原路径与备选方案的完整报价版本。</p><label>原路径可执行全价<select required name="main">'+mains+'</select></label><label>备选方案全价<select required name="alt">'+list+'</select></label><label>复核凭据与范围说明<textarea required maxlength="600" name="confirmation" placeholder="说明首台/加台、多点折扣、终点、动作、原窗和全程成本口径的核验依据"></textarea></label><p class="rv-error" role="alert"></p><footer><button type="button" data-close>取消</button><button type="submit" class="primary">确认并留存版本</button></footer></form>';
+      document.body.append(dialog);dialog.showModal();const f=dialog.querySelector('form');f.elements.alt.selectedIndex=0;
       f.querySelector('[data-close]').onclick=shutdown;f.onsubmit=async e=>{
         e.preventDefault();const b=f.querySelector('[type=submit]');b.disabled=true;
         try{
@@ -43,7 +45,7 @@
     function draw(){
       const s=report.summary;
       const card=(label,big,detail)=>'<section><small>'+label+'</small><b>'+big+'</b><p>'+detail+'</p></section>';
-      const legend='<details class="rv-method"><summary>指标口径与证据缺口</summary><ul><li>仅公司配送。原约期按订单首次承诺的当地结束日选票；首派期按第一次派车签发的 UTC 日期选票，重派保留原归属。选择日期范围时，缺少该队列日期的订单单列。</li><li>到期按所选当地截止日终了。原窗准时以 F05 第一次到场对照原始窗口；时区无法直接比较或缺记录均标待核。下方同时列全部到期票及可判定票。</li><li>首次送成以第 1 次实作结果为准，部分交付与失败均未计入首次成功。最终成功台数采用全票签交人、完成动作、POD 齐全的台数，尚未全票签交的部分完成单据回原单查看。</li><li>财务取查询时最新已核账订单，未核账留在总样本。全批核账且有成功台数时，才给出每成功台成本。此处未采集付款流水，核账额不表示已付款。</li><li>锁定基线用于财务复盘，中选委托用于实际派单。价格比较仅覆盖同范围书面基线与匹配票，新增固定费、让利、未赔损失仍需另核。这里不计算净节省。</li></ul></details>';
+      const legend='<details class="rv-method"><summary>指标口径与证据缺口</summary><ul><li>仅公司配送。原约期按订单首次承诺的当地结束日选票；首派期按第一次派车签发的 UTC 日期选票，重派保留原归属。选择日期范围时，缺少该队列日期的订单单列。</li><li>到期按所选当地截止日终了。原窗准时以 F05 第一次到场对照原始窗口；时区无法直接比较或缺记录均标待核。下方同时列全部到期票及可判定票。</li><li>首次送成以第 1 次实作结果为准，部分交付与失败均未计入首次成功。最终成功台数按明确关联逐台成功交接和 POD 记录累计；缺逐台依据的旧单待核。</li><li>财务取查询时最新已核账订单，未核账留在总样本。全批核账且有成功台数时，才给出每成功台成本。此处未采集付款流水，核账额不表示已付款。</li><li>锁定基线用于财务复盘，中选委托用于实际派单。价格比较仅覆盖同范围书面基线与匹配票，新增固定费、让利、未赔损失仍需另核。这里不计算净节省。</li></ul></details>';
       host.innerHTML='<div class="rv-panel"><form class="rv-filter"><label>批次归属<select name="basis">'+opt('promise','原约到期日 · 当地')+opt('dispatch','首次派单日 · UTC')+'</select></label><label>起日<input name="start" type="date"></label><label>止日<input name="end" type="date"></label><label>到期统计截止日<input name="as_of" type="date" required></label><label>持货仓<select name="warehouse">'+opt('','全部仓点')+report.warehouses.map(w=>opt(w,w)).join('')+'</select></label><label>目的 ZIP<input name="zip" maxlength="10" placeholder="完整或前缀"></label><label>交付层级<select name="level">'+opt('','全部服务档')+['L1','L2','L3'].map(v=>opt(v,v)).join('')+'</select></label><label>合同终点<input name="endpoint" placeholder="按关键字筛选"></label><div><button type="submit" class="primary">应用筛选</button> <button type="button" data-csv '+(report.rows.length?'':'disabled')+'>导出脱敏明细</button></div></form>'+
         '<div class="rv-kpis">'+card('纳入订单',s.orders+' 票','计划 '+s.plan_units+' 台 · 已完整签交 '+s.success_units+' 台')+
         card('原窗内到场 / 到期应到',rate(s.on_time,s.due),s.on_time+' / '+s.due+' 票 · 可判定 '+s.timed+' 票')+
@@ -52,6 +54,7 @@
         '<div class="rv-strip"><span>已核账小计 <b>'+usd(s.actual)+'</b> / '+s.settled+' 票</span><span>主备报价差 <b>'+usd(s.quote_diff)+'</b> / '+s.pairs+' 票</span><span>基线减核账 <b>'+usd(s.settled_diff)+'</b> / '+s.settled_pairs+' 票</span></div>'+
         '<div class="rv-flags">到期未派 '+s.due_unissued+' 票 · 到期未能判定到场 '+(s.due-s.timed)+' 票 · 缺原窗 '+s.no_window+' 票 · 缺队列日期另计 '+s.no_basis_date+' 票</div>'+legend+
         '<div class="rv-head"><div><span class="rv-eyebrow">ORDER EVIDENCE</span><h3>逐票核对</h3></div><small>仅导出平台单号及业务指标，邮编保留前三位</small></div><div class="rv-table"></div></div>';
+      window.Settlement.mount(host,ctx,'review');
       const form=host.querySelector('.rv-filter');for(const [k,v] of Object.entries({...filter,basis:report.basis,as_of:report.as_of}))if(form.elements[k])form.elements[k].value=v;
       form.onsubmit=e=>{e.preventDefault();filter=Object.fromEntries(new FormData(form));load()};
       form.querySelector('[data-csv]').onclick=csv;
