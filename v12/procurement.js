@@ -44,10 +44,11 @@ window.Procurement=(()=>{
         field('condition_ref','附条件资质本票核实号','text',q.condition_ref)+field('station_ref','经站地址、保管与窗口凭据','text',q.station_ref)+
         field('last_leg_ref','C2 二程书面承接','text',q.last_leg_ref)+field('unload_ref','住宅卸货位置确认','text',q.unload_ref)+
         field('dispatched_ref','实际发出询价的邮件 / 系统回执','text',q.dispatched_ref)+field('follow_up','下次跟进 / 经办人','text',q.follow_up)+
-        field('inclusions','明确包含','text',q.inclusions)+field('exclusions','明确排除','text',q.exclusions)+yes('same_window','对方书面确认本版相同窗口')+yes('same_liability','对方覆盖本版相同责任')+'</div>'+
+        field('execution_start','供方可执行开始 · '+(order?.timezone||'收件地时间'),'datetime-local',q.execution_start)+field('execution_end','供方可执行结束 · 同一时区','datetime-local',q.execution_end)+
+        field('liability_terms','本票责任与保管条款','text',q.liability_terms)+field('inclusions','明确包含','text',q.inclusions)+field('exclusions','明确排除','text',q.exclusions)+yes('same_window','实际作业可在本票约定窗口内完成')+yes('same_liability','对方覆盖本版相同责任')+'</div>'+
         '<fieldset><legend>每票确定应付 · USD</legend><p>未知留空。请将另收尾板等已确定费用归入一行，避免重复计费。</p><div class="form-grid">'+
         Object.entries(expenses).map(([k,v])=>field(k,v,'number',q[k])).join('')+field('zero_note','零金额行的已含或免收依据','text',q.zero_note)+
-        field('trigger','仅条件触发的费用及条件','text',q.trigger)+field('trigger_cap','条件合计上限 USD','number',q.trigger_cap)+
+        select('charge_terms','条件附加费',[['unknown','未确认'],['none','书面确认无条件附加费'],['capped','有明确触发条件与合计上限']],q.charge_terms)+field('trigger','仅条件触发的费用及条件','text',q.trigger)+field('trigger_cap','条件合计上限 USD','number',q.trigger_cap)+
         field('notes','备注 / 区间 / 拒接原因','text',q.notes)+'</div></fieldset>',
         async data=>post('reply',{...data,same_window:data.same_window==='on',same_liability:data.same_liability==='on',id:q.id,quote_version:q.version}));
     }
@@ -66,7 +67,8 @@ window.Procurement=(()=>{
         '<p>'+e(signed?'已书面委托':best?'可执行首选':q.eligible?'可作备选':q.reasons.join(' · '))+'</p>'+
         (q.delta!=null&&q.delta!==0?'<p class="rfq-delta">较可执行首选 '+(q.delta<0?'低 ':'高 ')+format(Math.abs(q.delta))+'</p>':'')+
         '<details><summary>范围、费用与凭据</summary><dl>'+detail('终点 / 执行窗',[(q.quoted_level||'待核'),q.same_window?'同窗已确认':'窗口待核'].join(' · '))+
-        Object.entries(expenses).map(([k,n])=>detail(n,format(q[k]))).join('')+detail('零金额依据',q.zero_note)+detail('条件增量 / 上限',q.trigger?q.trigger+' / '+format(q.trigger_cap):'无已登记条件增量')+
+        detail('实际可执行起止',[q.execution_start,q.execution_end].filter(Boolean).join(' – '))+detail('责任及保管',q.liability_terms)+
+        Object.entries(expenses).map(([k,n])=>detail(n,format(q[k]))).join('')+detail('零金额依据',q.zero_note)+detail('条件增量 / 上限',q.trigger?q.trigger+' / '+format(q.trigger_cap):q.charge_terms==='none'?'书面确认无':'未确认')+
         detail('包含',q.inclusions)+detail('排除',q.exclusions)+detail('承接号',q.accepted_ref)+detail('有效至',q.valid_until)+detail('书证',q.evidence)+
         detail('站内交接',q.station_ref)+detail('二程承接',q.last_leg_ref)+detail('下次跟进',q.follow_up)+'</dl></details>'+
         (write&&state.scope_current&&q.rfq_id===state.pack.id?button('修订回价','reply','data-id="'+e(q.id)+'"'):'')+
@@ -92,8 +94,8 @@ window.Procurement=(()=>{
           '<details><summary>预览英文询价包</summary><pre>'+e(p.english)+'</pre></details><div class="rfq-tools">'+button('下载英文询价草稿','export')+
           (can&&s.scope_current?button('登记询价已发出','sent')+button('登记供应方回执','reply'):'')+
           (can&&ctx.demo&&s.scope_current&&order?.zip==='75201'&&order?.model==='M01'&&order?.quantity===2&&order?.level==='L3'&&!order?.addon_l4&&!order?.addon_l5&&!s.quotes.some(q=>q.rfq_id===p.id)?button('录入四份达拉斯演练回价','sample'):'')+'</div></section>':'')+
-        '<section><h3>同范围全价比较 · USD / 本票</h3><div class="rfq-grid">'+(s.quotes.map(card).join('')||'<p>零份报价。生成本票询价包后即可登记覆盖、拒接、条件价或书面回价。</p>')+'</div></section>'+
-        (s.approval.quote_id?'<section><h3>批准与书面委托</h3><p>'+e(s.approval.approval_ref)+' · '+e(s.approval.reason)+'</p><p>'+e(s.approval.switch_condition||'')+'　'+(s.approval.backup_id?'备选价差 '+format(s.approval.backup_delta):'无备选，见批准理由')+'</p>'+
+        '<section><h3>同范围全价比较 · USD / 本票</h3><p>'+e(s.comparison_note)+'</p><p>可执行回价　'+e(s.comparison_set.join('、')||'暂无')+'</p><div class="rfq-grid">'+(s.quotes.map(card).join('')||'<p>零份报价。生成本票询价包后即可登记覆盖、拒接、条件价或书面回价。</p>')+'</div></section>'+
+        (s.approval.quote_id?'<section><h3>批准与书面委托</h3><p>'+e(s.approval.approval_ref)+' · '+e(s.approval.reason)+'</p><p>'+e(s.approval.switch_condition||'')+'　'+(s.approval.backup_id?(s.approval.backup_delta==null?'主备条款待人工比较':'备选价差 '+format(s.approval.backup_delta)):'无备选，见批准理由')+'</p>'+
         (s.commission.commission_ref?'<p>已有委托 '+e(s.commission.commission_ref)+'</p>':'')+
         (can&&s.approved&&!(s.commission.id===s.approval.quote_id&&s.commission.version===s.approval.quote_version)?button('登记正式书面委托','commission'):'')+
         (s.commission.id?button('到地图排车','map'):'')+'</section>':'')+'<p role="alert" class="error-line">'+e(error)+'</p>';

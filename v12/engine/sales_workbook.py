@@ -162,6 +162,12 @@ def template(example=False, main_rows=None, site_rows=None):
             if i==3:rows.append(["DEMO-ONLY","01","001","演练","示例不导入","M01","2"])
             if i in (1,2):
                 rows.extend([[str(facts.get(k,"")) for k in fields] for facts in ((main_rows if i==1 else site_rows) or [])])
+            validations=[]
+            for j,k in enumerate(fields,1):
+                if k not in ENUMS or i==3:continue
+                col=column(j);values=escape(",".join(ENUMS[k]))
+                validations.append(f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="{col}6:{col}2005"><formula1>"{values}"</formula1></dataValidation>')
+            checks=f'<dataValidations count="{len(validations)}">{"".join(validations)}</dataValidations>' if validations else ""
             content=''.join(f'<row r="{r}">'+''.join(f'<c r="{column(c)}{r}" t="inlineStr"><is><t>{escape(value)}</t></is></c>' for c,value in enumerate(row,1))+'</row>' for r,row in enumerate(rows,1))
-            z.writestr(f"xl/worksheets/sheet{i}.xml",f'<worksheet xmlns="{main}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="{len(fields)}" width="23" style="1" customWidth="1"/></cols><sheetData>{content}</sheetData></worksheet>')
+            z.writestr(f"xl/worksheets/sheet{i}.xml",f'<worksheet xmlns="{main}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="{len(fields)}" width="23" style="1" customWidth="1"/></cols><sheetData>{content}</sheetData>{checks}</worksheet>')
     return out.getvalue()

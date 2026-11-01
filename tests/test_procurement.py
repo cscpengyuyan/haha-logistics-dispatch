@@ -1,7 +1,8 @@
 import sqlite3
 import sys
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"v12"/"engine"))
@@ -142,6 +143,87 @@ class ProcurementTest(unittest.TestCase):
         self.assertEqual(state["requests"][0]["shipment"],s["id"])
         self.assertTrue(supply.book(self.db,booking,self.wh)["replayed"])
         with self.assertRaises(core.ApiError):supply.book(self.db,{**booking,"asn":"SIM-OTHER"},self.wh)
+
+    def comparison_fixture(self):
+        self.reserve()
+        self.send("open",deadline=self.day)
+        return {q["path"]:q for q in self.send("sample")["quotes"]}
+
+    def revise(self,q,**changes):
+        result=self.send("reply",**{**q,"quote_version":q["version"],**changes})
+        return next(x for x in result["quotes"] if x["id"]==q["id"])
+
+    def test_missing_actual_execution_window(self):
+        q=self.comparison_fixture()["B"]
+        revised=self.revise(q,execution_start="",execution_end="")
+        self.assertFalse(revised["eligible"])
+        self.assertIn("待回承运方实际执行起止时间",revised["reasons"])
+        self.assertIsNone(self.state()["recommended"])
+
+    def test_actual_execution_window_outside_promise(self):
+        q=self.comparison_fixture()["B"]
+        revised=self.revise(q,execution_end=self.day+"T18:00")
+        self.assertFalse(revised["eligible"])
+        self.assertIn("实际执行窗不在本票约定窗口内",revised["reasons"])
+
+    def test_expired_execution_window_even_with_valid_price(self):
+        q=self.comparison_fixture()["B"]
+        after=datetime.fromisoformat(self.day+"T23:59:00").replace(tzinfo=timezone.utc)
+        with patch("procurement.datetime") as clock:
+            clock.now.return_value=after
+            checked=next(x for x in self.state()["quotes"] if x["id"]==q["id"])
+            self.assertFalse(checked["eligible"])
+            self.assertIn("承运方实际执行窗已过",checked["reasons"])
+
+    def test_unlike_cost_conditions_or_responsibilities_have_no_price_winner(self):
+        quotes=self.comparison_fixture()
+        b,c1=quotes["B"],quotes["C1"]
+        for name,params in [
+            ("surcharge",dict(charge_terms="capped",trigger="Waiting after 30 min",trigger_cap=75)),
+            ("missing cost declaration",dict(charge_terms="unknown")),
+            ("different confirmed slot",dict(execution_start=self.day+"T10:00")),
+            ("different liability",dict(liability_terms="Custody exception during unloading")),
+            ("different inclusions",dict(inclusions="Unloading excluded")),
+        ]:
+            with self.subTest(name=name):
+                changed=self.revise(b,**params)
+                s=self.state()
+                self.assertTrue(changed["eligible"])
+                self.assertIsNone(s["recommended"])
+                self.assertNotIn("delta",changed)
+                decision=self.send("approve",quote_id=changed["id"],quote_version=changed["version"],
+                    backup_id=c1["id"],reason="Human review of differing terms",approval_ref="SIM-HUMAN")
+                self.assertIsNone(decision["approval"]["backup_delta"])
+                restored={k:b.get(k) for k in params}
+                b=self.revise(changed,**restored)
+                self.assertEqual(self.state()["recommended"],b["id"])
+
+    def test_single_source_retains_manual_approval_without_price_claim(self):
+        quotes=self.comparison_fixture()
+        self.revise(quotes["C1"],valid_until="2000-01-01")
+        s=self.state()
+        self.assertIsNone(s["recommended"])
+        self.assertIn("单一来源",s["comparison_note"])
+        chosen=quotes["B"]
+        result=self.send("approve",quote_id=chosen["id"],quote_version=chosen["version"],
+            reason="Only insured truck on the confirmed date",approval_ref="SIM-SOLE")
+        self.assertEqual(result["stage"],"待书面委托")
+
+    def test_existing_signed_quote_keeps_evidence_and_does_not_win_price_ranking(self):
+        quotes=self.comparison_fixture()
+        q=quotes["B"]
+        self.send("approve",quote_id=q["id"],quote_version=q["version"],reason="Signed same window",approval_ref="SIM-OK")
+        self.send("commission",commission_ref="SIM-LEGACY-SIGN")
+        # Reproduce a persisted pre-upgrade quote without adding facts to its written record.
+        self.db.execute("""UPDATE registry SET data=json_remove(data,'$.window_schema','$.execution_start','$.execution_end',
+            '$.liability_terms','$.charge_terms') WHERE id=?""",(q["id"],))
+        s=self.state()
+        self.assertEqual(s["commission"]["commission_ref"],"SIM-LEGACY-SIGN")
+        self.assertEqual(s["stage"],"已委托")
+        self.assertIsNone(s["recommended"])
+        self.assertIn("执行开始",s["comparison_note"])
+        o=core.get_order(self.db,self.oid,self.admin)
+        core.assert_commission(self.db,dict(o,carrier=q["carrier"],approved_cost=q["amount"]))
 
 
 if __name__=="__main__":unittest.main()

@@ -1,8 +1,11 @@
 import base64
+import io
 import json
 import sys
 import sqlite3
 import unittest
+import zipfile
+from xml.etree import ElementTree as ET
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"v12"/"engine"))
@@ -117,4 +120,53 @@ class Sales(unittest.TestCase):
         o=sales.handoff(self.db,dict(id=oid,version=v,level="L3"),d)["order"]
         self.assertTrue(o["window_end"].endswith("T15:00"))
         self.assertEqual(o["endpoint"],"一楼经客户确认的东侧 3 号机位")
+    def test_missing_column_vs_withdrawn_door_measurement(self):
+        _,r=self.submit(source(book.template(example=True)));oid=next(iter(r["tickets"].values()))
+        d={"role":"dispatch","username":"dispatch"}
+        o=sales.handoff(self.db,dict(id=oid,version=1,level="L3",confirm_demo_site=True),d)["order"]
+        o.update(active_rfq="SIM-ACTIVE-RFQ",training_road={"quote_id":"SIM-QUOTE"})
+        core.save(self.db,o,d,"fixture","synthetic")
+        raw=json.loads(self.db.execute("SELECT facts FROM sales_lines WHERE oid=?",(oid,)).fetchone()[0])
+        self.assertEqual(self.submit(rows_file([raw]))[1]["changed"],0)  # no supplement row
+        site={**raw,"door_width_cm":""}
+        form=book.template(main_rows=[raw],site_rows=[site])
+        # A legacy sheet without either width column must leave the existing dimension alone.
+        stripped=io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(form)) as original,zipfile.ZipFile(stripped,"w") as out:
+            for path in original.namelist():
+                buf=original.read(path)
+                if path=="xl/worksheets/sheet2.xml":
+                    for k in ("door_width_cm","door_width_in"):buf=buf.replace(book.FIELDS[k].split("|")[0].encode(),b"unused")
+                out.writestr(path,buf)
+        self.assertEqual(self.submit(source(stripped.getvalue()))[1]["changed"],0)
+        p,_=self.submit(source(form))
+        self.assertEqual(p["rows"][0]["changes"]["door_width_cm"],["140",""])
+        self.assertEqual(set(p["rows"][0]["impact"]),{"询价包 SIM-ACTIVE-RFQ","演练路线 "+oid+" · SIM-QUOTE"})
+        o=core.get_order(self.db,oid,d);self.assertTrue(o["sales_review_pending"])
+        revised=sales.handoff(self.db,dict(id=oid,version=o["version"],level="L3"),d)["order"]
+        self.assertEqual(revised["door_width_cm"],"")
+        self.assertTrue(any("门净宽" in m for m in procurement.site_problems(revised)))
+        self.assertNotIn("training_road",revised)
+    def test_template_lists_and_audited_preview_correction(self):
+        with zipfile.ZipFile(io.BytesIO(book.template())) as z:
+            lists=[]
+            for i in (1,2):
+                tree=ET.fromstring(z.read(f"xl/worksheets/sheet{i}.xml"))
+                lists.extend(x.find("{*}formula1").text for x in tree.findall(".//{*}dataValidation"))
+            for values in book.ENUMS.values():self.assertIn('"'+",".join(values)+'"',lists)
+        b=rows_file(fixture_rows())
+        b["corrections"]=[dict(sheet="销售交单",row=7,field="model",value="M02")]
+        _,created=self.submit(b);oid=created["tickets"]["DEMO-GROUP / 01 / 002"]
+        info=sales.dispatch(self.db,"GET","/api/sales/history/"+oid,{},self.u)["history"][0]
+        self.assertTrue(info["origin"]["model"].endswith("人工校正"));self.assertEqual(info["facts"]["model"],"M02")
+        del b["corrections"];p=sales.preview(self.db,b,self.u)[0]
+        self.assertEqual(p["rows"][1]["state"],"完全重复")
+        self.assertTrue(all(r["state"]=="完全重复" for r in p["rows"]))
+    def test_handoff_rechecks_existing_site_window(self):
+        _,r=self.submit(source(book.template(example=True)));first=next(iter(r["tickets"].values()))
+        raw=json.loads(self.db.execute("SELECT facts FROM sales_lines WHERE oid=?",(first,)).fetchone()[0])
+        self.submit(rows_file([{**raw,"line_id":"002","model":"M03"}]))
+        with self.assertRaisesRegex(core.ApiError,"同站明细 002"):
+            sales.handoff(self.db,dict(id=first,version=1,level="L3",facts={"window_end":"15:30"}),
+                          {"role":"dispatch","username":"dispatch"})
 if __name__=="__main__":unittest.main()

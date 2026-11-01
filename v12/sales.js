@@ -39,13 +39,19 @@ window.HHSales = (() => {
     }
     function showPreview() {
       const p=report;
+      const corrections=`<details class="wf-full"><summary>按原表行号校正单元格</summary><p>保留上传原件。校正仅作用于当前导入，经预检确认后记入字段来源。现场补充行如有门净宽或净高列，留空表示撤回该测量值。</p>
+        <div class="wf-form"><label class="field">工作表<select data-fix-sheet>${options(Object.fromEntries(p.sheets.map(s=>[s,s])))}</select></label>
+        <label class="field">原表行号<input data-fix-row type="number" min="2" value="${file.filename.toLowerCase().endsWith('.csv')?'2':'6'}"></label>
+        <label class="field">原表已映射字段<select data-fix-key>${options(fields)}</select></label>
+        <label class="field">校正值<input data-fix-value maxlength="2000"></label><button data-act="fix">应用校正并预检</button></div>
+        ${p.corrections.map((c,i)=>`<p>${e(c.sheet)} · 第 ${e(c.row)} 行 · ${e(fields[c.field])} → ${e(c.value)||'（空）'} <button data-act="unfix" data-idx="${i}">撤销校正</button></p>`).join('')}</details>`;
       const maps=p.unmapped.length?`<details open><summary>未映射列 ${p.unmapped.length}</summary><p>可映射到系统字段或保留在原文件中。确认导入会记住映射。</p>${p.unmapped.map(h=>`<label class="field"><span>${e(h)}</span><select data-header="${e(h)}">${options({'':'仅留原件',...fields})}</select></label>`).join('')}<button data-act="map">应用映射并重新预检</button></details>`:'';
       at('[data-preview]').innerHTML=`<div class="wf-form"><h3 class="wf-full">导入预检 · ${p.count} 条明细</h3><div class="wf-full">${maps}${[...p.errors,...p.unmatched.map(x=>'待匹配：'+x)].map(x=>`<p>${e(x)}</p>`).join('')}
         ${p.rows.map(r=>`<article><strong>${e(r.key.join(' / '))}</strong> · ${e(r.state)} · ${e(r.rows.join('、'))}
           ${r.missing.length?'<p>销售待补：'+r.missing.map(e).join('、')+'</p>':''}
           ${Object.keys(r.changes).length?'<ul>'+Object.entries(r.changes).map(([k,[a,b]])=>`<li>${e(fields[k])}　${e(a)||'（空）'} → ${e(b)||'（空）'}</li>`).join('')+'</ul>':''}
           ${r.impact.length?'<p>待重新核验：'+r.impact.map(e).join('、')+'</p>':''}</article>`).join('')}</div>
-        <div class="wf-full"><button data-act="confirm" class="primary" ${p.errors.length||!p.count&&!p.unmatched.length?'disabled':''}>确认导入</button> <button data-act="issues">导出预检结果</button></div></div>`;
+        ${corrections}<div class="wf-full"><button data-act="confirm" class="primary" ${p.errors.length||!p.count&&!p.unmatched.length?'disabled':''}>确认导入</button> <button data-act="issues">导出预检结果</button></div></div>`;
     }
     async function preview() {
       report=await api('preview',{...file,mapping});showPreview();message('预检完成。请核对后确认。');
@@ -86,6 +92,16 @@ window.HHSales = (() => {
           const res=await api(what);download(new Blob([Uint8Array.from(atob(res.base64),v=>v.charCodeAt(0))]),(what==='example'?'达拉斯两台_演练':'销售交单收集表_系统模板')+'.xlsx');return;
         }
         if(what==='map'){at('[data-preview]').querySelectorAll('[data-header]').forEach(s=>{if(s.value)mapping[s.dataset.header]=s.value});await preview();return}
+        if(what==='fix'||what==='unfix'){
+          const corrections=report.corrections.slice();
+          if(what==='unfix')corrections.splice(Number(b.dataset.idx),1);
+          else{
+            const cell={sheet:at('[data-fix-sheet]').value,row:Number(at('[data-fix-row]').value),field:at('[data-fix-key]').value,value:at('[data-fix-value]').value};
+            const index=corrections.findIndex(c=>c.sheet===cell.sheet&&c.row===cell.row&&c.field===cell.field);
+            if(index===-1)corrections.push(cell);else corrections[index]=cell;
+          }
+          report=await api('preview',{...file,mapping,corrections});file.corrections=corrections;showPreview();message('校正后预检已更新。');return;
+        }
         if(what==='confirm'){const r=await api('confirm',{...file,mapping,token:report.token});await ctx.refresh();ctx.toast(`已登记：新增 ${r.added} 条，变更 ${r.changed} 条。`);return}
         if(what==='issues'){download(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}),'交单逐行预检.json');return}
         if(what==='close'){at('[data-entry]').replaceChildren();return}

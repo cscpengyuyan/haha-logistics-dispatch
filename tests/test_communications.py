@@ -51,6 +51,13 @@ class ReminderTest(unittest.TestCase):
         self.assertIn("电话",stop["appointment"]["follow_up"])
         self.assertEqual(self.post("queue",dict(req,template="T1"))["jobs"][0]["state"],"manual")
 
+    def test_customer_reschedule_replaces_reminder_without_reauthorizing_payment(self):
+        self.post("queue",dict(version=1,template="T2"))
+        reply=self.post("reschedule",dict(version=1))
+        self.assertEqual(reply["jobs"][0]["state"],"cancelled")
+        new=self.post("save",dict(self.form,version=1,start="2026-11-04T09:00",end="2026-11-04T16:00"))
+        self.assertEqual([(j["version"],j["state"]) for j in new["jobs"]],[(2,"queued"),(1,"cancelled")])
+
     def test_late_unknown_zone_and_rights(self):
         self.now=datetime(2026,10,31,21,tzinfo=timezone.utc)
         self.assertEqual(self.post("queue",dict(version=1,template="T2"))["jobs"][0]["state"],"manual")

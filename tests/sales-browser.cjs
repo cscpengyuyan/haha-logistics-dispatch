@@ -47,6 +47,12 @@ with zipfile.ZipFile(src) as z, zipfile.ZipFile(dst,"w",zipfile.ZIP_DEFLATED) as
   const upload=async f=>{await page.locator('[data-file]').setInputFiles(f);await page.getByRole('heading',{name:/导入预检/}).waitFor()};
   await upload(file);
   const preview=page.locator('[data-preview]');assert.equal(await preview.locator('article').count(),3);
+  assert.ok((await preview.innerText()).includes('原始型号须对照主数据'));
+  await preview.getByText('按原表行号校正单元格',{exact:true}).click();
+  await page.locator('[data-fix-row]').fill('7');await page.locator('[data-fix-key]').selectOption('model');
+  await page.locator('[data-fix-value]').fill('M02');await page.getByRole('button',{name:'应用校正并预检'}).click();
+  await page.getByText('校正后预检已更新。',{exact:true}).waitFor();
+  assert.ok(!(await preview.innerText()).includes('原始型号须对照主数据'));
   await page.getByRole('button',{name:'确认导入'}).click();
   const lines=page.locator('[data-lines] article');await lines.first().waitFor();
   assert.equal(await lines.count(),3);
@@ -60,6 +66,21 @@ with zipfile.ZipFile(src) as z, zipfile.ZipFile(dst,"w",zipfile.ZIP_DEFLATED) as
   await dal.getByRole('button',{name:'澄清终点并接手'}).click();await page.locator('[name=level]').selectOption('L3');
   await page.locator('[name=confirm_demo_site]').check();await page.getByRole('button',{name:'确认接手'}).click();
   await dal.filter({hasText:'已接手'}).waitFor();
-  assert.deepEqual(errors,[]);console.log('PASS browser sales: template download, 2 sites / 3 rows, zero-prefixed IDs and ZIP, unknown-model gap, replay, sample workbook, logistics handoff.');
+  // Delete the Excel cell itself, leaving its column heading and the remaining measurement intact.
+  const revised=path.join(dir,'revised.xlsx');
+  execFileSync('python',['-B','-c',`import sys,zipfile
+from xml.etree import ElementTree as E
+with zipfile.ZipFile(sys.argv[1]) as src,zipfile.ZipFile(sys.argv[2],'w',zipfile.ZIP_DEFLATED) as dst:
+ for item in src.infolist():
+  data=src.read(item)
+  if item.filename=='xl/worksheets/sheet2.xml':
+   tree=E.fromstring(data);row=tree.find(".//{*}row[@r='6']")
+   cell=next(c for c in row if ''.join(c.itertext())=='140');row.remove(cell)
+   data=E.tostring(tree,encoding='utf-8',xml_declaration=True)
+  dst.writestr(item,data)`,file,revised]);
+  await upload(revised);
+  await preview.getByText(/门净宽.*140.*空/).waitFor();await page.getByRole('button',{name:'确认导入'}).click();
+  await dal.filter({hasText:'范围变更待复核'}).waitFor();
+  assert.deepEqual(errors,[]);console.log('PASS browser sales: template download, 2 sites / 3 rows, text IDs/ZIP, unknown model, audited preview correction, replay, Dallas handoff, delete workbook door width and invalidate.');
  }finally{await browser?.close();server?.kill()}
 })().catch(e=>{console.error(e);process.exitCode=1});

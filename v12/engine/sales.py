@@ -35,6 +35,7 @@ def init_db(db):
     CREATE TABLE IF NOT EXISTS sales_mappings(header TEXT PRIMARY KEY,field TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS sales_unmatched(source TEXT,location TEXT,PRIMARY KEY(source,location));
     CREATE TABLE IF NOT EXISTS sales_confirmations(oid TEXT PRIMARY KEY,source_rev INTEGER NOT NULL,facts TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS sales_file_fixes(source TEXT,actor TEXT,data TEXT NOT NULL,PRIMARY KEY(source,actor));
     """)
 
 def label(k):
@@ -74,6 +75,11 @@ def source(body):
 def affected(db,oid):
     records=db.execute("SELECT id,type,data FROM registry WHERE type IN ('quote','route') AND (json_extract(data,'$.order_id')=? OR EXISTS (SELECT 1 FROM json_each(registry.data,'$.order_ids') WHERE value=?))",(oid,oid))
     refs=[("报价 " if r[1]=="quote" else "路线 ")+r[0] for r in records]
+    order=json.loads(db.execute("SELECT data FROM orders WHERE id=?",(oid,)).fetchone()[0])
+    if order.get("active_rfq"):
+        refs.append("询价包 "+order["active_rfq"])
+    if order.get("training_road"):
+        refs.append("演练路线 "+oid+" · "+str(order["training_road"].get("quote_id") or "尚未关联委托"))
     refs += ["短信 "+r[0] for r in db.execute("SELECT id FROM sms_jobs WHERE oid=? AND state IN ('queued','manual','authorized','submitting')",(oid,))]
     return refs
 
@@ -89,6 +95,15 @@ def preview(db,body,user=None):
     aliases={**ALIASES,**dict(db.execute("SELECT header,field FROM sales_mappings")),**{compact(h):k for h,k in overrides.items()}}
     unmapped,problems,orphans=set(),[],[]
     groups={}
+    saved=db.execute("SELECT data FROM sales_file_fixes WHERE source=? AND actor=?",(digest,user["username"] if user else "")).fetchone()
+    edits=body.get("corrections",json.loads(saved[0]) if saved else [])
+    if not isinstance(edits,list) or len(edits)>100:raise core.ApiError(400,"每次最多校正 100 个单元格")
+    fixes={}
+    for edit in edits:
+        if not isinstance(edit,dict) or edit.get("sheet") not in sheets or type(edit.get("row"))!=int or edit["row"]<=headrow or edit.get("field") not in FIELDS:
+            raise core.ApiError(400,"请选择原工作表、数据行号与已映射字段")
+        fixes[(edit["sheet"],edit["row"],edit["field"])]=core.string(edit.get("value"),"人工校正",2000)
+    used=set()
     for sheet in ("销售交单","现场补充"):
         if sheet not in sheets:continue
         rows=sheets[sheet]
@@ -107,6 +122,11 @@ def preview(db,body,user=None):
             if number<=headrow or not any(row.values()):continue
             loc=f"{sheet} 第 {number} 行"
             vals={k:row.get(c,"") for c,k in cols.items()}
+            changed_by_hand=set()
+            for k in vals:
+                cell=(sheet,number,k)
+                if cell in fixes:
+                    vals[k]=fixes[cell];used.add(cell);changed_by_hand.add(k)
             if any(len(v)>2000 or "\x00" in v for v in vals.values()):
                 problems.append(loc+"：字段过长或含控制字符");continue
             key=tuple(vals[k] for k in KEYS)
@@ -123,8 +143,19 @@ def preview(db,body,user=None):
             if any(at.startswith(sheet+" ") for at in group["rows"]):
                 problems.append(loc+"：同一明细键重复，另见 "+group["rows"][0]);continue
             group["rows"].append(loc)
-            if sheet=="现场补充":vals={k:v for k,v in vals.items() if v}
-            group["facts"].update(vals);group["origin"].update({k:loc for k in vals})
+            if sheet=="现场补充":
+                # A supplied measurement column on an existing detail is an attestation.
+                # An empty measurement withdraws it. Missing rows or columns have no effect.
+                for axis in ("door_width","door_height"):
+                    cm,inch=axis+"_cm",axis+"_in"
+                    if cm in vals and not vals[cm] and not vals.get(inch) and group["facts"].get(inch):
+                        vals[inch]=""
+                    elif inch in vals and not vals[inch] and cm not in vals and group["facts"].get(inch):
+                        vals[cm]=""
+                vals={k:v for k,v in vals.items() if v or k in changed_by_hand or
+                      (k in ("door_width_cm","door_height_cm","door_width_in","door_height_in") and k in group["facts"])}
+            group["facts"].update(vals);group["origin"].update({k:loc+(" · 人工校正" if k in changed_by_hand else "") for k in vals})
+    if used!=set(fixes):problems.append("人工校正的行号或字段在原表中不存在，请核对数据行及列映射")
     if sum(len(rows) for rows in sheets.values())>2010:raise core.ApiError(413,"每次最多预检 2000 行")
     site_values=defaultdict(dict)
     # Include existing siblings when only one line of a multi-line site is being revised.
@@ -162,10 +193,13 @@ def preview(db,body,user=None):
         g["changes"]=changes
         state="新增" if not prior else "变更" if changes else "完全重复"
         g["impact"]=affected(db,prior["oid"]) if prior and SENSITIVE.intersection(changes) else []
-        summaries.append({"key":key,"rows":g["rows"],"state":state,"missing":missing(facts),"changes":changes if prior else {},
+        gaps=missing(facts)
+        if prior and any(k in changes and not facts.get(k) for k in ("door_width_cm","door_height_cm")):
+            gaps.append("门净宽或净高已撤回，请现场重新测量")
+        summaries.append({"key":key,"rows":g["rows"],"state":state,"missing":gaps,"changes":changes if prior else {},
                           "impact":g["impact"],"id":prior["oid"] if prior else None,"revision":prior["rev"] if prior else 0})
-    report={"rows":summaries,"errors":problems,"unmatched":orphans,"unmapped":sorted(unmapped),"count":len(groups)}
-    token=hashlib.sha256((digest+json.dumps(report,ensure_ascii=True,sort_keys=True)+json.dumps(overrides,sort_keys=True)).encode()).hexdigest()
+    report={"rows":summaries,"errors":problems,"unmatched":orphans,"unmapped":sorted(unmapped),"count":len(groups),"corrections":edits,"sheets":list(sheets)}
+    token=hashlib.sha256((digest+json.dumps(report,ensure_ascii=True,sort_keys=True)+json.dumps(overrides,sort_keys=True)+json.dumps(edits,sort_keys=True)).encode()).hexdigest()
     return {**report,"token":token},groups,(digest,name,data)
 
 def apply_facts(o,f):
@@ -189,6 +223,8 @@ def confirm(db,body,user):
     if body.get("token")!=report["token"]:raise core.ApiError(409,"预检已过期，重新预览并确认")
     if report["errors"]:raise core.ApiError(400,"未解决逐行错误")
     db.execute("INSERT OR IGNORE INTO sales_sources VALUES(?,?,?)",src)
+    if body.get("corrections") is not None:
+        db.execute("INSERT OR REPLACE INTO sales_file_fixes VALUES(?,?,?)",(src[0],user["username"],core.encode(report["corrections"])))
     db.execute("DELETE FROM sales_unmatched WHERE source=?",(src[0],))
     db.executemany("INSERT OR IGNORE INTO sales_unmatched VALUES(?,?)",[(src[0],loc) for loc in report["unmatched"]])
     for h,k in body.get("mapping",{}).items():db.execute("INSERT OR REPLACE INTO sales_mappings VALUES(?,?)",(compact(h),k))
@@ -236,6 +272,11 @@ def handoff(db,body,user):
     edit=body.get("facts",{})
     if not isinstance(edit,dict) or set(edit)-set(FIELDS) or set(edit)&set(KEYS):raise core.ApiError(400,"只能澄清交单事实")
     facts.update({k:core.string(v,k) for k,v in edit.items()})
+    for sibling in db.execute("SELECT oid,line,facts FROM sales_lines WHERE crm=? AND site=? AND oid<>?",(row["crm"],row["site"],oid)):
+        other=clarified_facts(db,sibling[0],json.loads(sibling[2]))
+        for field in SITE_SCOPE:
+            if facts.get(field) and other.get(field) and facts[field]!=other[field]:
+                raise core.ApiError(409,f"同站明细 {sibling[1]} 的{label(field)}冲突，请销售同步修正本站明细")
     if not re.fullmatch(r"[1-9][0-9]{0,2}",facts.get("quantity","")):raise core.ApiError(400,"请确认设备数量")
     gaps=missing(facts)
     if gaps:raise core.ApiError(409,"待销售补齐或物流核实："+"、".join(gaps))
@@ -254,6 +295,8 @@ def handoff(db,body,user):
             raise core.ApiError(409,"实际库存保管或 SN 锁与本票不一致，仓管须先复核")
     if o.get("selected_quote") and o.get("sales_review_pending"):
         o.setdefault("superseded_quotes",[]).append(o.pop("selected_quote"))
+    if o.get("training_road") and o.get("sales_review_pending"):
+        o.setdefault("superseded_training_roads",[]).append(o.pop("training_road"))
     if o["status"]!="intake" and any(o.get(k,"")!=facts.get(k,"") for k in ("address","zip","state","city")):
         o.update(location_precision="unknown",coordinate_ref="",lat=None,lng=None)
     apply_facts(o,facts)

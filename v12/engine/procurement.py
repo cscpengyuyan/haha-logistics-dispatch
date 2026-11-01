@@ -2,6 +2,7 @@
 import json
 import uuid
 from collections import Counter
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import core
@@ -9,6 +10,7 @@ import operations
 import review
 import supply
 from core import ApiError, encode, required
+from routing_zones import zone
 
 READ = {"procurement","dispatch","admin","finance"}
 WRITE = READ - {"finance"}
@@ -67,6 +69,13 @@ def offer_problems(o,q):
     if q.get("reply_state")!="firm":problems.append("尚非书面可执行价")
     if q.get("quoted_level")!=o.get("level"):problems.append("终点范围不一致："+str(q.get("quoted_level") or "未知"))
     if not q.get("same_window"):problems.append("未确认相同执行窗")
+    if q.get("window_schema")==2:
+        start,end=q.get("execution_start"),q.get("execution_end")
+        if not (start and end):problems.append("待回承运方实际执行起止时间")
+        elif end<=start or start<(o.get("window_start") or "") or end>(o.get("window_end") or ""):
+            problems.append("实际执行窗不在本票约定窗口内")
+        elif o.get("timezone") and end<=datetime.now(timezone.utc).astimezone(zone(o["timezone"])).strftime("%Y-%m-%dT%H:%M"):
+            problems.append("承运方实际执行窗已过")
     if not q.get("same_liability"):problems.append("未确认相同责任及保管范围")
     if not q.get("execution_ref"):problems.append("待车辆载重、车门、尾板、车组及现场能力书证")
     if not q.get("accepted_ref"):problems.append("待本票承接回执")
@@ -75,6 +84,25 @@ def offer_problems(o,q):
     if o.get("level")=="L1" and o.get("site_type") in {"住宅","residential"} and not q.get("unload_ref"):
         problems.append("住宅交接待承运方确认卸货位置")
     return problems
+
+
+def comparison_terms(q):
+    """Labels are returned alongside the specific facts used to determine comparability."""
+    trigger=None
+    if q.get("charge_terms")=="capped" and q.get("trigger") and q.get("trigger_cap") is not None:
+        trigger=(q["trigger"].strip(),q["trigger_cap"])
+    elif q.get("charge_terms")=="none" and not q.get("trigger") and q.get("trigger_cap") in (None,0):
+        trigger=("none",0)
+    return {"询价版本":q.get("rfq_id"),"币种":q.get("currency"),"终点":q.get("quoted_level"),
+            "执行开始":q.get("execution_start") if q.get("same_window") else None,
+            "执行结束":q.get("execution_end") if q.get("same_window") else None,
+            "责任及保管条款":q.get("liability_terms") if q.get("same_liability") else None,
+            "包含项":q.get("inclusions"),"排除项":q.get("exclusions"),"附加费触发条件与上限":trigger}
+
+
+def comparison_basis(q):
+    terms=tuple(comparison_terms(q).values())
+    return terms if all(terms) and q.get("window_schema")==2 else None
 
 
 def stock(db,o):
@@ -109,15 +137,31 @@ def inspect(db,o):
         except ApiError as exc:
             if str(exc)!="；".join(reasons):reasons.append(str(exc))
         q["reasons"]=list(dict.fromkeys(reasons+issues))
+        if q.get("rfq_id") and q.get("window_schema")!=2 and (q["id"],q["version"])!=(selected.get("id"),selected.get("version")):
+            q["reasons"].append("旧版书证已保留，定标前须修订并确认实际执行窗")
         q["eligible"]=not q["reasons"]
     eligible=sorted((q for q in quotes if q["eligible"]),key=lambda q:q["amount"])
-    recommended=eligible[0] if eligible else None
+    bases={comparison_basis(q) for q in eligible}
+    recommended=None
+    if len(eligible)<2:comparison_note="不足两份可执行回价。单一来源由经办人说明并审批。"
+    elif None in bases:
+        missing=[q["carrier"]+" 缺 "+"/".join(k for k,v in comparison_terms(q).items() if not v)
+                 for q in eligible if comparison_basis(q) is None]
+        comparison_note="人工评审，待补书证："+"；".join(missing)
+    elif len(bases)!=1:
+        all_terms=[comparison_terms(q) for q in eligible]
+        mismatch=[key for key in all_terms[0] if len({t[key] for t in all_terms})>1]
+        comparison_note="人工评审，书面条款不同："+"、".join(mismatch)
+    elif eligible[0]["amount"]==eligible[1]["amount"]:comparison_note="同条件最低确定应付价并列，请人工选定主备。"
+    else:
+        recommended=eligible[0]
+        comparison_note="同一询价包、实际执行窗、责任、含项和条件费用，按确定应付价比较。"
     for q in quotes:
         # Never rank a curbside, stale, differently conditioned or unpriced response.
         if (recommended and q.get("rfq_id")==recommended.get("rfq_id") and q.get("same_window")
             and q.get("same_liability") and q.get("quoted_level")==o.get("level")
-            and q.get("scope_snapshot")==review.scope_snapshot(o) and q.get("trigger")==recommended.get("trigger")
-            and q.get("trigger_cap")==recommended.get("trigger_cap") and q.get("reply_state")=="firm"
+            and q.get("scope_snapshot")==review.scope_snapshot(o) and comparison_basis(q)==comparison_basis(recommended)
+            and q.get("reply_state")=="firm"
             and q.get("pricing_status")=="itemized" and q.get("valid_until","")>=max(core.now()[:10],str(o.get("window_end") or "")[:10])):
             q["delta"]=float(Decimal(str(q["amount"]))-Decimal(str(recommended["amount"])))
     pack_ok=bool(pack and pack["snapshot"]==review.scope_snapshot(o))
@@ -140,7 +184,8 @@ def inspect(db,o):
             title={"amazon":"亚马逊指定仓：核货件、标签和预约","terminal":"原卡终端：核已购终点书面覆盖"}.get(o.get("a_channel"),"客户自提" if o.get("pickup") else "原渠道：核平台或终端交接")
         candidates.append(dict(path=path,title=title,origin=o.get("warehouse"),end=o.get("endpoint"),reasons=reasons))
     return dict(order_id=o["id"],version=o["version"],pack=pack,scope_current=pack_ok,stock=inventory,stage=stage,
-                candidates=candidates,quotes=quotes,recommended=(recommended or {}).get("id"),
+                candidates=candidates,quotes=quotes,recommended=(recommended or {}).get("id"),comparison_note=comparison_note,
+                comparison_set=[q["carrier"]+" v"+str(q["version"]) for q in eligible],
                 approval=approval,commission=selected,approved=bool(approved),site_problems=issues)
 
 
@@ -183,10 +228,13 @@ def write_reply(db,o,b,u):
             raise ApiError(409,"回价记录已更新或不属于本询价包")
     q=dict(name=required(b,"carrier",140),carrier=required(b,"carrier",140),path=path,order_id=o["id"],
            comparison_ref=pack["id"],rfq_id=pack["id"],scope=pack["english"],scope_snapshot=pack["snapshot"],
-           reply_state=state,currency="USD",quoted_level=supply.choice(b,"quoted_level",{"L1","L2","L3","unknown"}))
+           reply_state=state,currency="USD",window_schema=2,quoted_level=supply.choice(b,"quoted_level",{"L1","L2","L3","unknown"}))
     for k in ("evidence","supplier_id","executor_id","product","accepted_ref","execution_ref","station_ref","last_leg_ref",
-              "unload_ref","condition_ref","zero_note","follow_up","trigger","inclusions","exclusions","notes","dispatched_ref"):
+              "unload_ref","condition_ref","zero_note","follow_up","trigger","inclusions","exclusions","liability_terms","notes","dispatched_ref"):
         q[k]=core.string(b.get(k) or "",k)
+    for k in ("execution_start","execution_end"):
+        q[k]=core.localtime(b[k],k) if b.get(k) else ""
+    q["charge_terms"]=supply.choice({"charge_terms":b.get("charge_terms") or "unknown"},"charge_terms",{"capped","none","unknown"})
     q["same_window"]=b.get("same_window") is True
     q["same_liability"]=b.get("same_liability") is True
     q["valid_until"]=operations.iso_date(b["valid_until"]) if b.get("valid_until") else ""
@@ -218,6 +266,8 @@ def sample(db,o,u):
         supply.qualify(db,dict(supplier_id=sid,executor_id=executor,product="T2",warehouse_id=wh[0],zip="75201",model="M01",
                        action=level,decision="Y",valid_until=until,insurance_until=until,evidence="SIM-CAP-"+path),u)
         write_reply(db,o,dict(reply_state="firm",carrier=carrier,path=path,quoted_level=level,valid_until=until,
+                    execution_start=o.get("window_start"),execution_end=o.get("window_end"),charge_terms="none",
+                    liability_terms="Single ticket coverage from pickup through signed delivery to the contracted point",
                     supplier_id=sid,executor_id=executor,product="T2",accepted_ref="SIM-RESPONSE-"+path,
                     evidence="SIM-QUOTE-"+path,execution_ref="SIM-VEHICLE-CREW-GATE-"+path,same_window=True,
                     same_liability=path!="A",zero_note="书面全包已含其余项目；未购技术无费用",
@@ -237,8 +287,9 @@ def approve(db,o,b,u,state):
     decision=dict(quote_id=q["id"],quote_version=q["version"],backup_id=backup,approval_ref=required(b,"approval_ref",300),
                   reason=required(b,"reason"),actor=u["username"],at=core.now(),rfq_id=q["rfq_id"])
     other=next((x for x in state["quotes"] if x["id"]==backup),None)
+    same_basis=other and comparison_basis(q) is not None and comparison_basis(other)==comparison_basis(q)
     decision.update(backup_version=other["version"] if other else None,
-                    backup_delta=float(core.money(other["amount"])-core.money(q["amount"])) if other else None,
+                    backup_delta=float(core.money(other["amount"])-core.money(q["amount"])) if same_basis else None,
                     window=[o.get("window_start"),o.get("window_end"),o.get("timezone")],
                     switch_condition=core.string(b.get("switch_condition") or decision["reason"],"切换条件"))
     o["rfq_approval"]=decision

@@ -128,7 +128,7 @@ def handle(db, method, path, body, user, clock=None):
     if method != "POST": raise core.ApiError(404, "无此通讯接口")
     if action == "save":
         old_version = a["version"]
-        prior_t2 = db.execute("SELECT 1 FROM sms_jobs WHERE oid=? AND version=? AND template='T2' AND state!='cancelled'",
+        prior_t2 = db.execute("SELECT 1 FROM sms_jobs WHERE oid=? AND version=? AND template='T2' AND (state!='cancelled' OR reason='待改约')",
                               (oid,old_version)).fetchone()
         a = appointment(db,o,body,a,user)
         if a["version"] != old_version and prior_t2:
