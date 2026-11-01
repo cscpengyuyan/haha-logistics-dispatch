@@ -1,0 +1,46 @@
+Offline dispatch map
+
+Leaflet 1.9.4
+https://github.com/Leaflet/Leaflet/tree/v1.9.4
+Distributed with Leaflet-LICENSE.txt (BSD-2-Clause).
+
+us-states.js
+The simplified GeoJSON state boundary file is carried over from the v8 application.
+
+us-roads-2025.json
+Source: U.S. Census Bureau, TIGER/Line 2025 Primary Roads, 2025
+Primary and Secondary Roads and 2025 National Places Gazetteer.
+https://www2.census.gov/geo/tiger/TIGER2025/PRIMARYROADS/tl_2025_us_primaryroads.zip
+https://www2.census.gov/geo/tiger/TIGER2025/PRISECROADS/
+https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_Gaz_place_national.zip
+
+Includes a generalized selection of contiguous-US interstate corridors and
+regional primary/secondary roads in the Dallas/Fort Worth, New York/New Jersey,
+Seattle/Tacoma/Fife and Los Angeles areas. Place labels use gazetteer internal
+points. Data have been cropped, simplified, quantized to 1e-4 degrees,
+delta encoded and filtered to reduce payload and clutter. The source datum
+is NAD83. This schematic basemap has no turn instructions, traffic, address
+lookup, truck restrictions or commercial routing guarantees. Dispatch routes
+and estimated miles are calculated separately from this display data.
+
+dfw-demo-road-legs.json
+Only used in the isolated training environment for three matching fictional
+coordinates. Derived from © OpenStreetMap contributors (ODbL 1.0).
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+This file is available under the Open Database License. The dataset itself
+is distributed with the application as editable JSON and may be independently
+downloaded from the relative path vendor/dfw-demo-road-legs.json.
+
+Extract via Overpass API: OSM data timestamp 2026-11-01T08:24:50Z,
+major roads through tertiary including links in bounding box
+(32.67,-97.16,32.93,-96.73), plus all highways within 550 meters of
+each dummy point (32.83,-96.91), (32.778,-96.806), (32.735,-97.079).
+Dijkstra shortest estimated time, with basic vehicle access and one-way
+directions, excluding private, permit-only and non-motor roads. Speed by
+road class, capped by parsed posted speed. Six independent directed paths.
+Snapping distances from the three training points: 9.0, 25.4, 18.2 m.
+Independent geometry check against Census 2025 Dallas and Tarrant TIGER
+edges: 283 samples in all, median separation per directed leg 1.4–3.0 m.
+No turn restrictions, truck clearance, weight limits, live traffic or
+intersection delays. These cached journeys are planning examples.
