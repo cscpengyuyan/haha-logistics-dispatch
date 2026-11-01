@@ -224,6 +224,81 @@
       <section class="dm-plan"><header><div><small>MULTI-STOP ROUTE</small><h3>多站排线</h3></div><div class="dm-actions"><select data-field="routeLoad" aria-label="调出共享批次"></select>${btn('clear','新建草案')}</div></header>
        <details class="dm-checks"><summary>车辆、班次及逐段承运依据</summary><div data-box="config" class="dm-config"></div><div data-box="facts"></div></details><div data-box="stops"></div><details class="dm-checks"><summary>同范围路线费用试算</summary><div class="dm-config" data-box="cost"></div><p data-box="costResult" role="status"></p></details><div data-box="save" class="dm-save"></div>
        <p data-box="message" class="dm-msg" role="status"></p></section></section>`;
+    /* 版面重组：把「订单池 / 地图 / 车次执行」收进一个调度台，
+       并把合规核验与费用试算折到页尾抽屉里（只搬 DOM，不改业务逻辑）。 */
+    function restructure(){
+      const grid=root.querySelector('.dm-grid');if(!grid)return;
+      const mapcard=grid.querySelector('.dm-mapcard');
+      const queue=grid.querySelector('.dm-queue');
+      const plan=root.querySelector('.dm-plan');
+      const detail=root.querySelector('.dm-detail');
+      const decision=root.querySelector('.dm-decision');
+      const checks=[...plan.querySelectorAll('.dm-checks')];
+
+      const consoleEl=document.createElement('div');
+      consoleEl.className='dm-console';
+      const left=document.createElement('aside');
+      left.className='dm-queue dm-side dm-side-left';
+      const right=document.createElement('aside');
+      right.className='dm-plan dm-side dm-side-right';
+
+      /* 左：订单池 + 车次 */
+      left.appendChild(queue.querySelector('header'));
+      left.appendChild(queue.querySelector('[data-box="list"]'));
+      const runs=document.createElement('div');
+      runs.className='dm-runs';
+      runs.innerHTML='<header class="dm-panel-head"><div><small>RUNS</small><h3>当日车次</h3></div><b data-box="runTotal"></b></header><div data-box="runs" class="dm-runlist"></div>';
+      left.appendChild(runs);
+
+      /* 右：执行卡 */
+      const planHead=plan.querySelector(':scope > header');
+      if(planHead)right.appendChild(planHead);
+      if(decision)right.appendChild(decision);
+      const stopsBox=plan.querySelector('[data-box="stops"]');
+      if(stopsBox)right.appendChild(stopsBox);
+      const saveBox=plan.querySelector('[data-box="save"]');
+      if(saveBox)right.appendChild(saveBox);
+      const msg=plan.querySelector('[data-box="message"]');
+      if(msg)right.appendChild(msg);
+
+      consoleEl.appendChild(left);
+      consoleEl.appendChild(mapcard);
+      consoleEl.appendChild(right);
+
+      grid.replaceWith(consoleEl);
+      plan.remove();
+
+      /* 页尾：核验与证据 */
+      const wrap=document.createElement('details');
+      wrap.className='dm-evidence';
+      wrap.innerHTML='<summary><span>核验与证据</span><small>车辆、班次、逐段承运依据与同范围费用试算</small></summary>';
+      const body=document.createElement('div');
+      body.className='dm-evidence-body';
+      const noteSlot=document.createElement('section');
+      noteSlot.className='dm-evidence-block dm-evidence-note';
+      noteSlot.innerHTML='<h4>路网与范围说明</h4><div data-box="routenote" class="dm-routenote">虚线只表示站点关系，道路里程与行驶时长以「规划货车路线」的结果为准。地图范围：美国；预约按收货地时区核算；OSM 未记录的施工与限行须由车组复核。</div>';
+      for(const c of checks){
+        const label=c.querySelector('summary')?.textContent||'核验';
+        c.querySelector('summary')?.remove();
+        const block=document.createElement('section');
+        block.className='dm-evidence-block';
+        block.innerHTML='<h4>'+e(label)+'</h4>';
+        while(c.firstChild)block.appendChild(c.firstChild);
+        body.appendChild(block);
+      }
+      wrap.appendChild(body);
+      body.appendChild(noteSlot);
+
+      if(detail){
+        detail.classList.add('dm-detail-strip');
+        consoleEl.after(detail);
+        detail.after(wrap);
+      }else{
+        consoleEl.after(wrap);
+      }
+    }
+    restructure();
+
     function initMap(){
       if (!window.L || !window.US_STATES) {el('map').textContent='地图资源未加载。可继续在订单池查看订单和排线。';return;}
       map=L.map(el('map'),{minZoom:0,maxZoom:18,zoomSnap:0.25,zoomAnimation:false,fadeAnimation:false,scrollWheelZoom:true,attributionControl:false});
@@ -550,7 +625,25 @@
       el('itinerary').innerHTML=stops.length?`<div class="dm-flow-label"><b>计划站序</b><small>${r?'公路参考':'直线参考'} · ${complete?e(fmtMi(totalDistance)):'—'}</small></div><div class="dm-flow"><span class="dm-from">▣ ${e(warehouse)}</span>${stops.map((o,i)=>rowBtn('focus',o.id,`<i>${stopNumber(i)}</i>${e(o.city||o.zip)}<small>× ${e(o.quantity)} 台</small>`)).join('')}</div><p class="dm-group-note">${shared?'发现 '+shared+' 处跨票同址。收货方、原窗和同一装卸口一致时可登记确认同停。各票作业与 SN 分开记录。':stops.some(o=>o.quantity>1)?'含同址多台订单。台数计入装载，逐票核对卸货与摆位时长。':''}</p>`:
         '<span class="dm-route-hint"><b>排线起点</b> 点选城市标记下钻，或在订单池中点「＋ 排线」。</span>';
     }
-    function paint(){config();list();details();plan();costs();drawMap();}
+    function runs(){
+      const box=el('runs');if(!box)return;
+      const list=routes.filter(r=>!date||r.date===date).sort((a,b)=>String(b.id).localeCompare(String(a.id)));
+      const total=el('runTotal');if(total)total.textContent=list.length?list.length+' 条':'';
+      box.innerHTML=list.length?list.map(r=>{
+        const ids=r.order_ids||[];
+        const units=ids.reduce((n,id)=>n+(Number(byKey(id)?.quantity)||0),0);
+        const veh=fleet.find(f=>String(f.id)===String(r.resource_id));
+        const signed=r.phase==='signed'||r.signed;
+        return `<button type="button" class="dm-run${String(r.id)===String(routeId)?' active':''}" data-act="loadRun" data-id="${e(r.id)}">
+          <span class="dm-run-name">${e(r.name||'未命名车次')}</span>
+          <span class="dm-run-meta">${e(veh?.name||'未指派车辆')} · ${ids.length} 票 / ${units} 台</span>
+          <em class="${signed?'ok':''}">${signed?'已签':'草案'}</em></button>`;
+      }).join(''):'<p class="dm-empty">今日暂无车次。左侧选票 → 右侧排线 → 保存即生成。</p>';
+    }
+    function paint(){config();list();runs();details();plan();costs();drawMap();
+      const note=root.querySelector('[data-box="stops"] .dm-note'),slot=el('routenote');
+      if(note&&slot)slot.appendChild(note);
+    }
     function reset(){
       selected=[];costDraft={};grantNote='';routeChecks={};stopFacts={};crew='';executor='';lastCheck=null;undoStack=[];splitOut=[];locked='';routeId='';version=null;name='';notes='';message='';vehicle='';invalidateRoad();
     }
@@ -675,7 +768,8 @@
       if(a==='prev'||a==='next'){pageNo=Math.max(0,pageNo+(a==='next'?1:-1));list();return}
       if(a==='prefs'){writePref('filters',{filter,search,stateFilter});notice('已保存当前账号的筛选');return}
       if(a==='unfilter'){filter='';stateFilter='';search='';pageNo=0;writePref('filters',{});root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';paint();return}
-      if(a==='pool'){root.querySelector('.dm-grid').classList.toggle('hide-pool');return}
+      if(a==='pool'){root.querySelector('.dm-console')?.classList.toggle('hide-pool');return}
+      if(a==='loadRun'){loadRoute(id);return}
       if(a==='layer'){const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));prefMap.set('layers',showLayer);drawMap();return}
       if(a==='undo'&&undoStack.length){const x=undoStack.pop();selected=x.ids;splitOut=x.split;stopFacts=x.facts;locked=x.locked;lastCheck=null;invalidateRoad();paint();return}
       if(a==='split'&&selected.length>1){if(locked===selected.at(-1)){notice('请先解锁末站');return}checkpoint();splitOut.push(selected.pop());invalidateRoad();paint();return}

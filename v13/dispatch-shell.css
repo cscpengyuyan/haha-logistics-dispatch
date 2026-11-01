@@ -1,0 +1,302 @@
+/* ==========================================================================
+   地图调度 · DISPATCH CONSOLE (v13)
+   版面：任务台（订单池 / 当日车次）· 地图 · 车次执行卡
+   ========================================================================== */
+
+.dm{
+  --dm-ink:#0f2b2a;
+  --dm-muted:#5c716d;
+  --dm-border:#e2e9e1;
+  display:block;
+}
+
+/* ---------- console grid ---------- */
+.dm-console.hide-pool > .dm-queue{display:none}
+.dm-console.hide-pool{grid-template-columns:minmax(0,1fr) minmax(304px,348px)}
+.dm-console.hide-pool > .dm-mapcard{grid-column:1}
+.dm-console.hide-pool > .dm-plan{grid-column:2}
+.dm-console{
+  display:grid;
+  grid-template-columns:minmax(258px,288px) minmax(0,1fr) minmax(304px,348px);
+  gap:12px;align-items:start;
+  margin-top:2px;
+}
+.dm-console > .dm-mapcard{grid-column:2;grid-row:auto;min-width:0;margin:0}
+.dm-console > .dm-queue{grid-column:1;grid-row:auto;margin:0}
+.dm-console > .dm-plan{grid-column:3;grid-row:auto;margin:0}
+
+.dm-side{
+  position:sticky;top:74px;
+  max-height:calc(100dvh - 132px);
+  overflow:auto;
+  background:#fff;
+  border:1px solid var(--dm-border);
+  border-radius:16px;
+  box-shadow:var(--shadow-2);
+  padding:12px 12px 10px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.dm-side-left{padding-bottom:8px}
+.dm-side .dm-empty{margin:0}
+
+/* panel headers */
+.dm-console .dm-side > header,
+.dm-panel-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:10px;padding:0 2px 8px;margin:0;
+  border-bottom:1px solid var(--line-2);
+  position:sticky;top:0;background:#fff;z-index:3;
+}
+.dm-console .dm-side > header small,
+.dm-panel-head small{
+  display:block;font-size:9px;font-weight:700;letter-spacing:.16em;
+  color:#8ba398;text-transform:uppercase;
+}
+.dm-console .dm-side > header h3,
+.dm-panel-head h3{font-size:13.5px;margin:2px 0 0;letter-spacing:-.01em}
+.dm-console .dm-side > header b,
+.dm-panel-head b{font-size:11px;color:var(--dm-muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- run control (right rail) ---------- */
+.dm-side-right .dm-summary{
+  display:grid;gap:5px;
+  padding:10px 12px;margin:0 0 10px;
+  border-radius:12px;background:#f7faf5;border:1px solid var(--line-2);
+  font-size:10.5px;color:#5c716d;
+}
+.dm-side-right .dm-summary b{font-size:13px;color:var(--dm-ink);letter-spacing:-.01em}
+.dm-side-right .dm-summary span{display:flex;justify-content:space-between;gap:8px}
+.dm-side-right .dm-summary strong{color:var(--dm-ink);font-variant-numeric:tabular-nums}
+.dm-side-right .dm-summary .dm-actions{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap}
+.dm-side-right .dm-summary .dm-actions button{min-height:26px;padding:2px 9px;font-size:10.5px;border-radius:7px}
+
+.dm-side-right .dm-stops{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.dm-stops > li{background:#fff;border:1px solid var(--line-2);border-radius:12px;padding:9px 11px}
+.dm-stops > li:hover{border-color:#cfe0d3}
+
+.dm-side-right .dm-save{display:grid;gap:8px;margin-top:8px}
+.dm-side-right .dm-save .dm-field{display:grid;gap:3px}
+.dm-side-right .dm-save .dm-field span{font-size:10px;font-weight:650;color:#7d9a8c;letter-spacing:.02em}
+.dm-side-right .dm-save input{
+  min-height:32px;height:32px;padding:4px 10px;font-size:12px;border-radius:9px;
+}
+.dm-side-right .dm-save .dm-field+.dm-field{margin-top:0}
+.dm-side-right .dm-save .dm-actions{margin-top:2px}
+.dm-side-right .dm-save .dm-actions button,
+.dm-side-right .dm-save > button{width:100%;min-height:38px;font-size:13px;border-radius:10px}
+.dm-side-right .dm-msg{margin:2px 0 0;font-size:10.5px;color:var(--dm-muted);line-height:1.55}
+
+.dm-routenote{font-size:10px;line-height:1.65;color:#8b9c91;margin:0}
+.dm-routenote a{color:var(--green-600)}
+
+/* ---------- order pool ---------- */
+.dm-side .dm-list{flex:1;min-height:160px;max-height:none;overflow:auto;margin:0 -4px;padding:0 4px}
+.dm-side .dm-item{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:6px;align-items:start;
+  padding:9px 10px;border-radius:11px;margin-bottom:6px;
+  border:1px solid var(--line-2);border-bottom:1px solid var(--line-2);
+  background:#fcfdfa;
+}
+.dm-side .dm-item:last-child{margin-bottom:0}
+.dm-side .dm-item.active{background:#f1f8ee;border-color:#cfe4d2;box-shadow:inset 3px 0 var(--green-600)}
+.dm-side .dm-item-main{min-width:0;display:grid;gap:2px;text-align:left;border:0;background:none;padding:0;border-radius:0;box-shadow:none}
+.dm-side .dm-item-main b{font-size:12px;font-weight:650;line-height:1.3;color:var(--dm-ink);white-space:normal;overflow-wrap:anywhere}
+.dm-side .dm-item-main b em{font-style:normal;font-size:10px;color:var(--dm-muted);font-weight:500;margin-left:2px}
+.dm-side .dm-item-main span{font-size:10.5px;color:#3d5f55;overflow-wrap:anywhere}
+.dm-side .dm-item-main small{font-size:9.5px;color:#93a89d;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-side .dm-item-main span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-side .dm-item-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.dm-side .dm-badge{font-size:9px;padding:1px 6px;border-radius:999px;background:#eef3ec;color:#5a7268;white-space:nowrap}
+.dm-side .dm-item-end button{min-height:24px;padding:2px 8px;font-size:10px;border-radius:7px;white-space:nowrap}
+
+/* ---------- runs ---------- */
+.dm-runs{border-top:1px dashed var(--line);padding-top:10px;margin-top:2px}
+.dm-runlist{display:grid;gap:6px;margin-top:8px}
+.dm-run{
+  position:relative;display:grid;gap:2px;text-align:left;width:100%;
+  padding:9px 11px;border-radius:11px;
+  border:1px solid var(--line);background:#fbfdf9;box-shadow:none;
+  transition:border-color .15s ease,background .15s ease;
+}
+.dm-run:hover{background:#f6faf3;border-color:#c9dccd;box-shadow:none}
+.dm-run.active{background:#fff;border-color:var(--green-600);box-shadow:0 0 0 1px var(--green-600) inset}
+.dm-run-name{
+  font-size:12px;font-weight:650;color:var(--dm-ink);letter-spacing:-.005em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:44px;
+}
+.dm-run-meta{font-size:10px;color:var(--dm-muted);font-variant-numeric:tabular-nums}
+.dm-run em{
+  position:absolute;right:9px;top:9px;font-style:normal;
+  font-size:9px;font-weight:700;letter-spacing:.03em;
+  padding:1px 7px;border-radius:999px;
+  background:#eef3ec;color:#5a7268;
+}
+.dm-run em.ok{background:#e7f4ec;color:#14694f}
+
+/* ---------- map card ---------- */
+.dm-console .dm-mapcard{
+  border:1px solid var(--dm-border);border-radius:16px;
+  box-shadow:var(--shadow-2);background:#fff;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.dm-console .dm-mapcard > header{
+  flex:none;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--line-2);
+}
+.dm-console .dm-mapcard > header h3{font-size:13.5px;margin:2px 0 0}
+.dm-console .dm-mapcard > header small{font-size:9px;font-weight:700;letter-spacing:.16em;color:#8ba398;text-transform:uppercase}
+.dm-console .dm-map{flex:1 1 auto;height:clamp(420px,56vh,620px);min-height:380px}
+.dm-console .dm-mapcard > footer{
+  flex:none;
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  padding:9px 12px;border-top:1px solid var(--line-2);background:#fbfdf9;
+  font-size:11px;
+}
+.dm-console .dm-mapcard > footer .dm-legend{gap:4px}
+.dm-console .dm-mapcard > footer button{min-height:26px;padding:2px 8px;font-size:10.5px;border-radius:7px}
+.dm-console .dm-routebar{margin:0;border-radius:0;border-top:1px solid var(--line-2)}
+
+/* ---------- decision card ---------- */
+.dm-console .dm-decision{
+  position:static;margin:0;padding:11px 12px;
+  border-radius:13px;min-height:0;
+  background:linear-gradient(180deg,#f2f8ef,#eaf4e6);
+  border:1px solid #d8e8cf;border-left:1px solid #d8e8cf;
+  display:block;
+}
+.dm-console .dm-decision.has-conflict{
+  background:linear-gradient(180deg,#fdf6ef,#fbeee2);border-color:#efd3b8;
+}
+.dm-console .dm-decision small{font-size:10px;color:#5f7a6b;line-height:1.5}
+.dm-console .dm-decision strong{display:block;font-size:13px;margin:3px 0 2px;letter-spacing:-.01em}
+.dm-console .dm-decision .dm-actions{margin-top:8px;gap:6px;flex-wrap:wrap}
+.dm-console .dm-decision .dm-actions button{min-height:28px;padding:3px 10px;font-size:11px}
+
+/* ---------- right rail content ---------- */
+.dm-side-right{overflow:auto}
+.dm-side-right [data-box="stops"]{min-height:40px}
+.dm-side-right .dm-save{
+  margin-top:auto;padding-top:10px;border-top:1px solid var(--line-2);
+  display:flex;flex-direction:column;gap:8px;
+}
+.dm-side-right .dm-save .dm-primary,
+.dm-side-right .dm-save button[data-act="save"]{
+  min-height:38px;font-size:13px;border-radius:10px;
+}
+.dm-side-right .dm-msg{font-size:11px;color:var(--dm-muted);margin:0;min-height:0}
+
+/* ---------- detail strip ---------- */
+.dm-detail-strip{
+  margin-top:12px;border-radius:16px;border:1px solid var(--dm-border);
+  box-shadow:var(--shadow-2);background:#fff;
+}
+.dm-detail-strip:empty{display:none}
+
+/* ---------- evidence drawer ---------- */
+.dm-evidence{
+  margin-top:12px;background:#fff;border:1px solid var(--dm-border);
+  border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;
+}
+.dm-evidence > summary{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:13px 16px;cursor:pointer;list-style:none;
+  font-size:12.5px;font-weight:640;color:#22403c;
+}
+.dm-evidence > summary::-webkit-details-marker{display:none}
+.dm-evidence > summary::before{
+  content:"";width:0;height:0;
+  border-left:5px solid #93a89d;border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .18s ease;
+}
+.dm-evidence[open] > summary::before{transform:rotate(90deg)}
+.dm-evidence > summary:hover{background:#f8fbf6}
+.dm-evidence > summary small{font-size:10.5px;color:#9aada6;font-weight:400}
+.dm-evidence-body{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:12px;padding:0 16px 16px;
+}
+.dm-evidence-block{
+  border:1px solid var(--line-2);border-radius:12px;padding:12px 14px;
+  background:#fbfdf9;
+}
+.dm-evidence-block h4{
+  font-size:11px;margin:0 0 8px;color:#557063;
+  letter-spacing:.04em;font-weight:700;
+}
+
+/* ---------- command / toolbar polish ---------- */
+.dm-command{gap:10px;margin-bottom:10px}
+.dm-pulse{
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--line);box-shadow:var(--shadow-1);
+}
+.dm-top{
+  border:1px solid var(--line);border-radius:14px;
+  background:#fff;box-shadow:var(--shadow-1);margin-bottom:12px;
+}
+.dm-shortcuts{gap:6px;margin-bottom:10px}
+.dm-shortcuts button{min-height:28px;font-size:11px;border-radius:8px}
+
+/* ---------- responsive ---------- */
+@media(max-width:1380px){
+  .dm-console{grid-template-columns:minmax(232px,256px) minmax(0,1fr) minmax(280px,316px)}
+}
+@media(max-width:1180px){
+  .dm-console{grid-template-columns:minmax(232px,256px) minmax(0,1fr)}
+  .dm-console > .dm-plan{grid-column:1 / -1}
+  .dm-side{position:static;max-height:none}
+}
+@media(max-width:900px){
+  .dm-console{grid-template-columns:minmax(0,1fr)}
+  .dm-console > .dm-mapcard{grid-column:1}
+  .dm-console > .dm-queue{grid-column:1}
+  .dm-console .dm-map{height:clamp(300px,42vh,420px)}
+  .dm-evidence-body{grid-template-columns:1fr}
+}
+
+/* ---------- v13.2 layout fixes ---------- */
+.dm-console > .dm-mapcard{grid-column:2;grid-row:auto}
+.dm-console > .dm-queue{grid-column:1;grid-row:auto}
+.dm-console > .dm-plan{grid-column:3;grid-row:auto}
+
+/* 右栏保存区：压掉旧表单的留白 */
+.dm-side-right .dm-save{
+  display:flex;flex-direction:column;gap:8px;
+  margin-top:10px;padding:10px 0 0;border-top:1px solid var(--line-2);
+}
+.dm-side-right .dm-save .dm-field{
+  display:grid;gap:4px;height:auto;min-height:0;flex:none;
+}
+.dm-side-right .dm-save .dm-field span{
+  display:block;height:auto;min-height:0;line-height:1.35;margin:0;
+  font-size:10px;font-weight:650;color:#7d9a8c;
+}
+.dm-side-right .dm-save input{
+  width:100%;height:34px;min-height:34px;padding:4px 10px;
+  font-size:12px;border-radius:9px;flex:none;
+}
+.dm-side-right .dm-save button{width:100%;min-height:38px;font-size:13px;border-radius:10px}
+
+/* 左栏订单池：固定滚动区，避免压住车次列表 */
+.dm-side-left .dm-list{
+  flex:0 1 auto;
+  max-height:clamp(220px,40vh,430px);
+  overflow:auto;
+  padding-right:2px;
+}
+.dm-side-left .dm-runs{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.dm-side-left .dm-runlist{overflow:auto;max-height:clamp(160px,26vh,300px)}
+
+.dm-side-right .dm-save{align-items:stretch}
+.dm-side-right .dm-save .dm-field{width:100%;justify-items:stretch}
+.dm-side-left .dm-list{max-height:min(48vh,400px)}
+
+/* 右栏不再重复展示路网长文，统一放到页尾「核验与证据」 */
+.dm-side-right .dm-note{display:none}
+.dm-side-right .dm-empty{
+  font-size:11px;line-height:1.65;color:#7d948b;
+  background:#f8fbf5;border:1px dashed #dbe6d6;border-radius:11px;
+  padding:10px 11px;
+}

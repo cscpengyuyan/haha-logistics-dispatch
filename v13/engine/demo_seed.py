@@ -114,6 +114,7 @@ def seed_planning(db, admin):
             "address": city + " 演练作业点（城市范围示例）",
             "lat": lat, "lng": lng, "warehouse": "Dallas", "model": model, "quantity": qty,
             "route": "B", "level": level, "pickup": False, "procurement_mode": "company",
+            "location_precision": "dock", "coordinate_ref": f"PLAN-GEO-{j}",
             "endpoint": ENDPOINT[level],
             "window_start": local_day + "T" + ws, "window_end": local_day + "T" + we,
             "timezone": "America/Chicago", "contact": "演练收货岗",
