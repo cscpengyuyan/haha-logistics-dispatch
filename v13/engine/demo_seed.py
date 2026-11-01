@@ -71,3 +71,53 @@ def seed(db):
             gate.verify(db,core.get_order(db,order["id"],admin),dict(release_version=order["issue_version"],
                 pickup_code=instruction["pickup_ref"],bol_ref=instruction["bol_pro"],identity_ref=instruction["identity_ref"],
                 sns=[order["sn"]],evidence="DEMO-GATE-HANDOVER"),admin)
+    seed_planning(db, admin)
+
+
+# V13 派单计划演练数据：同一个出发仓（Dallas）、覆盖未来 7 天，
+# 片区（ZIP 前三码）、订单类型（L1/L2/L3）与收货时段各不相同，
+# 用来演示"按时间 → 片区 → 类型 → 车次"的排车过程。
+PLAN_ROWS = [
+    # offset, city, zip, lat, lng, model, qty, level, window start, window end
+    (1, "Frisco", "75034", 33.150, -96.823, "M01", 1, "L2", "09:00", "12:00"),
+    (1, "McKinney", "75070", 33.197, -96.640, "M04", 1, "L3", "10:00", "14:00"),
+    (1, "Richardson", "75080", 32.976, -96.728, "M01", 1, "L1", "13:00", "17:00"),
+    (2, "Lewisville", "75067", 33.046, -96.994, "M02", 3, "L3", "09:00", "13:00"),
+    (2, "Carrollton", "75006", 32.976, -96.890, "M06", 1, "L2", "10:00", "15:00"),
+    (2, "Garland", "75040", 32.913, -96.639, "M01", 1, "L1", "13:00", "16:00"),
+    (3, "Denton", "76201", 33.215, -97.133, "M04", 1, "L3", "08:00", "12:00"),
+    (3, "Mesquite", "75149", 32.767, -96.599, "M02", 1, "L2", "10:00", "14:00"),
+    (4, "Grand Prairie", "75050", 32.746, -96.997, "M01", 3, "L3", "08:00", "11:00"),
+    (4, "Irving", "75061", 32.826, -96.951, "M06", 3, "L1", "09:00", "12:00"),
+    (4, "Plano", "75023", 33.040, -96.750, "M04", 1, "L3", "13:00", "17:00"),
+    (4, "Frisco", "75033", 33.170, -96.860, "M01", 1, "L2", "14:00", "18:00"),
+    (5, "Garland", "75043", 32.860, -96.590, "M02", 1, "L2", "09:00", "13:00"),
+    (5, "Richardson", "75081", 32.950, -96.700, "M01", 1, "L3", "13:00", "17:00"),
+    (6, "McKinney", "75071", 33.210, -96.680, "M04", 1, "L3", "09:00", "12:00"),
+    (6, "Lewisville", "75057", 33.020, -96.980, "M06", 1, "L1", "11:00", "15:00"),
+    (7, "Mesquite", "75150", 32.820, -96.630, "M02", 1, "L2", "09:00", "12:00"),
+    (7, "Denton", "76209", 33.230, -97.100, "M01", 1, "L3", "10:00", "14:00"),
+]
+ENDPOINT = {"L3": "一层营业机位", "L2": "入口门厅", "L1": "卸货区"}
+
+
+def seed_planning(db, admin):
+    for j, (off, city, zip_code, lat, lng, model, qty, level, ws, we) in enumerate(PLAN_ROWS, 1):
+        local_day = (datetime.now() + timedelta(days=off)).strftime("%Y-%m-%d")
+        sns = [f"PLAN-{j}-{n}" for n in range(1, qty + 1)]
+        for n, sn in enumerate(sns, 1):
+            lifecycle.receipt(db, dict(sn=sn, warehouse="Dallas", model=model, bin=f"P-{j:02d}-{n}",
+                condition="演练已验合格", batch=f"PLAN-ASN-{j}", evidence=f"PLAN-GRN-{j}", state="available"), admin)
+        order = core.create_order(db, {
+            "customer": f"{city} 派单点 · 演练 {j:02d}",
+            "city": city, "zip": zip_code, "state": "TX",
+            "address": city + " 演练作业点（城市范围示例）",
+            "lat": lat, "lng": lng, "warehouse": "Dallas", "model": model, "quantity": qty,
+            "route": "B", "level": level, "pickup": False, "procurement_mode": "company",
+            "endpoint": ENDPOINT[level],
+            "window_start": local_day + "T" + ws, "window_end": local_day + "T" + we,
+            "timezone": "America/Chicago", "contact": "演练收货岗",
+            "delivery_actions": "按约定终点交接，逐台签认",
+            "notes": "虚构派单演练数据，仅用于按时间排车练习。"}, admin)
+        core.apply_action(db, order["id"], dict(action="ready", version=order["version"],
+            sn=", ".join(sns), release_ref=f"PLAN-R{j}"), admin)

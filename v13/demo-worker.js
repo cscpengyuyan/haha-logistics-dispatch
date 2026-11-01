@@ -11,7 +11,7 @@ async function initialize(){
     const res=await fetch('./engine/'+file+location.search);if(!res.ok)throw Error('演练引擎未能加载：'+file);
     py.FS.writeFile('/home/pyodide/'+file,await res.text());
   }
-  const open=indexedDB.open('haha-logistics-public-v12-2',1);
+  const open=indexedDB.open('haha-logistics-public-v13-1',1);
   open.onupgradeneeded=()=>open.result.createObjectStore('state');
   store=await reqValue(open);self.postMessage({progress:'正在恢复本设备的岗位与订单记录…'});
   await py.runPythonAsync("import browser_api as platform");
