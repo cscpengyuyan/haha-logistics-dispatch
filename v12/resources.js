@@ -2,7 +2,7 @@
 (() => {
   const types={warehouse:'仓点',vehicle:'车辆',crew:'车组',supplier:'供应商',inbound:'海运交接',quote:'承运报价'};
   const fields={warehouse:['address','lat','lng','timezone','evidence','notes'],vehicle:['capacity_units','door_cm','payload_kg','equipment','evidence','notes'],crew:['capacity_units','coverage','equipment','evidence','notes'],supplier:['address','coverage','model','ability','qualification','evidence','notes'],inbound:['batch','warehouse','stage','serials','custodian','evidence','notes'],quote:['order_id','carrier','path','scope','comparison_ref','amount','valid_until','evidence','notes']};
-  const required={warehouse:['address','timezone'],vehicle:['capacity_units'],crew:['coverage'],supplier:['address','ability','qualification'],inbound:['batch','warehouse','stage','custodian','evidence'],quote:['order_id','carrier','path','scope','amount','valid_until','evidence']};
+  const required={warehouse:['address','timezone'],vehicle:['capacity_units'],crew:['coverage'],supplier:['address','ability','qualification'],inbound:['batch','warehouse','stage','custodian','evidence'],quote:['order_id','carrier','path','scope','valid_until','evidence']};
   const labels={comparison_ref:'同范围询价版本号（用于横向比价）',name:'记录名称',address:'实际库址 / 执行地址',lat:'纬度',lng:'经度',timezone:'库址时区',evidence:'书面回执 / 原始凭据号',notes:'限制、条件与下次跟进',capacity_units:'核定可载台数',door_cm:'车门净高（cm）',payload_kg:'核定载重（kg）',equipment:'人员、工具及尾板条件',coverage:'服务区域 / ZIP',model:'适用机型',ability:'采购能力（T1–T5）',qualification:'准入状态',batch:'海运批次 / 分单号',warehouse:'指定收货仓',stage:'当前节点',serials:'设备序列号 / 清单引用',custodian:'当前保管人',order_id:'关联订单',carrier:'实际承运 / 报价方',path:'报价路径',scope:'终点、动作、窗口及全价包含项',amount:'全价（USD）',valid_until:'报价有效期'};
   const editors={warehouse:['warehouse','dispatch'],vehicle:['dispatch'],crew:['dispatch'],supplier:['dispatch'],inbound:['warehouse'],quote:['dispatch','finance']};
   const zones=['America/Chicago','America/Los_Angeles','America/New_York','America/Denver','America/Phoenix','America/Anchorage','Pacific/Honolulu'];
@@ -21,19 +21,40 @@
     else {const num=['lat','lng','capacity_units','amount','door_cm','payload_kg'].includes(k);input='<input name="'+k+'" type="'+(num?'number':k==='valid_until'?'date':'text')+'" '+(num?'step="'+(k==='capacity_units'?'1':'any')+'"':'maxlength="2000"')+' value="'+e(value)+'"'+req+'>'}
     return '<label class="field '+(['notes','scope','serials','address'].includes(k)?'full':'')+'"><span>'+e(labels[k]||k)+(needed?' *':'')+'</span>'+input+'</label>';
   }
+  const costLabels={origin_cost:'原仓、干线及附加费',station_cost:'经站收发与短存',delivery_cost:'末端首台、加台及逐站费',special_cost:'专项、技术及税费净额',other_cost:'协调及其他未含费用'};
+  Object.assign(labels,costLabels);
+  function costPanel(d,ctx,row){
+    const form=d.querySelector('form'),box=document.createElement('fieldset');box.className='quote-lines';
+    box.innerHTML='<legend>F03 · 归一化全程费用 / USD</legend><p class="r-help">已含项填 0，并注明报价行。未知费用留空，待补齐后才能中选。</p><div class="form-grid">'+Object.entries(costLabels).map(([key,title])=>'<label class="field"><span>'+title+'</span><input type="number" name="'+key+'" min="0" max="100000000" step=".01" value="'+ctx.escape(row[key]??'')+'"></label>').join('')+'</div><p class="quote-total"></p>';
+    form.querySelector('.form-grid').append(box);
+    const sync=()=>{const nums=[...box.querySelectorAll('input')],complete=nums.every(n=>n.value!==''),total=nums.reduce((sum,n)=>sum+Math.round(Number(n.value)*100),0)/100;
+      box.querySelector('.quote-total').textContent=complete?'五行全价　USD '+total.toFixed(2):'待补 '+nums.filter(n=>!n.value).length+' 行费用';
+      if(complete)form.elements.amount.value=total.toFixed(2);form.elements.amount.readOnly=complete};
+    box.addEventListener('input',sync);sync();
+  }
   function edit(ctx,kind,row={}){
     const d=dialog((row.id?'编辑':'登记')+types[kind],ctx);
     const options=k=>k==='order_id'?ctx.orders.map(o=>[o.id,o.id+' · '+o.customer]):k==='warehouse'?ctx.resources.filter(r=>r.type==='warehouse').map(w=>[w.name,w.name]):undefined;
     d.querySelector('.dialog-body').innerHTML='<form><div class="form-grid">'+['name',...fields[kind]].map(k=>formField(ctx,k,row[k]??'',options(k),k==='name'||required[kind].includes(k))).join('')+'</div><div class="error-line" role="alert"></div><div class="dialog-foot"><button type="submit" class="primary">保存记录</button></div></form>';
+    if(kind==='quote')costPanel(d,ctx,row);
     d.querySelector('form').onsubmit=async ev=>{ev.preventDefault();const f=ev.target,b=f.querySelector('button');b.disabled=true;try{await ctx.api('/api/ops/resources',{method:'POST',body:{...Object.fromEntries(new FormData(f)),type:kind,id:row.id,version:row.version}});d.close();ctx.toast('记录已保存');await ctx.refresh()}catch(err){f.querySelector('.error-line').textContent=err.message}finally{b.disabled=false}};
   }
   function summary(r){
-    return {warehouse:r.address,vehicle:[r.capacity_units+' 台',r.equipment].filter(Boolean).join(' · '),crew:r.coverage,supplier:[r.qualification,r.ability,r.coverage].filter(Boolean).join(' · '),inbound:[r.batch,r.stage,r.warehouse].join(' · '),quote:[r.path,r.carrier,'USD '+r.amount].join(' · ')}[r.type]
+    return {warehouse:r.address,vehicle:[r.capacity_units+' 台',r.equipment].filter(Boolean).join(' · '),crew:r.coverage,supplier:[r.qualification,r.ability,r.coverage].filter(Boolean).join(' · '),inbound:[r.batch,r.stage,r.warehouse].join(' · '),quote:[r.path,r.carrier,r.amount!=null?'USD '+r.amount:'待补全价'].join(' · ')}[r.type]
   }
   async function inspect(ctx,r){
     const d=dialog(r.name,ctx),e=ctx.escape,b=d.querySelector('.dialog-body');
     b.innerHTML='<dl>'+fields[r.type].filter(k=>r[k]!==undefined).map(k=>'<dt class="muted">'+e(labels[k])+'</dt><dd style="margin:3px 0 12px">'+e(r[k])+'</dd>').join('')+'</dl><h3>版本与经办</h3><div class="history"></div>';
+    if(r.type==='quote')addAwardButton(ctx,d,b,r);
     try{const {history}=await ctx.api('/api/ops/history/'+encodeURIComponent(r.id));b.querySelector('.history').innerHTML=history.map(x=>'<details><summary>v'+e(x.version)+' · '+e(x.actor)+' · '+e(new Date(x.ts).toLocaleString('zh-CN'))+'</summary>'+Object.entries(JSON.parse(x.snapshot)).map(([k,v])=>'<div>'+e(labels[k]||k)+'　'+e(v)+'</div>').join('')+'</details>').join('')}catch(err){b.querySelector('.history').textContent=err.message}
+  }
+  function addAwardButton(ctx,d,host,r){
+    const o=ctx.orders.find(x=>x.id===r.order_id),can=['admin','dispatch'].includes(ctx.user.role)&&o&&['ready','new'].includes(o.status)&&!o.pickup&&o.route===r.path&&r.pricing_status==='itemized';
+    const info=document.createElement('section');info.className='quote-lines';info.innerHTML='<b>F03 · 选定委托</b><p>'+Object.entries(costLabels).map(([k,t])=>ctx.escape(t)+' '+(r[k]??'待核')).join('　/　')+'</p>';
+    if(can){info.insertAdjacentHTML('beforeend','<form><label class="field"><span>批准人 / 委托批准凭据号 *</span><input name="approval" required maxlength="300"></label><p class="error-line"></p><button class="primary">选用此报价并关联订单</button></form>');
+      info.querySelector('form').onsubmit=async ev=>{ev.preventDefault();const f=ev.target,b=f.querySelector('button');b.disabled=true;try{await ctx.api('/api/ops/award-quote',{method:'POST',body:{id:r.id,version:o.version,quote_version:r.version,approval_ref:f.elements.approval.value}});d.close();await ctx.refresh();ctx.openOrder(o.id)}catch(x){f.querySelector('.error-line').textContent=x.message}finally{b.disabled=false}}}
+    else info.insertAdjacentHTML('beforeend','<small class="muted">中选须有完整五行费用、匹配路径、有效报价、批准凭据及可办理的订单状态。</small>');
+    host.prepend(info)
   }
   function migrate(ctx){
     const d=dialog('逐票迁入 v8 订单',ctx),b=d.querySelector('.dialog-body');
@@ -61,8 +82,8 @@
       const base=rows[Number(select.value)],targets=rows.filter(r=>r.order_id===base.order_id&&r.comparison_ref===base.comparison_ref);
       const table=b.querySelector('.comparison');
       if(!base.comparison_ref){table.innerHTML='<p class="empty">请先补录同范围询价版本号，确保机型、起运仓、终点、动作和时窗一致。</p>';return}
-      const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
-      table.innerHTML='<p>询价版本 '+e(base.comparison_ref)+' · '+e(base.order_id)+'</p><div class="table-wrap"><table class="r-table"><thead><tr><th>承运方 / 路径</th><th>全价</th><th>较基准</th><th>有效至</th><th>范围与凭据</th></tr></thead><tbody>'+targets.map(r=>'<tr><td>'+e(r.carrier)+' / '+e(r.path)+'</td><td>'+money(r.amount)+'</td><td>'+(r.id===base.id?'基准':money(r.amount-base.amount))+'</td><td>'+e(r.valid_until)+'</td><td>'+e(r.scope)+'<br>'+e(r.evidence)+'</td></tr>').join('')+'</tbody></table></div><p class="muted">本表是询价差额。实际节省需以同批已结账单和成功台数另行核实。</p>';
+      const money=n=>n==null?'待核':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+      table.innerHTML='<p>询价版本 '+e(base.comparison_ref)+' · '+e(base.order_id)+'</p><div class="table-wrap"><table class="r-table"><thead><tr><th>承运方 / 路径</th><th>全价</th><th>较基准</th><th>有效至</th><th>范围与凭据</th></tr></thead><tbody>'+targets.map(r=>'<tr><td>'+e(r.carrier)+' / '+e(r.path)+'</td><td>'+money(r.amount)+'</td><td>'+(r.id===base.id?'基准':r.pricing_status==='incomplete'||base.pricing_status==='incomplete'||r.amount==null||base.amount==null?'待核':money(r.amount-base.amount))+'</td><td>'+e(r.valid_until)+'</td><td>'+e(r.scope)+'<br>'+e(r.evidence)+'</td></tr>').join('')+'</tbody></table></div><p class="muted">本表是询价差额。实际节省需以同批已结账单和成功台数另行核实。</p>';
     }select.onchange=render;render()
   }
   function mount(h,ctx,view){
@@ -71,7 +92,7 @@
     if(kind==='quote'&&rows.length){const compare=document.createElement('button');compare.textContent='同范围比价';compare.onclick=()=>compareQuotes(ctx,rows);h.querySelector('.card-head .list-actions').prepend(compare)}
     h.onclick=ev=>{const n=ev.target.closest('button');if(!n)return;if(n.dataset.type){active[view]=n.dataset.type;mount(h,ctx,view)}else if(n.id==='r-add')edit(ctx,kind);else if(n.id==='legacyimport')migrate(ctx);else if(n.dataset.edit!==undefined)edit(ctx,kind,rows[+n.dataset.edit]);else if(n.dataset.show!==undefined)inspect(ctx,rows[+n.dataset.show])};
   }
-  window.Resources={mount};
+  window.Resources={mount,focusTab:(view,k)=>{active[view]=k}};
 })();
 
 

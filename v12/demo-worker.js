@@ -5,8 +5,8 @@ async function initialize(){
   importScripts('./runtime/pyodide.js');
   py=await loadPyodide({indexURL:new URL('./runtime/',location.href).href});
   await py.loadPackage('sqlite3');
-  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py"]){
-    const res=await fetch('./engine/'+file);if(!res.ok)throw Error('演练引擎未能加载：'+file);
+  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py", "review.py", "folder.py"]){
+    const res=await fetch('./engine/'+file+location.search);if(!res.ok)throw Error('演练引擎未能加载：'+file);
     py.FS.writeFile('/home/pyodide/'+file,await res.text());
   }
   const open=indexedDB.open('haha-logistics-public-v12-2',1);

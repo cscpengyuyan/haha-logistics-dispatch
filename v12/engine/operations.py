@@ -3,9 +3,15 @@ import json
 import math
 import re
 import uuid
+from decimal import Decimal
 import lifecycle
+import review
+import folder
 from datetime import date, datetime
 from core import ApiError, ZONES, create_order, encode, get_order, now, required, string
+from core import check_version, save as save_order
+
+COSTS = ("origin_cost","station_cost","delivery_cost","special_cost","other_cost")
 
 EDITORS = {
     "warehouse": {"warehouse", "dispatch"}, "crew": {"dispatch"}, "vehicle": {"dispatch"},
@@ -17,15 +23,17 @@ FIELDS = {
     "crew": ("capacity_units","coverage","equipment","evidence","notes"),
     "supplier": ("address","coverage","model","ability","qualification","evidence","notes"),
     "inbound": ("stage","warehouse","batch","serials","custodian","evidence","notes"),
-    "quote": ("order_id","carrier","path","scope","comparison_ref","amount","valid_until","evidence","notes"),
+    "quote": ("order_id","carrier","path","scope","comparison_ref","amount","valid_until","evidence","notes")+COSTS,
 }
 REQUIRED = {
     "warehouse": ("address","timezone"), "vehicle": ("capacity_units",), "crew": ("coverage",),
     "supplier": ("address","ability","qualification"), "inbound": ("batch","warehouse","stage","custodian","evidence"),
-    "quote": ("order_id","carrier","path","scope","amount","valid_until","evidence"),
+    "quote": ("order_id","carrier","path","scope","valid_until","evidence"),
 }
 def init_db(db):
     lifecycle.init_db(db)
+    review.init_db(db)
+    folder.init_db(db)
     db.executescript("""
     CREATE TABLE IF NOT EXISTS registry(id TEXT PRIMARY KEY,type TEXT NOT NULL,version INTEGER NOT NULL,data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS registry_log(id INTEGER PRIMARY KEY,item TEXT NOT NULL,version INTEGER NOT NULL,actor TEXT NOT NULL,ts TEXT NOT NULL,snapshot TEXT NOT NULL);
@@ -90,7 +98,8 @@ def save_resource(db,body,user):
             if k in REQUIRED[kind]:raise ApiError(400,"缺少字段 "+k)
             continue
         limits={"lat":(-90,90),"lng":(-180,180),"capacity_units":(1,999),"door_cm":(1,1000),"payload_kg":(1,100000),"amount":(0,100000000)}
-        data[k]=number(v,k,*limits[k]) if k in limits else string(v,k)
+        if k in COSTS: data[k]=number(v,k,0,100000000)
+        else: data[k]=number(v,k,*limits[k]) if k in limits else string(v,k)
     if "capacity_units" in data and not data["capacity_units"].is_integer():raise ApiError(400,"载台数必须是整数")
     if ("lat" in data)!=("lng" in data):raise ApiError(400,"经纬度须成对提供")
     if kind=="warehouse":
@@ -104,6 +113,15 @@ def save_resource(db,body,user):
         get_order(db,data["order_id"],user)
         if data["path"] not in {"A","B","C1","C2"}:raise ApiError(400,"报价路径无效")
         iso_date(data["valid_until"])
+        if all(k in data for k in COSTS):
+            parts=[Decimal(str(data[k])) for k in COSTS]
+            if any(p!=p.quantize(Decimal(".01")) for p in parts) or ("amount" in data and sum(parts)!=Decimal(str(data["amount"]))):
+                raise ApiError(400,"五个费用行合计须与全价一致，USD 最多两位小数")
+            data["amount"]=float(sum(parts))
+            data["pricing_status"]="itemized"
+        elif any(k in data for k in COSTS) or "amount" not in data:
+            data["pricing_status"]="incomplete"
+        else:data["pricing_status"]="total_only"
     if kind=="inbound" and data["stage"] not in {"S01","S02","S03","S04"}:raise ApiError(400,"海运节点无效")
     if kind=="supplier" and data["qualification"] not in {"S0","S1","S2","S3","SX"}:raise ApiError(400,"供应商准入状态无效")
     return {"resource":save(db,kind,data,body,user)}
@@ -159,13 +177,35 @@ def import_v8(db,body,user):
     db.execute("INSERT INTO v8_links VALUES(?,?)",(old_id,order["id"]))
     return {"order":order}
 
+def award_quote(db,body,user):
+    if user["role"] not in {"admin","dispatch"}:raise ApiError(403,"仅主管或调度可确认中选委托")
+    row=db.execute("SELECT * FROM registry WHERE id=? AND type='quote'",(required(body,"id",100),)).fetchone()
+    if not row:raise ApiError(404,"报价不存在")
+    q=record(row)
+    if q["version"]!=body.get("quote_version"):raise ApiError(409,"报价已更新，请重新核对")
+    o=get_order(db,q["order_id"],user)
+    check_version(o,body)
+    if o["status"] not in ("new","ready") or o.get("pickup"):raise ApiError(409,"此票当前不可选择运输委托")
+    if q["path"]!=o["route"]:raise ApiError(400,"中选路径须与订单一致，请先核对分单")
+    if q["valid_until"]<now()[:10]:raise ApiError(400,"报价已过期，请重新询价")
+    if not q.get("comparison_ref") or not all(k in q for k in COSTS):raise ApiError(400,"中选前请补齐询价版本和五行全程费用")
+    approval=required(body,"approval_ref",300)
+    o["selected_quote"]={k:q[k] for k in ("id","version","carrier","amount","path","evidence","scope","valid_until","comparison_ref")+COSTS}
+    o["selected_quote"].update(ref=q["evidence"],approval_ref=approval)
+    return {"order":save_order(db,o,user,"award_quote","中选 "+q["name"]+" · "+str(q["amount"])+" USD · "+approval)}
+
 def handle(db,method,path,body,user):
+    if path.startswith("/api/ops/folder/"):
+        return folder.handle(db,method,path,body,user)
+    if path.startswith("/api/review/"):
+        return review.handle(db,method,path,body,user)
     if path.startswith("/api/lifecycle/"):
         return lifecycle.handle(db,method,path,body,user)
     if method=="GET" and path in ("/api/ops/resources","/api/ops/routes"):
         routes=path.endswith("/routes")
         return {"routes" if routes else "resources":list_records(db,routes,user)}
     if method=="POST":
+        if path=="/api/ops/award-quote":return award_quote(db,body,user)
         if path=="/api/ops/resources":return save_resource(db,body,user)
         if path=="/api/ops/routes":return save_route(db,body,user)
         if path=="/api/ops/import-v8":return import_v8(db,body,user)
@@ -190,5 +230,16 @@ def seed_demo(db):
     if ticket:
         expiry=json.loads(ticket["data"])["window_end"][:10]
         for kind,path,amount,ref in [("现行车组","B",565,"Q-A"),("备选经站统包","C1",610,"Q-B")]:
-            save_resource(db,dict(type="quote",name=kind+" · 虚构报价",carrier=kind,path=path,order_id=ticket["id"],scope="同仓两台 M01，原窗口到指定一层机位，包含提货、搬运、签交",comparison_ref="DEMO-RFQ-01",amount=amount,valid_until=expiry,evidence="DEMO-"+ref,notes="演练数字，不作为对客报价"),user)
+            save_resource(db,dict(type="quote",name=kind+" · 虚构报价",carrier=kind,path=path,order_id=ticket["id"],scope="同仓两台 M01，原窗口到指定一层机位，包含提货、搬运、签交",comparison_ref="DEMO-RFQ-01",amount=amount,origin_cost=110,station_cost=0 if path=="B" else 45,delivery_cost=420,special_cost=35,other_cost=0,valid_until=expiry,evidence="DEMO-"+ref,notes="演练数字，不作为对客报价"),user)
+
+def upgrade_demo_quotes(db):
+    """Populate cost lines only on the original, unedited synthetic samples."""
+    for row in db.execute("SELECT * FROM registry WHERE type='quote' AND version=1").fetchall():
+        q=record(row)
+        fixture={"DEMO-Q-A":("B",565,0),"DEMO-Q-B":("C1",610,45)}.get(q.get("evidence"))
+        if not fixture or q.get("comparison_ref")!="DEMO-RFQ-01" or not q["name"].endswith(" · 虚构报价"):
+            continue
+        if any(k in q for k in COSTS) or (q["path"],q.get("amount"))!=fixture[:2]:continue
+        q.update(origin_cost=110,station_cost=fixture[2],delivery_cost=420,special_cost=35,other_cost=0)
+        save_resource(db,q,{"role":"admin","username":"演练样例升级"})
 

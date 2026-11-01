@@ -65,6 +65,9 @@
   const fmtMi = n => Number.isFinite(n) ? `${n.toLocaleString('en-US',{maximumFractionDigits:1})} mi` : '—';
   const orderCity = o => [o.city,o.state,o.zip].filter(Boolean).join(' ') || '地址待补';
   const orderKey = o => String(o.id);
+  const transitStages=new Set(['in_transit','last_mile']);
+  const levels={L1:'基础交接',L2:'指定入口',L3:'室内机位'};
+  const locationKey=o=>o?.address && o.zip ? [o.address,o.city,o.state,o.zip].join('|').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim() : '';
   const viaStation = o => ['C1','C2'].includes(o?.route);
   const dispatchOrigin = o => viaStation(o) ? o.station_name : o.warehouse;
   function position(point) {
@@ -132,10 +135,16 @@
     warehouse=warehouses.find(w=>all().some(o=>o.warehouse===w.name && o.status==='ready'))?.name || warehouses[0]?.name || '';
     zone=depot()?.timezone || zone;
     try { date=localStamp(Date.now(),zone).slice(0,10); } catch {zone='America/Chicago';date=localStamp(Date.now(),zone).slice(0,10);}
+    const available=o=>!gate(o,'') && warehouses.some(w=>w.name===dispatchOrigin(o)&&position(w));
+    function accepts(o,key){
+      if(key==='missing')return !position(o);
+      if(key==='available')return available(o);
+      if(key==='onroad')return transitStages.has(o.status);
+      return !key || key===o.status;
+    }
     const visible=()=>all().filter(o=>{
-      const mode=filter==='' || (filter==='missing'?!position(o):filter==='available'?!gate(o,''):filter===o.status);
       const haystack=[o.id,o.customer,o.city,o.state,o.zip,o.warehouse].join(' ').toLowerCase();
-      return mode && (!stateFilter || o.state===stateFilter) && (!search || haystack.includes(search.trim().toLowerCase()));
+      return accepts(o,filter) && (!stateFilter || o.state===stateFilter) && (!search || haystack.includes(search.trim().toLowerCase()));
     });
     const field=(title,key,body)=>`<label class="dm-field"><span>${title}</span>${body(key)}</label>`;
     const btn=(act,text,attrs='')=>`<button type="button" data-act="${act}" ${attrs}>${text}</button>`;
@@ -165,12 +174,14 @@
     function eligibleDepot(){return position(depot());}
     function notice(s){message=s; if(ctx.toast) ctx.toast(s);}
     root.innerHTML=`<section class="dm">
+      <div class="dm-command"><div class="dm-pulse" data-box="metrics"></div><div class="dm-route-head" data-box="trial"></div></div>
       <div class="dm-top"><label class="dm-search"><span aria-hidden="true">⌕</span><input data-field="search" placeholder="搜索单号、客户、城市或 ZIP" aria-label="搜索地图订单"></label>
-        <select data-field="filter" aria-label="按任务状态筛选"><option value="">全部任务状态</option><option value="available">可加入批次</option><option value="missing">缺定位</option>${Object.entries(statusNames).map(([v,n])=>option(v,n,'')).join('')}</select>
-        <select data-field="stateFilter" aria-label="按州筛选"></select><select data-field="region" aria-label="聚焦区域"><option value="">聚焦区域…</option>${Object.entries(regions).map(([k,v])=>option(k,v[0],'')).join('')}</select>${btn('fit','定位筛选结果')}${btn('nation','全美视图')}<span data-box="trial"></span></div>
-      <div class="dm-grid"><section class="dm-mapcard"><header><div><small>DISPATCH COVERAGE</small><h3>交付点与仓点</h3></div><span class="dm-live" data-box="layer"></span></header>
+        <select data-field="filter" aria-label="按任务状态筛选"><option value="">全部任务状态</option><option value="available">可加入批次</option><option value="onroad">全部在途</option><option value="missing">缺定位</option>${Object.entries(statusNames).map(([v,n])=>option(v,n,'')).join('')}</select>
+        <select data-field="stateFilter" aria-label="按州筛选"></select>${btn('fit','定位筛选结果')}</div>
+      <div class="dm-shortcuts" aria-label="调度区定位">${btn('jumpMap','地图')}${btn('jumpList','订单池')}${btn('jumpPlan','排线与保存')}</div>
+      <div class="dm-grid"><section class="dm-mapcard"><header><div><small>DISPATCH COVERAGE</small><h3>交付点与仓点</h3></div><div class="dm-actions"><select data-field="region" aria-label="聚焦区域"><option value="">聚焦区域…</option>${Object.entries(regions).map(([k,v])=>option(k,v[0],'')).join('')}</select>${btn('nation','全美视图')}</div></header>
         <div class="dm-map" data-box="map" aria-label="美国交付点调度地图"></div>
-        <footer><span class="dm-legend"><i class="wh"></i>仓点 <i></i>订单 <i class="ex"></i>异常 <i class="rp"></i>已选站序</span><span data-box="routeCredit"></span><span data-box="counts"></span></footer></section>
+        <footer><span class="dm-legend"><i class="wh"></i>仓点 <i></i>订单 <i class="ex"></i>异常 <i class="rp">1</i>已选站序</span><span class="dm-live" data-box="layer"></span><span data-box="routeCredit"></span><span data-box="counts"></span></footer><div class="dm-routebar" data-box="itinerary"></div></section>
         <section class="dm-queue"><header><div><small>ORDER POOL</small><h3>地图订单池</h3></div><b data-box="total"></b></header><div data-box="list" class="dm-list"></div></section></div>
       <section class="dm-detail" data-box="detail"></section>
       <section class="dm-plan"><header><div><small>MULTI-STOP ROUTE</small><h3>多站排线</h3></div><div class="dm-actions"><select data-field="routeLoad" aria-label="调出共享批次"></select>${btn('clear','新建草案')}</div></header>
@@ -204,13 +215,24 @@
       }
       const coords=[...all().map(position),...warehouses.map(position)].filter(Boolean);
       if(coords.length) fit(coords,8); else nationView();
+      map.on('zoomend',drawMap);
+      cleanups.push(()=>map.off('zoomend',drawMap));
       offlineData().then(data=>{
         if(!destroyed && map){
           cleanups.push(addGeography(map,data));attribution.addAttribution('道路及地名 U.S. Census 2025');
           if(!ctx.tilesEnabled)el('layer').textContent='离线公路与州界';
         }
       }).catch(()=>{if(!destroyed && !ctx.tilesEnabled)el('layer').textContent='离线州界 · 公路图层不可用';});
-      observer=new ResizeObserver(()=>{if(map)map.invalidateSize();});observer.observe(el('map'));
+      let previousWidth=el('map').clientWidth;
+      observer=new ResizeObserver(()=>{
+        if(!map || destroyed)return;
+        const width=el('map').clientWidth;
+        if(width===previousWidth)return;
+        previousWidth=width;
+        map.invalidateSize({animate:false,debounceMoveend:false});
+        if(selected.length)fit([eligibleDepot(),...selected.map(id=>position(byKey(id)))].filter(Boolean));
+        else if(map.getZoom()<6)fit([...visible().map(position),...warehouses.map(position)].filter(Boolean),8);
+      });observer.observe(el('map'));
     }
     function nationView(){if(map) map.fitBounds([[24.5,-125],[49.5,-66.5]],{padding:[8,8],animate:false});}
     function fit(points,max=10){if(map && points.length) map.fitBounds(L.latLngBounds(points),{padding:[34,34],maxZoom:max,animate:false});}
@@ -219,26 +241,36 @@
       el('routeCredit').innerHTML=validRoad()?.cached?'线路 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>':'';
       if(!map) return;
       pins.clearLayers();lines.clearLayers();
-      for(const w of warehouses.filter(position)){
-        const marker=L.marker(position(w),{title:w.name,icon:L.divIcon({className:'dm-marker',html:'<i class="dm-warehouse">仓</i>',iconSize:[26,26],iconAnchor:[13,13]})}).addTo(pins);
-        marker.bindTooltip(e(w.name));
-        marker.on('click',()=>{const box=document.createElement('div');box.className='dm-pop';box.textContent=w.name+' · 仓点';marker.bindPopup(box).openPopup();});
+      const orders=[...new Map([...visible(),...selected.map(byKey).filter(Boolean)].map(o=>[orderKey(o),o])).values()];
+      const points=[...warehouses.filter(position).map(w=>({w,p:position(w)})),...orders.filter(position).map(o=>({o,p:position(o)}))];
+      const groups=[],radius=map.getZoom()<7?45:17;
+      for(const item of points){
+        const pixel=map.project(item.p);
+        let group=groups.find(g=>g.pixel.distanceTo(pixel)<radius);
+        if(!group){group={pixel,items:[]};groups.push(group);}
+        group.items.push(item);
       }
-      const grouped=new Map();
-      for(const o of [...new Map([...visible(),...selected.map(byKey).filter(Boolean)].map(o=>[orderKey(o),o])).values()]){
-        const pos=position(o);if(!pos) continue;
-        const key=pos.join(','); if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(o);
-      }
-      for(const group of grouped.values()){
-        const o=group.find(o=>orderKey(o)===focused)||group[0], id=orderKey(o);
-        const index=selected.indexOf(id), label=group.length>1?'×'+group.length:index>=0?index+1:'';
-        const cls=group.some(x=>selected.includes(orderKey(x)))?'picked':group.some(x=>x.status==='exception')?'alert':'';
-        const marker=L.marker(position(o),{zIndexOffset:index>=0?100:0,title:group.map(o=>o.id).join(' / '),icon:L.divIcon({className:'dm-marker',html:`<i class="dm-pin ${cls} ${focused===id?'focus':''}">${label}</i>`,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(pins);
-        marker.bindTooltip(e(group.length>1?`${group.length} 票同坐标`:`${o.id} · ${orderCity(o)}`));
+      for(const {items} of groups){
+        const os=items.filter(i=>i.o).map(i=>i.o), ws=items.filter(i=>i.w).map(i=>i.w), pos=items[0].p;
+        const chosen=os.filter(o=>selected.includes(orderKey(o))),alerts=os.filter(o=>o.status==='exception');
+        const plural=items.length>1,city=ws[0]?.name||os[0]?.city||'订单';
+        const title=plural?`${city} · ${ws.length} 仓 / ${os.length} 票${alerts.length?' / 异常 '+alerts.length:''}`:ws[0]?.name||os[0].id;
+        const index=chosen.length?selected.indexOf(orderKey(chosen[0]))+1:0;
+        let html;
+        if(plural){
+          html=`<span class="dm-cluster ${alerts.length?'has-alert':''} ${index?'has-stops':''}"><b>${e(city)}</b><span>${ws.length?'▣ '+ws.length+' 仓 ':''}${os.length?'● '+os.length+' 票':''}${alerts.length?' · ⚠ '+alerts.length:''}</span></span>`;
+        }else if(ws.length)html='<i class="dm-warehouse">仓</i>';
+        else html=`<i class="dm-pin ${index?'picked':alerts.length?'alert':''} ${focused===orderKey(os[0])?'focus':''}">${index|| (alerts.length?'!':'')}</i>`;
+        const size=plural?[76,38]:[26,26];
+        const marker=L.marker(pos,{zIndexOffset:index?150:0,title,icon:L.divIcon({className:'dm-marker',html,iconSize:size,iconAnchor:[size[0]/2,size[1]/2]})}).addTo(pins);
+        marker.bindTooltip(e(title));
         marker.on('click',()=>{
-          if(group.length===1){focusOrder(id,false);return;}
+          if(!plural && os.length){focusOrder(orderKey(os[0]),false);return;}
+          const different=items.some(({p})=>Math.abs(p[0]-pos[0])+Math.abs(p[1]-pos[1])>0.0002);
+          if(plural && different && map.getZoom()<9){fit(items.map(i=>i.p),11);return;}
           const box=document.createElement('div');box.className='dm-pop';
-          for(const item of group){const b=document.createElement('button');b.type='button';b.textContent=`${item.id} · ${item.customer||item.city||''}`;b.onclick=()=>{map.closePopup();focusOrder(orderKey(item),false);};box.appendChild(b);}
+          ws.forEach(w=>{const text=document.createElement('p');text.textContent='仓点 · '+w.name;box.appendChild(text);});
+          for(const item of os){const b=document.createElement('button');b.type='button';b.textContent=`${item.city||''} · ${item.id}`;b.onclick=()=>{map.closePopup();focusOrder(orderKey(item),false);};box.appendChild(b);}
           marker.bindPopup(box).openPopup();
         });
       }
@@ -259,11 +291,15 @@
     }
     function list(){
       const rows=visible(), missing=rows.filter(o=>!position(o)).length;
+      const metrics=[['available','可排订单','green'],['onroad','运输在途','blue'],['exception','异常待处理','rust'],['missing','待补定位','gold']];
+      el('metrics').innerHTML=metrics.map(([key,label,tone])=>
+        btn('slice',`<span><i></i>${label}</span><strong>${all().filter(o=>accepts(o,key)).length}</strong><small>票</small>`,`class="dm-kpi ${tone}" data-slice="${key}" aria-pressed="${filter===key}"`)
+      ).join('');
       el('counts').textContent=`${rows.length-missing} 票已定位 · ${missing} 票缺定位`;
       el('total').textContent=rows.length+' 票';
       el('list').innerHTML=rows.length?rows.map(o=>{
         const id=orderKey(o), issue=gate(o,'');
-        return `<div class="dm-item ${id===focused?'active':''}"><button type="button" class="dm-item-main" data-act="focus" data-id="${e(id)}"><b>${e(id)}</b><span>${e(orderCity(o))}</span><small>${e(o.customer||'客户待补')} · ${e(o.warehouse||'仓点待补')}</small></button>
+        return `<div class="dm-item ${id===focused?'active':''}"><button type="button" class="dm-item-main" data-act="focus" data-id="${e(id)}"><b>${e(o.city||o.customer||'目的地待补')} <em>${e(o.state||'')} ${e(o.zip||'')}</em></b><span>${e(o.model||'型号待补')} × ${e(o.quantity||'—')} 台 · ${e(o.pickup?'客户自提':levels[o.level]||'终点待核')}</span><small>${e(id)} · ${e(o.customer||'客户待补')}</small></button>
           <div class="dm-item-end"><span class="dm-badge ${o.status==='exception'?'warn':''}">${e(!position(o)?'缺定位':statusNames[o.status]||o.status)}</span>
             ${canEdit()?rowBtn('toggle',id,selected.includes(id)?'移出':'＋ 排线',issue&&!selected.includes(id)?`disabled title="${e(issue)}"`:''):''}</div></div>`;
       }).join(''):'<p class="dm-empty">当前条件下没有订单。</p>';
@@ -274,7 +310,7 @@
       const pos=position(o);
       const near=pos?warehouses.filter(position).map(w=>({name:w.name,dist:miles(position(w),pos)})).sort((a,b)=>a.dist-b.dist):[];
       const itinerary=[o.warehouse||'仓点待补',...(viaStation(o)?[o.station_name||'接收站待核']:[]),o.pickup?'授权仓口自提':orderCity(o)].join(' → ');
-      el('detail').innerHTML=`<div><small>SELECTED ORDER</small><h3>${e(o.id)} <span>${e(o.customer)}</span></h3><p>${e(o.level||'')} ${e(o.route||'')} · ${e(o.model||'机型待补')} × ${e(o.quantity||'—')}</p><p>${e(itinerary)}</p></div>
+      el('detail').innerHTML=`<div><small>单票交付 · ${e(o.id)}</small><h3>${e(o.customer||o.city||'交付点')} <span>${e(o.pickup?'授权自提':levels[o.level]||'终点待核')}</span></h3><p>${e(o.route||'')} · ${e(o.model||'机型待补')} × ${e(o.quantity||'—')} 台</p><p>${e(itinerary)}</p><p>交接位置 · ${e(o.endpoint||'待核验')}${o.addon_l4?' · 特殊通道':''}</p></div>
         <div><small>收货窗口 · ${e(o.timezone||'时区待核')}</small><p>${e((o.window_start||'未录入').replace('T',' '))} 至 ${e((o.window_end||'未录入').replace('T',' '))}</p>
         <small>${e(pos?'各仓直线参考（库存仍以订单锁定仓为准）':'交付点坐标缺失，需补录定位')}</small><p>${e(near.slice(0,3).map(w=>w.name+' '+fmtMi(w.dist)).join(' / ')||'—')}</p></div>
         <div class="dm-actions">${rowBtn('fitOrder',o.id,'定位运段',ticketPoints(o).every(Boolean)?'':'disabled title="需先补齐各段坐标"')}${rowBtn('open',o.id,'查看订单')}${canEdit() && o.allowed_actions?.includes('dispatch')?rowBtn('dispatch',o.id,'办理派单','class="dm-primary"'):''}${canEdit() && o.allowed_actions?.includes('station_release')?rowBtn('station_release',o.id,'办理二程放行','class="dm-primary"'):''}</div>`;
@@ -328,7 +364,7 @@
         cursor=exit;prev=p;
       });
       el('stops').innerHTML=`<div class="dm-summary"><b>${selected.length} 票 / ${totalUnits} 台</b><span>${r?'路网里程':'直线合计'} <strong>${complete?e(fmtMi(totalDistance)):'—'}</strong></span><span>${warnings} 票待复核</span><div class="dm-actions">
-        ${demoOrders()?btn('sample','试排 Dallas 双站','class="dm-primary"'):''}${canEdit()?btn('nearest','就近排序',selected.length>1&&complete?'':'disabled'):''}${btn('fitPlan','查看全线',selected.length&&complete?'':'disabled')}
+        ${canEdit()?btn('nearest','就近排序',selected.length>1&&complete?'':'disabled'):''}${btn('fitPlan','查看全线',selected.length&&complete?'':'disabled')}
         ${cachedLegs()?btn('cached','按演练路网测算'):''}
         ${ctx.routingEnabled?btn('roads',roadBusy?'计算中…':'查询私有路网',!roadBusy&&selected.length&&complete?'':'disabled'):''}</div></div>
         ${rows.length?`<ol class="dm-stops">${rows.join('')}</ol>`:'<div class="dm-empty">从订单池选择同一出发点的待调度订单。经站单完成入站交接后，可由接收站排第二程。</div>'}
@@ -336,7 +372,14 @@
       el('save').innerHTML=canEdit()?`${field('批次名称','name',k=>`<input maxlength="100" data-field="${k}" placeholder="如：达拉斯周一上午线" value="${e(name)}">`)}${field('交班备注','notes',k=>`<input maxlength="500" data-field="${k}" placeholder="车组、预约或限行待核事项" value="${e(notes)}">`)}
         ${btn('save',busy?'保存中…':routeId?'更新共享草案':'保存共享草案',`class="dm-primary" ${busy||!selected.length||problems.length?'disabled':''}`)}`: '<p class="dm-note">当前岗位可查阅已保存批次。调度岗负责排线和派单。</p>';
       el('message').textContent=[...new Set([...(selected.length?problems:[]),message].filter(Boolean))].join(' · ');
-      el('trial').innerHTML=demoOrders()?btn('sample','试排 Dallas 双站','class="dm-primary"'):'';
+      const stops=selected.map(byKey).filter(Boolean);
+      const sameSite=new Map();
+      for(const o of stops){const key=locationKey(o);if(key)sameSite.set(key,(sameSite.get(key)||0)+1);}
+      const shared=[...sameSite.values()].filter(n=>n>1).length;
+      el('trial').innerHTML=demoOrders()?`<div><small>DALLAS · 路网演练</small><b>一仓两站，检查预约窗</b></div>${btn('sample','试排 Dallas 双站','class="dm-primary"')}`:
+        `<div><small>MULTI-STOP · 当前批次</small><b>${selected.length?e(warehouse)+' · '+selected.length+' 票 / '+totalUnits+' 台':'按同仓、约窗与交接位置排线'}</b></div>${btn('jumpPlan',selected.length?'查看排线 ↓':'打开排线 ↓','class="dm-jump"')}`;
+      el('itinerary').innerHTML=stops.length?`<div class="dm-flow-label"><b>计划站序</b><small>${r?'公路参考':'直线参考'} · ${complete?e(fmtMi(totalDistance)):'—'}</small></div><div class="dm-flow"><span class="dm-from">▣ ${e(warehouse)}</span>${stops.map((o,i)=>rowBtn('focus',o.id,`<i>${i+1}</i>${e(o.city||o.zip)}<small>× ${e(o.quantity)} 台</small>`)).join('')}</div><p class="dm-group-note">${shared?'发现 '+shared+' 处跨票同址。请核实同一入口与预约窗后合并现场安排；当前逐票计作业时长。':stops.some(o=>o.quantity>1)?'含同址多台订单。台数计入装载，逐票核对卸货与摆位时长。':''}</p>`:
+        '<span class="dm-route-hint"><b>排线起点</b> 点选城市标记下钻，或在订单池中点「＋ 排线」。</span>';
     }
     function paint(){config();list();details();plan();drawMap();}
     function reset(){
@@ -417,7 +460,13 @@
     function click(ev){
       const b=ev.target.closest('[data-act]');if(!b || !root.contains(b) || b.disabled || busy)return;
       const id=b.dataset.id, a=b.dataset.act;
-      if(a==='focus')focusOrder(id,true);
+      if(a==='slice'){
+        filter=filter===b.dataset.slice?'':b.dataset.slice;search='';stateFilter='';
+        root.querySelector('[data-field="filter"]').value=filter;root.querySelector('[data-field="search"]').value='';root.querySelector('[data-field="stateFilter"]').value='';
+        list();drawMap();const pts=visible().map(position).filter(Boolean);if(pts.length)fit(pts,8);
+        if(window.innerWidth<=800 && filter==='missing')root.querySelector('.dm-queue').scrollIntoView({block:'start',behavior:'smooth'});
+      }else if(['jumpMap','jumpList','jumpPlan'].includes(a))root.querySelector({jumpMap:'.dm-mapcard',jumpList:'.dm-queue',jumpPlan:'.dm-plan'}[a]).scrollIntoView({block:'start',behavior:'smooth'});
+      else if(a==='focus')focusOrder(id,true);
       else if(['open','dispatch','station_release'].includes(a))ctx.openOrder?.(id,a==='open'?undefined:a);
       else if(a==='fitOrder' && byKey(id))fit(ticketPoints(byKey(id)).filter(Boolean));
       else if(a==='nation')nationView();

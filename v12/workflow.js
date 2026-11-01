@@ -10,7 +10,8 @@
   const cats = {pod:'签收回单 POD',release:'仓库放行',quote:'承运报价／委托',site:'现场条件',service:'技术服务',invoice:'费用凭据',other:'其他凭证'};
   const names = {ready:'核验并锁机', dispatch:'确认派车', depart:'登记发车', pickup:'授权自提交接', station_receive:'登记入站交接',
     station_release:'授权第二程', deliver:'登记签收', exception:'挂起异常', resolve:'处理并恢复', service_complete:'确认技术启用',
-    settle:'核对并结算', note:'写协作记录', edit:'编辑订单', upload:'上传凭证', revise_window:'更改预约', unrelease:'撤回放行'};
+    settle:'核对并结算', note:'写协作记录', edit:'编辑订单', upload:'上传凭证', revise_window:'更改预约', unrelease:'撤回放行',
+    attempt:'登记本次到场',platform_receipt:'核对平台实收'};
   const operationKeys = ['ready','dispatch','pickup','depart','station_receive','station_release','deliver','resolve','service_complete','settle'];
   const help = {
     ready:'按每台实物核查 SN、包装、货况与可提时段。缺损设备留仓隔离。',
@@ -235,20 +236,91 @@
   }
   function summary(o) {
     return `<div class="wf-order-hero"><div><span class="wf-overline">CONTRACT ENDPOINT</span><h3>${esc(o.customer)}</h3><p>${esc(o.endpoint)} · ${esc(o.address)}</p></div>${stageTag(o)}</div>
-      <div class="wf-facts"><div><small>履约路径</small><b>${esc(routeText(o))}</b></div><div><small>承诺范围</small><b>${esc(o.level)} ${esc(scope[o.level] || '')}${o.addon_l4?' + L4':''}${o.addon_l5?' + L5':''}</b></div><div><small>设备</small><b>${esc(o.model)} × ${esc(o.quantity)}</b></div></div>`;
+      <div class="wf-facts"><div><small>履约路径</small><b>${esc(routeText(o))}</b></div><div><small>承诺范围</small><b>${esc(o.level)} ${esc(scope[o.level] || '')}${o.addon_l4?' + L4':''}${o.addon_l5?' + L5':''}</b></div><div><small>设备</small><b>${esc(o.model)} × ${esc(o.quantity)}</b></div>${o.release_route?`<strong class="wf-full wf-issued-line">已签线路 · ${esc(issuedLine(o.release_route))}</strong>`:''}</div>`;
   }
   function facts(o,heading,keys) {
     const content=kv(o,keys);
     return content.includes('<dd>')? `<section class="wf-info"><h4>${heading}</h4>${content}</section>`:'';
   }
+  const resultNames={success:'完成所购动作',partial:'部分完成',failed:'未能交付'};
+  const assetNames={available:'在仓可用',reserved:'已锁机',transit:'交运中',station:'站方保管',hold:'隔离',delivered:'已签交',return_transit:'返运中',return_received:'退回查验'};
+  const caseNames={restore:'客户恢复',claim:'承运索赔',rma:'退回 / RMA'};
+  function handoff(o,f,files){
+    const latest=f?.attempts?.at(-1);
+    const pod=files.some(x=>x.category==='pod');
+    const track={
+      new:['F02','仓库','核验合格库存并锁定 '+o.quantity+' 台 '+o.model,'待录逐台 SN 与验机放行号'],
+      ready:o.pickup?['F05','仓库','核提货授权并在原仓逐台签交',pod?'已关联 POD，请核对实际签收人':'待提货授权号、签收人和 POD']:
+        ['F04','调度','核 12 项放行依据，签发本票委托','待实际执行车组、确认窗口与批准全价'],
+      dispatched:['F04','执行车组','按本票委托提货并登记发车','核实到仓车组、货况与交接依据'],
+      at_station:['F04','调度 / 仓库','由接收站签发第二程放行','待第二程执行人、承接方与放行凭据'],
+      exception:['F06','调度 / 客服','按当前保管和已批准方案恢复作业',o.next_step || '待记录处理结果与恢复依据'],
+      delivered:o.addon_l5&&!o.result_ref?['F07','技术服务','根据授权逐台测试并留存客户验收','待技术验收结果号']:
+        ['F08','财务','核报价、批准变更、作业与发票','待登记实结金额及发票号'],
+      settled:['F08','财务','已核账归档','已登记实结依据，可查随单凭证与操作记录']
+    };
+    if(o.status==='in_transit'&&['C1','C2'].includes(o.route))return ['F05','接收站 / 仓库','按 SN 核货况、接手人与库位','待接收站、当前保管人和入站回执'];
+    const now=track[o.status] || ['F05','执行车组','逐台核合同终点，交接后登记签收',pod?'已关联 POD，请核对签收位置与未完成项':'待到场结果、签收人、实际位置及 POD'];
+    if(o.status==='new' && !o.pickup && (o.lat==null||o.lng==null))now[3]+='。待补合同终点坐标，补齐后可地图排线。';
+    if(latest && latest.outcome!=='success' && f.rights.attempt)now[3]='上次'+resultNames[latest.outcome]+' · '+latest.next_step;
+    if(o.status==='settled' && f?.receipt?.state==='open')return ['F05','渠道 / 客服','跟进平台接收差异（运费已结）',f.receipt.next_step];
+    const openCase=f?.cases?.find(c=>c.state!=='closed');
+    if(o.status==='settled' && openCase)return [openCase.kind==='restore'?'F07':'F06',openCase.owner||'售后',
+      caseNames[openCase.kind]+'工单待跟进 · '+openCase.id,openCase.next_step||'按关联工单的授权及期限办理'];
+    return now;
+  }
+  const subnote = t=>`<p class="wf-subnote">${esc(t)}</p>`;
+  function folderPanel(key,title,badge,content,focus){
+    return `<details class="wf-stage"${key===focus?' open':''}><summary><span class="wf-code">${key}</span><strong>${title}</strong><small>${esc(badge)}</small></summary><div>${content}</div></details>`;
+  }
+  function fileRefs(files,category){
+    const matches=files.filter(x=>x.category===category);
+    return matches.length?`<div class="wf-refs">${matches.map(x=>`<button type="button" data-download="${esc(x.id)}">↓ ${esc(x.name)}</button>`).join('')}</div>`:'';
+  }
+  function folderBody(ctx,data,focus){
+    const {order:o,files=[],events=[],folder:f}=data;
+    const panel=(key,title,badge,content)=>folderPanel(key,title,badge,content,focus);
+    const list=(arr,show)=>`<ul class="wf-related">${arr.map(x=>`<li>${show(x)}</li>`).join('')}</ul>`;
+    const quotes=f?.quotes,assets=f?.assets,cases=f?.cases, attempts=f?.attempts||[],receipt=f?.receipt;
+    const q=Array.isArray(quotes)?o.selected_quote:null;
+    const ex=events.filter(x=>['exception','resolve','revise_window','unrelease'].includes(x.action));
+    const pod=files.filter(x=>x.category==='pod').length;
+    const tech=cases?.filter(c=>c.kind==='restore')||[], recovery=cases?.filter(c=>c.kind!=='restore')||[];
+    const casesHtml=arr=>arr.length?list(arr,c=>`<b>${esc(caseNames[c.kind])} · ${esc(c.id)}</b><small>${esc(c.state==='closed'?'已关闭':'处理中')} · ${esc(c.sn)} · ${esc(c.owner)} · ${esc(c.issue)}</small>`):'';
+    const work=attempts.length?list(attempts,a=>`<b>第 ${esc(a.ordinal)} 次 · ${esc(resultNames[a.outcome])}</b><small>${esc(localTime(a.arrival_local))} — ${esc(localTime(a.finished_local))} · ${esc(a.timezone)} · ${esc(a.location)}</small>
+      ${a.units.map(u=>`<small>${esc(u.sn)} · ${esc(resultNames[u.outcome])} · ${esc(u.details)}</small>`).join('')}<small>凭据 ${esc(a.evidence)}${a.next_step?' · 当前保管 '+esc(a.custodian)+' · 待办 '+esc(a.next_step):''}</small>`):subnote('尚无独立的实际到场记录。');
+    const rec=receipt?`<div class="wf-hint"><b>平台实收 · ${receipt.state==='closed'?'已核结':'待跟进'}</b><br>货件 ${esc(receipt.shipment_ref)} · 仓签 ${esc(receipt.signed_qty)} 台 / 平台 ${esc(receipt.received_qty)} 台<br>${esc(receipt.owner)} · ${esc(receipt.next_step||receipt.resolution)}${receipt.due?' · 当地期限 '+esc(localTime(receipt.due)):''}<br>依据 ${esc(receipt.evidence)}</div>`:'';
+    const qLines=Array.isArray(quotes)?list(quotes,x=>`<b>${esc(x.carrier)} · USD ${esc(x.amount)} · ${esc(x.path)}</b><small>${esc(x.scope)} · 有效至 ${esc(x.valid_until)} · ${esc(x.evidence)}</small>`):'';
+    return panel('F01','客户承诺与现场',o.level+(o.addon_l4?' + L4':'')+(o.addon_l5?' + L5':''),
+        kv(o,['crm_ref','customer','contact','endpoint','address','city','state','zip','lat','lng','delivery_actions','exclusions','site_note','original_window_start','original_window_end','original_timezone','notes'])+fileRefs(files,'site'))+
+      panel('F02','库存与持货仓',assets?assets.length+' 台已关联':(o.sn?'已录 SN':'待锁机'),
+        kv(o,['warehouse','model','quantity','sn','release_ref'])+(assets?.length?list(assets,a=>`<b>${esc(a.sn)} · ${esc(assetNames[a.state]||a.state)}</b><small>${esc(a.model)} · 原仓 ${esc(a.warehouse)} / 库位 ${esc(a.bin)} · 入库批次 ${esc(a.batch)} · ${esc(a.evidence)}</small>`):'')+fileRefs(files,'release'))+
+      panel('F03','选商与同范围报价',q?'已选报价':quotes?quotes.length+' 份关联报价':o.pickup?'仓口自提':'按权限可见',
+        (q?subnote('中选 '+q.id+' · '+q.carrier+' · USD '+q.amount+' · 审批 '+q.approval_ref):o.checks?.price&&quotes?subnote('随单价格依据 · '+o.checks.price):'')+
+        (quotes?.length?qLines:subnote(o.pickup?'仓口自提按约核仓口费用。':quotes?'尚无本票报价。':'报价明细由采购、调度与财务岗位查阅。'))+fileRefs(files,'quote'))+
+      panel('F04','放行、派车与站序',o.release_route?'第 '+o.release_route.stop+' / '+o.release_route.stops+' 站':o.dispatch_ref?'已有委托号':'待确认',
+        subnote(routeNotes[o.pickup?'pickup':o.route]||'')+kv(o,['carrier','driver','dispatch_ref','handoff_ref','station_name','receipt_ref','custodian','release_route','window_start','window_end','timezone','checks']))+
+      panel('F05','到场、分段交接与签收',attempts.length+' 次到场 · '+pod+' 份 POD',
+        kv(o,['signer','delivered_at','delivery_note','station_name','receipt_ref'])+work+rec+fileRefs(files,'pod')+
+        `<div class="wf-refs">${f?.rights.attempt?btn('attempt','登记本次到场'):''}${f?.rights.receipt&&receipt?.state!=='closed'?btn('platform_receipt',receipt?'跟进平台实收':'登记平台实收 / 差异'):''}</div>`)+
+      panel('F06','异常、改约与责任',ex.length+' 条可见记录'+(recovery.length?' · '+recovery.length+' 张工单':''),
+        kv(o,['reason','next_step','resolution'])+(ex.length?list(ex,x=>`<b>${esc(names[x.action])} · ${esc(x.actor)}</b><small>${esc(timestamp(x.ts))}（查看地）</small>`):subnote('暂无可见异常记录。'))+casesHtml(recovery))+
+      panel('F07','技术启用与客户恢复',o.result_ref?'已验收':o.addon_l5?'已购 L5':'未购 L5',
+        (o.result_ref?kv(o,['result_ref']):subnote(o.addon_l5?'物理签交后由授权岗位登记技术验收结果。':'本票无另购技术启用。'))+
+        (o.service_units?.length?list(o.service_units,u=>`<b>${esc(u.sn)} · ${esc(u.result)}</b>${u.customer_ref?`<small>客户确认 · ${esc(u.customer_ref)}</small>`:''}`):'')+casesHtml(tech)+fileRefs(files,'service'))+
+      panel('F08','成本、发票与核账',o.status==='settled'?'已核账':ctx.user.role==='driver'?'财务经办':'待核账',
+        (ctx.user.role==='driver'?subnote('财务核账依据按岗位查看。'):kv(o,['approved_cost','change_cost','change_ref','actual_cost','variance_cost','variance_ref','invoice_ref']))+fileRefs(files,'invoice'));
+  }
   function details(ctx,data,modal,tab='overview') {
     const {order:o,events=[],files=[]}=data,{body,el}=modal;
     if (!el.open) return;
     const primary=next(o);
-    const controls=[primary,'edit','upload','note','revise_window','unrelease','exception'].filter(k=>k && can(o,k));
-    const tabs={overview:'履约详情',evidence:'随单凭证 · '+files.length,log:'协作轨迹 · '+events.length};
-    body.innerHTML=summary(o)+
-      `<div class="wf-commands">${controls.map(k=>btn(k,names[k],k===primary?'wf-primary':k==='exception'?'wf-risk':'')).join('')}</div>
+    const step=handoff(o,data.folder,files);
+    const controls=['edit','upload','note','revise_window','unrelease','exception'].filter(k=>can(o,k));
+    const tabs={overview:'随单作业夹',evidence:'凭证 · '+files.length,log:'轨迹 · '+events.length};
+    body.innerHTML=summary(o)+`<div class="wf-handoff"><div class="wf-handoff-body"><small>${esc(step[0])} · ${o.status==='settled'&&step[0]==='F08'?'归档岗位':'下一经办岗'} / ${esc(step[1])}</small><b>${esc(step[2])}</b><p>${esc(step[3])}</p></div>
+      <div class="wf-handoff-actions">${data.folder?.rights.attempt?btn('attempt','登记到场'):''}${primary?btn(primary,names[primary],'wf-primary'):''}</div></div>`+
+      `<div class="wf-commands">${controls.map(k=>btn(k,names[k],k==='exception'?'wf-risk':'')).join('')}</div>
       <div class="wf-tabs">${Object.entries(tabs).map(([k,v])=>`<button type="button" data-tab="${k}" aria-pressed="${tab===k}">${esc(v)}</button>`).join('')}</div><div class="wf-tab-body"></div>`;
     const pane=body.querySelector('.wf-tab-body');
     if(tab==='log'){
@@ -258,17 +330,13 @@
         '<div class="wf-empty"><b>尚无可见凭证</b><p>上传按票归档的回单、委托或现场照片。签交前须有 POD。</p></div>';
     }else{
       pane.innerHTML=(o.status==='exception'?`<div class="wf-warning"><b>货物已挂起 · ${esc(o.reason || '见协作轨迹')}</b><p>当前保管 · ${esc(o.custodian || '待明确')}<br>下一步 · ${esc(o.next_step || '待确认')}</p></div>`:'')+
-        `<div class="wf-hint">${esc(routeNotes[o.pickup?'pickup':o.route] || '')}</div>`+
-        facts(o,'交付与窗口',['crm_ref','warehouse','city','state','zip','contact','timezone','window_start','window_end','original_window_start','original_window_end','original_timezone','lat','lng'])+
-        facts(o,'服务与现场',['delivery_actions','exclusions','site_note','notes'])+
-        facts(o,'设备与分段保管',['sn','release_ref','carrier','driver','dispatch_ref','release_route','handoff_ref','station_name','receipt_ref','custodian'])+
-        (o.checks?`<details class="wf-info"><summary>查看发车前核验 · F04</summary>${kv(o,['checks'])}</details>`:'')+
-        facts(o,'签收与结算',['signer','delivered_at','delivery_note','result_ref','approved_cost','change_cost','change_ref','actual_cost','variance_cost','variance_ref','invoice_ref'])+
-        facts(o,'台账信息',['owner','updated_at']);
+        (data.folderError?`<div class="wf-warning" role="alert">${esc(data.folderError)} <button data-reload>重新读取</button></div>`:
+          folderBody(ctx,data,step[0]));
     }
     body.onclick=async e=>{
       const b=e.target.closest('button');if(!b)return;
-      if(b.dataset.tab)details(ctx,data,modal,b.dataset.tab);
+      if(b.hasAttribute('data-reload'))loadDetail(ctx,o.id,modal);
+      else if(b.dataset.tab)details(ctx,data,modal,b.dataset.tab);
       else if(b.dataset.download){
         const f=files.find(file=>String(file.id)===b.dataset.download);
         if(!f)return;
@@ -277,7 +345,8 @@
           const a=document.createElement('a');
           a.href='/api/files/'+encodeURIComponent(f.id);a.download=f.name;document.body.append(a);a.click();a.remove();
         }
-      }else if(b.dataset.cmd)actForm(ctx,data,modal,b.dataset.cmd);
+      }else if(['attempt','platform_receipt'].includes(b.dataset.cmd))folderForm(ctx,data,modal,b.dataset.cmd);
+      else if(b.dataset.cmd)actForm(ctx,data,modal,b.dataset.cmd);
     };
   }
   function base64(file) {
@@ -285,6 +354,54 @@
       const reader=new FileReader();reader.onload=()=>res(String(reader.result).split(',')[1]);
       reader.onerror=()=>rej(Error('无法读取附件，请重新选择文件。'));reader.readAsDataURL(file);
     });
+  }
+  function folderForm(ctx,data,modal,cmd) {
+    const {el,body}=modal,{order:o,folder}=data;
+    const isAttempt=cmd==='attempt',r=folder?.receipt;
+    if(!folder?.rights[isAttempt?'attempt':'receipt'] || (!isAttempt && r?.state==='closed'))return;
+    const serials=String(o.sn||'').split(/[,，;；\r\n]+/).map(s=>s.trim()).filter(Boolean);
+    const latest=folder.attempts.at(-1);
+    const outcomeOptions={'':'按实际选择',success:resultNames.success,partial:resultNames.partial,failed:resultNames.failed};
+    const qty={type:'number',req:true,extra:'min="0" max="'+Number(o.quantity)+'" step="1"'};
+    body.onclick=null;
+    body.innerHTML=`<form class="wf-form"><div class="wf-action-title"><small class="wf-overline">F05 / ${esc(o.id)}</small>
+      <h3>${isAttempt?'登记第 '+(folder.attempts.length+1)+' 次实际到场':'核对平台实收'}</h3><p>${isAttempt?'记录每台 SN 在本次现场完成的动作。实际到场与作业结束均用订单当地时间。':'核对货件与逐台标签。仓口签收、平台接收数和运费各自留痕。'}</p></div>
+      <div class="wf-hint">作业时区 · ${esc(o.timezone)}${isAttempt&&latest?' · 上次 '+esc(localTime(latest.arrival_local))+' / '+esc(resultNames[latest.outcome]):''}</div>
+      <div class="wf-grid">${isAttempt?
+        field('arrival_local','实际到场','',{req:true,type:'datetime-local'})+field('finished_local','本次作业结束','',{req:true,type:'datetime-local'})+
+        field('location','实际交接位置','',req)+field('evidence','现场记录 / 影像凭据号','',req)+
+        serials.map((sn,i)=>`<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('outcome'+i,'本次结果','',{opts:outcomeOptions,req:true})}${field('details'+i,'实际位置、已做 / 未做及原因','',req)}</div></div>`).join('')+
+        field('custodian','未完成时的实物保管人','')+field('next_step','未完成项、责任人及下次安排','') :
+        (r?`<div class="wf-hint wf-full">货件 ${esc(r.shipment_ref)} · 原仓签 ${esc(r.signed_qty)} 台</div>`:field('shipment_ref','平台货件号','',req)+field('signed_qty','仓口签收台数',o.quantity,qty))+
+        field('received_qty','平台当前接收台数',r?.received_qty??'',qty)+field('state','本次处理','open',{req:true,opts:{open:'继续跟进平台查询',closed:'已有明确结果 · 核结'}})+
+        field('owner','经办人',r?.owner||ctx.user.name,req)+field('evidence','平台查询编号 / 处理凭据','',req)+
+        '<div data-receipt-next class="wf-full wf-grid">'+field('next_step','下一步',r?.next_step||'',req)+field('due','下次反馈期限',r?.due||'',{req:true,type:'datetime-local'})+'</div>'+
+        '<div data-receipt-end class="wf-full">'+field('resolution','最终接收、差异原因与批准处置','',{area:true,req:true})+'</div>'}</div>${formEnd(isAttempt?'保存实际到场':'保存实收记录')}</form>`;
+    const form=body.querySelector('form');
+    form.querySelector('[data-cmd=back]').onclick=()=>details(ctx,data,modal);
+    if(!isAttempt){
+      function visibility(){
+        const closed=form.elements.state.value==='closed';
+        for(const [name,visible] of [['next',!closed],['end',closed]]){
+          const group=form.querySelector('[data-receipt-'+name+']');group.hidden=!visible;
+          group.querySelectorAll('input,textarea').forEach(x=>x.disabled=!visible);
+        }
+      }
+      form.elements.state.onchange=visibility;visibility();
+    }
+    submitter(form,async fd=>{
+      const p=Object.fromEntries(fd);
+      if(isAttempt){
+        p.units=serials.map((sn,i)=>({sn,outcome:p['outcome'+i],details:p['details'+i]}));
+        for(let i=0;i<serials.length;i++){delete p['outcome'+i];delete p['details'+i];}
+        if(p.units.some(u=>u.outcome!=='success') && (!p.custodian.trim()||!p.next_step.trim()))throw Error('有未完成项，请补实物保管人与下一步安排。');
+      }else{
+        if(!r)p.signed_qty=Number(p.signed_qty);
+        p.received_qty=Number(p.received_qty);
+      }
+      await ctx.api('/api/ops/folder/'+encodeURIComponent(o.id)+(isAttempt?'/attempts':'/receipts'),{method:'POST',body:{...p,version:o.version}});
+      ctx.toast?.('已归入本票 F05');await refreshAfterSave(ctx);if(el.open)await loadDetail(ctx,o.id,modal);
+    },()=>loadDetail(ctx,o.id,modal));
   }
   async function uploadFile(ctx,o,file,category) {
     if(!file?.size)throw Error('请选择附件。');
@@ -310,11 +427,11 @@
         <div>${assets.map(a=>`<label><input type="checkbox" data-sn="${esc(a.sn)}"> <b>${esc(a.sn)}</b> <small>${esc(a.bin||'')}</small></label>`).join('')}</div></div>`:
         '<div class="wf-full wf-warning">当前没有同仓同型号的合格设备。先到逐台库存登记实收、库位和验收依据。 <button type="button" data-inventory>查看逐台库存</button></div>')+
         f('sn',{area:true,full:true,ph:'从合格库存勾选，或逐行录入序列号',hint:'订单台数 '+o.quantity+'，提交时会再次核实每台库存。'})+f('release_ref',{full:true,ph:'仓库验机单或放行凭证号'});
-      case 'dispatch':return planField()+driver()+f('carrier')+f('dispatch_ref')+
-        field('approved_cost','批准全价（USD）','',{req:true,type:'number',extra:'min="0" max="999999999" step=".01"'})+
+      case 'dispatch':return planField()+driver()+field('carrier',labels.carrier,o.selected_quote?.carrier||'',req)+f('dispatch_ref')+
+        field('approved_cost','批准全价（USD）',o.selected_quote?.amount??'',{req:true,type:'number',extra:'min="0" max="999999999" step=".01"',hint:o.selected_quote?'依据已签选报价 '+o.selected_quote.id:undefined})+
         (['C1','C2'].includes(o.route)?f('handoff_ref',{full:true,ph:'接收人、站方与后续车组的确认依据'}):'')+date('window_start')+date('window_end')+
         '<div class="wf-full wf-hint"><b>F04 发车前核验</b><br>逐项填实测结果、回执号或不适用原因。同一份放行单可引用对应行号。</div>'+
-        Object.entries(checks).map(([k,v],i)=>field('check_'+k,String(i+1).padStart(2,'0')+' · '+v,'',{req:true,extra:'minlength="3" maxlength="512"',ph:'凭据号、实测值或说明'})).join('');
+        Object.entries(checks).map(([k,v],i)=>field('check_'+k,String(i+1).padStart(2,'0')+' · '+v,k==='price'&&o.selected_quote?[o.selected_quote.id,o.selected_quote.ref,o.selected_quote.approval_ref].filter(Boolean).join(' / '):'',{req:true,extra:'minlength="3" maxlength="512"',ph:'凭据号、实测值或说明'})).join('');
       case 'station_receive':return f('station_name')+f('custodian')+f('receipt_ref',{full:true});
       case 'station_release':return planField()+driver()+f('carrier')+f('dispatch_ref',{full:true});
       case 'pickup':case 'deliver':{
@@ -328,7 +445,11 @@
       }
       case 'exception':return f('reason',{area:true,full:true,ph:'中断环节、发现时刻和已知事实'})+f('custodian',{full:true,ph:'当前位置与实际保管人'})+f('next_step',{area:true,full:true,ph:'下一位经办人、待办及回复时限'});
       case 'resolve':return f('resolution',{area:true,full:true,ph:'处置经过、批准人、客户确认和所恢复的工作'});
-      case 'service_complete':return f('result_ref',{full:true,ph:'SN、授权人员、测试结果号与客户确认依据'});
+      case 'service_complete':{
+        const serials=String(o.sn||'').split(/[,，;；\r\n]+/).map(x=>x.trim()).filter(Boolean);
+        return f('result_ref',{full:true,ph:'授权人员、技术验收结论及客户签认的总回执号'})+(serials.length>1?serials.map((sn,i)=>
+          `<div class="wf-unit wf-full"><b>${esc(sn)}</b><div class="wf-grid">${field('test_result'+i,'逐台复测结果','',req)}${field('customer_ref'+i,'客户确认号','',req)}</div></div>`).join(''):'');
+      }
       case 'settle':return `<div class="wf-hint wf-full"><b>已批预算 · USD ${esc(o.approved_cost ?? '待核')}</b><br>核对原委托与获批变更，差异须注明处理依据。</div>`+
         f('actual_cost',{type:'number',extra:'min="0" max="999999999" step="0.01"',ph:'0.00'})+f('invoice_ref')+
         field('change_cost','批准调整额（USD，可为负）','0',{req:true,type:'number',extra:'min="-999999999" max="999999999" step="0.01"'})+
@@ -377,6 +498,11 @@
     }
     submitter(form,async fd=>{
       const payload=Object.fromEntries(fd);delete payload.file;
+      if(action==='service_complete' && Number(o.quantity)>1){
+        const serials=String(o.sn).split(/[,，;；\r\n]+/).map(x=>x.trim()).filter(Boolean);
+        payload.service_units=serials.map((sn,i)=>({sn,result:fd.get('test_result'+i),customer_ref:fd.get('customer_ref'+i)}));
+        for(let i=0;i<serials.length;i++){delete payload['test_result'+i];delete payload['customer_ref'+i];}
+      }
       if(payload.route_id){
         const p=plans.find(p=>p.id===payload.route_id);
         if(!p)throw Error('请重新读取已保存的线路。');
@@ -413,7 +539,12 @@
   async function loadDetail(ctx,id,modal,action='',tab='overview'){
     const {el,body}=modal;
     try {
-      const result=await ctx.api('/api/orders/'+encodeURIComponent(id));
+      const [orderRead,folderRead]=await Promise.allSettled([ctx.api('/api/orders/'+encodeURIComponent(id)),ctx.api('/api/ops/folder/'+encodeURIComponent(id))]);
+      if(orderRead.status!=='fulfilled')throw orderRead.reason;
+      const result=orderRead.value;
+      if(folderRead.status!=='fulfilled')result.folderError='关联凭据未能读取。'+msg(folderRead.reason);
+      else if(result.order.version!==folderRead.value.version)result.folderError='其他岗位刚更新了订单，请重新读取随单资料。';
+      else result.folder=folderRead.value;
       if(!el.open)return;
       if(action && can(result.order,action))await actForm(ctx,result,modal,action);
       else details(ctx,result,modal,tab);

@@ -13,6 +13,7 @@
     ledger:['海运与采购','INBOUND & SOURCING','登记海运节点、收货凭据与同一票的书面报价。','M3 5h18v13H3z M7 9h9m-9 4h6m-4 5v3m6-3v3'],
     inventory:['逐台库存','SERIAL INVENTORY','按 SN 核实实收、库位和货况，跟踪实际锁机与出库。','M3 7l9-5 9 5v11l-9 4-9-4zM3 7l9 4 9-4m-9 4v11'],
     recovery:['售后与返修','SERVICE RECOVERY','按实际需要启动恢复、索赔或整机移修，分别记录交接与结果。','M9 4H4v5m0-4a9 9 0 1 1-1 9m9-8v6l3 2'],
+    review:['经营复盘','PERFORMANCE REVIEW','按同仓、交付范围和原预约窗复核成本与履约结果，从指标回到原单。','M3 4v16h18M7 16v-4m5 4V8m5 8V5'],
     guide:['使用手册','FIELD MANUAL','按岗位试跑一票，核对交接方式、数据来源和运行边界。','M3 4q5-2 9 1 4-3 9-1v15q-5-2-9 1-4-3-9-1zM12 5v15']
   };
   const roleNames={admin:'管理员',sales:'销售 / 订单',warehouse:'仓库',dispatch:'调度',driver:'执行车组',finance:'财务',service:'客服 / 技术'};
@@ -32,7 +33,7 @@
     return out;
   }
   const canAdd=()=>['admin','sales','dispatch'].includes(session.user?.role);
-  const visible=p=>(p!=='inventory'||session.user?.role!=='driver') && (p!=='recovery'||!['driver','sales'].includes(session.user?.role)) && !(['resources','ledger'].includes(p)&&['driver','service'].includes(session.user?.role)) && (p!=='finance'||['admin','finance','dispatch'].includes(session.user?.role));
+  const visible=p=>(p!=='review'||['admin','dispatch','finance'].includes(session.user?.role)) && (p!=='inventory'||session.user?.role!=='driver') && (p!=='recovery'||!['driver','sales'].includes(session.user?.role)) && !(['resources','ledger'].includes(p)&&['driver','service'].includes(session.user?.role)) && (p!=='finance'||['admin','finance','dispatch'].includes(session.user?.role));
   const openOrder=(id,a)=>window.Workflow.openOrder(ctx(),id,a);
   function ctx(){return {...data,user:session.user,publicDemo:!!window.PublicDemo,demo:session.demo,openOrder,navigate,toast,refresh:()=>refresh(true),api,
     saveRoute:async p=>{const result=await api('/api/ops/routes',{method:'POST',body:p});data.routes=(await api('/api/ops/routes')).routes;return result.route},
@@ -48,11 +49,12 @@
   function navGroup(name,keys){return '<div class="nav-caption">'+name+'</div>'+keys.filter(visible).map(k=>'<button data-nav="'+k+'">'+icon(pages[k][3])+'<span>'+pages[k][0]+'</span></button>').join('')}
   function shell(){
     workingUser=session.user.username;
-    $('#root').innerHTML='<div class="shell"><aside class="rail" id="rail"><div class="brand"><img src="brand.svg" alt="" width="37" height="37"><div><strong>哈哈便利</strong><small>LOGISTICS OPERATIONS</small></div></div><nav>'+navGroup('调度中心',['map','dashboard','tasks','orders'])+navGroup('业务协作',['inventory','resources','ledger','exceptions','recovery','finance'])+navGroup('工作空间',['guide'])+'</nav><div class="rail-bottom"><span class="avatar">'+esc(session.user.name?.slice(0,1)||'H')+'</span><div><b>'+esc(session.user.name)+'</b><small>'+esc(roleNames[session.user.role])+'</small></div><button id="signout" title="退出 / 切换岗位" aria-label="退出 / 切换岗位">'+icon('M9 3H4v18h5m4-14 5 5-5 5m-5-5h12')+'</button></div></aside><div class="main"><header class="topbar"><div class="crumb"><button class="menu-mobile btn-icon" aria-label="打开导航">'+icon('M3 6h18M3 12h18M3 18h18')+'</button>美国物流 <span>/</span> <b id="crumb"></b></div><div class="top-rt"><time id="clock"></time><span class="env '+(session.demo?'demo':'')+'">'+(window.PublicDemo?'公开演练 · 仅用虚构数据':session.demo?'本机演练库':'内部共享工作库')+'</span></div></header><div id="network"></div><main class="page-pad"><header class="mast"><div><div class="kicker" id="section-kicker"></div><h1 id="section-title"></h1><p id="section-hint"></p></div><div class="mast-actions"><button id="refresh" title="刷新共享数据">'+icon('M20 7v5h-5M4 17v-5h5M5.5 8a7 7 0 0 1 12-2L20 9M4 15l2.5 3a7 7 0 0 0 12-2',15)+'刷新</button>'+(canAdd()?'<button id="create" class="primary">＋ 新建订单</button>':'')+'</div></header><div id="content" class="content"></div></main></div></div>';
+    $('#root').innerHTML='<div class="shell"><aside class="rail" id="rail"><div class="brand"><img src="brand.svg" alt="" width="37" height="37"><div><strong>哈哈便利</strong><small>LOGISTICS OPERATIONS</small></div></div><nav>'+navGroup('调度中心',['map','dashboard','tasks','orders'])+navGroup('业务协作',['inventory','resources','ledger','exceptions','recovery','finance'])+navGroup('工作空间',['review','guide'])+'</nav><div class="rail-bottom"><span class="avatar">'+esc(session.user.name?.slice(0,1)||'H')+'</span><div><b>'+esc(session.user.name)+'</b><small>'+esc(roleNames[session.user.role])+'</small></div><button id="signout" title="退出 / 切换岗位" aria-label="退出 / 切换岗位">'+icon('M9 3H4v18h5m4-14 5 5-5 5m-5-5h12')+'</button></div></aside><div class="main"><header class="topbar"><div class="crumb"><button class="menu-mobile btn-icon" aria-label="打开导航">'+icon('M3 6h18M3 12h18M3 18h18')+'</button>美国物流 <span>/</span> <b id="crumb"></b><span class="shell-version">V12</span></div><div class="top-rt"><button id="quick-find" aria-label="全局查单">⌕　查单 <kbd>Ctrl K</kbd></button><time id="clock"></time><span class="env '+(session.demo?'demo':'')+'">'+(window.PublicDemo?'公开演练 · 仅用虚构数据':session.demo?'本机演练库':'内部共享工作库')+'</span></div></header><div id="network"></div><main class="page-pad"><header class="mast"><div><div class="kicker" id="section-kicker"></div><h1 id="section-title"></h1><p id="section-hint"></p></div><div class="mast-actions"><button id="refresh" title="刷新共享数据">'+icon('M20 7v5h-5M4 17v-5h5M5.5 8a7 7 0 0 1 12-2L20 9M4 15l2.5 3a7 7 0 0 0 12-2',15)+'刷新</button>'+(canAdd()?'<button id="create" class="primary">＋ 新建订单</button>':'')+'</div></header><div id="content" class="content"></div></main></div></div>';
     $('.menu-mobile').onclick=()=>{const rail=$('#rail');rail.classList.add('open');const mask=document.createElement('button');mask.className='scrim';mask.setAttribute('aria-label','收起导航');mask.onclick=closeNav;rail.after(mask)};
     $('#signout').onclick=async()=>{try{await api('/api/logout',{method:'POST',body:{}});await boot()}catch(e){toast(e.message)}};
-    $('#root').onclick=e=>{const n=e.target.closest('[data-nav]');if(n){closeNav();navigate(n.dataset.nav)}};
+    $('#root').onclick=e=>{const n=e.target.closest('[data-nav]');if(n){if(n.dataset.resourceTab)window.Resources.focusTab(n.dataset.nav,n.dataset.resourceTab);closeNav();navigate(n.dataset.nav)}};
     $('#refresh').onclick=()=>refresh(true).catch(e=>toast(e.message));if($('#create'))$('#create').onclick=()=>window.Workflow.newOrder(ctx());
+    $('#quick-find').onclick=()=>window.OrderFinder.open(ctx(),Object.keys(pages).filter(visible).map(key=>({key,label:pages[key][0],desc:pages[key][2]})));
     time();
   }
   function closeNav(){$('#rail')?.classList.remove('open');$('.scrim')?.remove()}
@@ -62,13 +64,16 @@
     destroy();current=v;const [title,en,hint]=pages[v];$('#crumb').textContent=title;$('#section-title').textContent=title;$('#section-hint').textContent=hint;$('#section-kicker').textContent=en+'   /   US OPERATIONS';
     document.querySelectorAll('nav [data-nav]').forEach(n=>n.dataset.nav===v?n.setAttribute('aria-current','page'):n.removeAttribute('aria-current'));
     const host=$('#content');host.onclick=null;host.replaceChildren();pendingRefresh=false;$('#network').replaceChildren();
-    if(v==='map') mounted=window.DispatchMap.mount(host,ctx());else if(v==='inventory'||v==='recovery')mounted=window.Lifecycle.mount(host,ctx(),v);else if(v==='dashboard')dashboard(host);else if(v==='guide')guide(host);else if(['resources','ledger'].includes(v))window.Resources.mount(host,ctx(),v);else window.Workflow.mount(host,ctx(),v);
+    if(v==='map') mounted=window.DispatchMap.mount(host,ctx());else if(v==='inventory'||v==='recovery')mounted=window.Lifecycle.mount(host,ctx(),v);else if(v==='dashboard')dashboard(host);else if(v==='guide'){guide(host);guideLinks(host)}else if(v==='review')mounted=window.Review.mount(host,ctx());else if(['resources','ledger'].includes(v))window.Resources.mount(host,ctx(),v);else window.Workflow.mount(host,ctx(),v);
   }
   function dashboard(h){
     const orders=data.orders,ready=orders.filter(o=>o.status==='ready'),travel=orders.filter(o=>['dispatched','in_transit','at_station','last_mile'].includes(o.status)),issues=orders.filter(o=>o.status==='exception'||o.exceptions?.some(x=>!x.resolved)),counts=new Map();
     for(const o of orders)counts.set(o.warehouse||'待定仓址',(counts.get(o.warehouse||'待定仓址')||0)+1);
-    const stats=[['可见订单',orders.length],['可发待调度',ready.length],['执行中',travel.length],['待跟进异常',issues.length]];
+    const stats=[['可见订单',orders.length],['已就绪待交接',ready.length],['执行中',travel.length],['待跟进异常',issues.length]];
     h.innerHTML='<div class="stats">'+stats.map(([t,n],i)=>'<div class="stat '+(!i?'accent':'')+'"><small>'+t+'</small><b>'+n+'</b></div>').join('')+'</div><div class="dash-grid"><section class="card"><div class="eyebrow">DISPATCH QUEUE</div><div class="card-head"><h2>调度交接队列</h2><button class="text-btn" data-nav="orders">查看订单 →</button></div><div id="queue"></div></section><section class="card"><div class="eyebrow">WAREHOUSE NETWORK</div><h2>各仓订单量</h2>'+([...counts].map(([w,n])=>'<div class="dash-row"><span>'+esc(w)+'</span><b>'+n+' 票</b></div>').join('')||'<p class="empty">录入订单后，可在这里对照各仓工作量。</p>')+'</section></div><section class="dash-banner"><div><h2>交接下一票设备</h2><p>核实际起运仓、可发 SN、车组和收货窗口后，再到地图排线。</p></div><button data-nav="map">进入地图调度 →</button></section>';
+    const work=[['F01–02','接单和备货','orders',orders.filter(o=>o.status==='new').length],['F03–04','核价与放行','map',ready.filter(o=>!o.pickup).length],['F05–07','执行与交接','tasks',travel.length],['F08','核对已交付费用','finance',orders.filter(o=>o.status==='delivered').length]].filter(r=>visible(r[2]));
+    const belt=document.createElement('section');belt.className='flow-nav';belt.innerHTML='<div class="eyebrow">SHIFT HANDOVER</div><h2>本班交接</h2><div class="flow-steps">'+work.map(([code,name,view,n])=>'<button data-nav="'+view+'"><small>'+code+'</small><strong>'+n+' 票</strong><span>'+name+' →</span></button>').join('')+'</div>';
+    h.querySelector('.dash-grid').before(belt);
     const q=[...issues,...ready,...travel].filter((x,i,a)=>a.indexOf(x)===i).slice(0,8);h.querySelector('#queue').innerHTML=q.map(o=>'<button class="dash-row" data-order="'+esc(o.id)+'"><span>'+esc(o.customer||o.id)+'<small>'+esc(o.id)+' · '+esc(o.warehouse)+'</small></span><span class="pill">'+esc(statusNames[o.status]||o.status)+'</span></button>').join('')||'<p class="empty">当前没有待调度、运输中或异常订单。</p>';
     h.querySelectorAll('[data-order]').forEach(n=>n.onclick=()=>openOrder(n.dataset.order));
     if(['finance','admin','dispatch'].includes(session.user.role)){
@@ -93,6 +98,10 @@
     ['访问与演练',window.PublicDemo?'本链接使用虚构样例，改动只保存在访问者当前浏览器。请勿录入真实客户、地址或凭证。':'正式库由主管分配账号；演练库与正式库隔离。员工在同一台内网应用服务器办理，点击刷新可立即读取最新结果。']
     ].map(([t,b])=>'<details><summary>'+t+'</summary><p>'+esc(b)+'</p></details>').join('')+'</article>';
   }
+  function guideLinks(h){
+    const steps=[['F01','确认交付范围','销售 · 客户承诺','orders'],['F02','锁定实物','仓库 · SN 与库位','inventory'],['F03','同范围比价','调度 · 全程报价','ledger','quote'],['F04','核验与派车','调度 · 12 项放行','map'],['F05','逐台签交','车组 · 交付与 POD','orders'],['F06','变更与异常','客服 · 保管与恢复','exceptions'],['F07','技术与返修','售后 · 已购启用或报障','recovery'],['F08','核账与关单','财务 · 预算与差异','finance']];
+    const box=document.createElement('div');box.className='guide-grid';box.innerHTML=steps.filter(r=>visible(r[3])).map(([code,title,owner,view,tab])=>'<button class="guide-step" data-nav="'+view+'" '+(tab?'data-resource-tab="'+tab+'"':'')+'><span class="step-code">'+code+'</span><b>'+title+'　↗</b><small>'+owner+'</small></button>').join('');h.prepend(box);
+  }
   async function refresh(force=false){
     const n=++refreshNo;
     try{
@@ -109,6 +118,7 @@
     try{session=await api('/api/session');if(!session.user){login();return}shell();current='';await refresh(true)}
     catch(e){if(!workingUser)$('#root').innerHTML='<div class="boot"><div><h2>工作台暂未连接</h2><p>'+esc(e.message)+'</p><button id="retry">重新连接</button></div></div>';if($('#retry'))$('#retry').onclick=boot}
   }
+  addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='k'&&session.user&&!document.querySelector('dialog[open]')){ev.preventDefault();$('#quick-find')?.click()} if(ev.key==='Escape')closeNav()});
   addEventListener('hashchange',()=>{if(session.user)renderPage()});
   setInterval(time,30000);setInterval(()=>{if(session.user&&!document.hidden&&!document.querySelector('dialog[open]')&&!window.PublicDemo)refresh().catch(()=>{})},20000);
   boot();

@@ -24,6 +24,9 @@ def connect_demo():
     if fresh:
         with db:
             seed(db)
+    else:
+        with db:
+            operations.upgrade_demo_quotes(db)
 
 def call(path,method,body,username):
     users=[dict(x) for x in db.execute("SELECT id,username,role,name FROM users ORDER BY id")]

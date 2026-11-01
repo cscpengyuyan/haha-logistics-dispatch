@@ -222,7 +222,7 @@ def present(order, user):
     result = dict(order, allowed_actions=actions(order, user["role"]))
     if user["role"] == "driver":
         for key in ("approved_cost", "actual_cost", "invoice_ref", "notes", "change_cost",
-                    "variance_cost", "variance_ref", "change_ref", "checks"):
+                    "variance_cost", "variance_ref", "change_ref", "checks", "selected_quote"):
             result.pop(key, None)
     return result
 
@@ -268,6 +268,8 @@ def edit_order(db, oid, body, user):
             order["original_" + field] = order[field]
             order["original_timezone"] = order["timezone"]
     diff = {k: [old.get(k), order[k]] for k in body if k != "version" and old.get(k) != order.get(k)}
+    if set(diff)-{"notes","crm_ref","contact"} and order.pop("selected_quote",None):
+        diff["中选委托"]=["已选","变更范围后须复核"]
     return save(db, order, user, "edit", encode(diff))
 
 
@@ -371,6 +373,9 @@ def apply_action(db, oid, body, user):
         assign_driver(db, order, body)
         order["checks"] = preflight(body)
         order["approved_cost"] = float(money(body.get("approved_cost")))
+        quote=order.get("selected_quote")
+        if quote and (order["approved_cost"]!=quote["amount"] or order["carrier"]!=quote["carrier"] or quote["path"]!=order["route"]):
+            raise ApiError(400,"承运方、路径和预算应与已选委托一致。变更时请先复核并选择新版报价")
         if order["route"] in {"C1", "C2"}:
             copy_fields(order, body, "handoff_ref")
         for field in ("window_start", "window_end"):
@@ -401,6 +406,8 @@ def apply_action(db, oid, body, user):
         lifecycle.move(db, order, "transit", user, order["dispatch_ref"])
         order["status"] = "last_mile"
     elif action in {"deliver", "pickup"}:
+        import folder
+        folder.assert_attempt_resolved(db,oid)
         copy_fields(order, body, "signer", "delivered_at", "delivery_note")
         localtime(order["delivered_at"], "delivered_at")
         require_pod(db, oid)
@@ -423,6 +430,8 @@ def apply_action(db, oid, body, user):
     elif action == "revise_window":
         copy_fields(order, body, "window_start", "window_end", "reason")
         windows(order, require=True)
+        if order["status"] in {"new","ready","dispatched"}:
+            order.pop("selected_quote",None)
         if not order.get("original_window_start"):
             order["original_window_start"] = before.get("window_start") or order["window_start"]
             order["original_window_end"] = before.get("window_end") or order["window_end"]
@@ -432,7 +441,9 @@ def apply_action(db, oid, body, user):
             for key in ("driver","checks","carrier","dispatch_ref","handoff_ref","approved_cost","release_route"):
                 order.pop(key,None)
     elif action == "service_complete":
+        import folder
         copy_fields(order, body, "result_ref")
+        order["service_units"] = folder.service_units(order, body)
     elif action == "settle":
         copy_fields(order, body, "invoice_ref")
         require_pod(db, oid)
