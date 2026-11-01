@@ -142,6 +142,11 @@
     function writePref(key,value){try{localStorage.setItem(keyPrefix+key,JSON.stringify(value))}catch{}}
     function checkpoint(){undoStack.push({ids:[...selected],split:[...splitOut],facts:structuredClone(stopFacts),locked});if(undoStack.length>20)undoStack.shift();lastCheck=null}
     const canEdit=()=>['admin','dispatch'].includes(ctx.user?.role);
+    /* 交付日视图：按订单收货窗当地日期收敛整个调度台 */
+    let dayFilter='';
+    const dayKeyOf=o=>(o.window_start||'').slice(0,10);
+    const addDays=(key,n)=>{const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+n);const p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
+    const weekdayOf=key=>['周日','周一','周二','周三','周四','周五','周六'][new Date(key+'T12:00:00').getDay()];
     const depot=()=>warehouses.find(x=>x.name===warehouse);
     const byKey=id=>records.get(String(id));
     const all=()=>Array.from(records.values());
@@ -165,6 +170,7 @@
     const needsAddress=o=>!position(o)||(!o.station_target && (o.location_precision!=='dock'||!o.coordinate_ref));
     const available=o=>!needsAddress(o)&&!gate(o,'') && warehouses.some(w=>w.name===dispatchOrigin(o)&&position(w));
     function accepts(o,key){
+      if(dayFilter && dayKeyOf(o)!==dayFilter)return false;
       if(key==='missing')return needsAddress(o);
       if(key==='available')return available(o);
       if(key==='week'){
@@ -237,6 +243,9 @@
 
       const consoleEl=document.createElement('div');
       consoleEl.className='dm-console';
+      const dateBar=document.createElement('section');
+      dateBar.className='dm-dates';
+      dateBar.innerHTML='<div data-box="dates"></div>';
       const left=document.createElement('aside');
       left.className='dm-queue dm-side dm-side-left';
       const right=document.createElement('aside');
@@ -266,6 +275,8 @@
       consoleEl.appendChild(right);
 
       grid.replaceWith(consoleEl);
+      const head=root.querySelector('.dm-command');
+      if(head)head.before(dateBar);else consoleEl.before(dateBar);
       plan.remove();
 
       /* 页尾：核验与证据 */
@@ -640,7 +651,34 @@
           <em class="${signed?'ok':''}">${signed?'已签':'草案'}</em></button>`;
       }).join(''):'<p class="dm-empty">今日暂无车次。左侧选票 → 右侧排线 → 保存即生成。</p>';
     }
-    function paint(){config();list();runs();details();plan();costs();drawMap();
+    /* 交付日条：按天取票，票数取自可排订单 */
+    function dates(){
+      const box=el('dates');if(!box)return;
+      const tz=depot()?.timezone||zone;
+      const today=localStamp(Date.now(),tz).slice(0,10);
+      const days=Array.from({length:14},(_,i)=>addDays(today,i));
+      const ready=new Map(),total=new Map();
+      for(const o of all()){
+        const k=dayKeyOf(o);if(!k)continue;
+        total.set(k,(total.get(k)||0)+1);
+        if(available(o))ready.set(k,(ready.get(k)||0)+1);
+      }
+      for(const k of [...total.keys()].sort())if(!days.includes(k))days.push(k);
+      const totalReady=[...ready.values()].reduce((a,b)=>a+b,0);
+      const chip=(key,on)=>{
+        const n=ready.get(key)||0,m=total.get(key)||0;
+        return `<button type="button" class="dm-daychip${on?' on':''}${n?'':' empty'}" data-act="day" data-day="${key}" aria-pressed="${on}">
+          <i>${e(weekdayOf(key))}</i><b>${e(key.slice(5).replace('-','/'))}</b>${n?`<em>${n}</em>`:''}</button>`;
+      };
+      box.innerHTML=`<div class="dm-daybar" role="group" aria-label="按交付日筛选">
+        <button type="button" class="dm-daychip all${dayFilter?'':' on'}" data-act="dayAll" aria-pressed="${!dayFilter}">
+          <i>全部</i><b>日期</b><em>${totalReady}</em></button>
+        <div class="dm-daylist">${days.map((k,i)=>(i&&weekdayOf(k)==='周一'?'<i class="dm-daysep" aria-hidden="true"></i>':'')+chip(k,k===dayFilter)).join('')}</div>
+        <label class="dm-daypick"><span>指定日期</span>
+          <input type="date" data-field="dayPick" value="${e(dayFilter||'')}" aria-label="选择交付日"></label>
+      </div>`;
+    }
+    function paint(){dates();config();list();runs();details();plan();costs();drawMap();
       const note=root.querySelector('[data-box="stops"] .dm-note'),slot=el('routenote');
       if(note&&slot)slot.appendChild(note);
     }
@@ -769,6 +807,16 @@
       if(a==='prefs'){writePref('filters',{filter,search,stateFilter});notice('已保存当前账号的筛选');return}
       if(a==='unfilter'){filter='';stateFilter='';search='';pageNo=0;writePref('filters',{});root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';paint();return}
       if(a==='pool'){root.querySelector('.dm-console')?.classList.toggle('hide-pool');return}
+      if(a==='day'||a==='dayAll'){
+        dayFilter=a==='day'?(b.dataset.day||''):'';
+        if(dayFilter)date=dayFilter;
+        selected=selected.filter(id=>{const o=byKey(id);return !dayFilter||dayKeyOf(o)===dayFilter});
+        invalidateRoad();
+        pageNo=0;paint();
+        const pts=all().filter(o=>accepts(o,'available')).map(position).filter(Boolean);
+        if(pts.length)fit(pts,9);
+        return;
+      }
       if(a==='loadRun'){loadRoute(id);return}
       if(a==='layer'){const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));prefMap.set('layers',showLayer);drawMap();return}
       if(a==='undo'&&undoStack.length){const x=undoStack.pop();selected=x.ids;splitOut=x.split;stopFacts=x.facts;locked=x.locked;lastCheck=null;invalidateRoad();paint();return}
@@ -814,6 +862,16 @@
       if(ev.target.dataset.check){invalidateRoad();routeChecks[ev.target.dataset.check]=value;lastCheck=null;plan();return}
       if(ev.target.dataset.leg){invalidateRoad();const {leg,prop}=ev.target.dataset;const s=stopFacts[leg]||={};s[prop]=value;if(prop==='road_ref'){const i=selected.indexOf(leg);s.from_id=i?selected[i-1]:depot()?.id}lastCheck=null;plan();return}
       if(!key || busy)return;
+      if(key==='dayPick'){
+        dayFilter=value||'';
+        if(dayFilter)date=dayFilter;
+        selected=selected.filter(id=>{const o=byKey(id);return !dayFilter||dayKeyOf(o)===dayFilter});
+        invalidateRoad();
+        pageNo=0;paint();
+        const pts=all().filter(o=>accepts(o,'available')).map(position).filter(Boolean);
+        if(pts.length)fit(pts,9);
+        return;
+      }
       if(key==='opacity'){el('map').style.setProperty('--basemap-opacity',String(Number(value)/100));return}
       if(key==='region'){const r=regions[value];if(map && r)map.setView([r[1],r[2]],r[3],{animate:false});ev.target.value='';return;}
       if(key==='routeLoad'){if(value)loadRoute(value);return;}

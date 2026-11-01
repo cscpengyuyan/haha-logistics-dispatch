@@ -300,3 +300,44 @@
   background:#f8fbf5;border:1px dashed #dbe6d6;border-radius:11px;
   padding:10px 11px;
 }
+
+/* ---------- 交付日条 ---------- */
+.dm-dates{margin:0 0 10px}
+.dm-daybar{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow-1);padding:8px 10px;
+}
+.dm-daylist{display:flex;gap:6px;overflow:auto;flex:1;padding:1px 2px;scrollbar-width:thin}
+.dm-daychip{
+  flex:none;display:grid;gap:1px;justify-items:center;
+  min-width:62px;padding:5px 9px 6px;border-radius:10px;
+  border:1px solid var(--line-2);background:#fbfdf9;box-shadow:none;
+  transition:background .15s ease,border-color .15s ease,transform .12s ease;
+}
+.dm-daychip:hover{background:#f2f8ee;border-color:#cfe2d4;box-shadow:none;transform:translateY(-1px)}
+.dm-daychip i{font-style:normal;font-size:9px;color:#8ba398;letter-spacing:.02em}
+.dm-daychip b{font-size:12.5px;font-weight:680;letter-spacing:-.015em;color:var(--ink);font-variant-numeric:tabular-nums}
+.dm-daychip em{
+  font-style:normal;font-size:9.5px;font-weight:700;color:#35685c;
+  background:#eef3ec;border-radius:999px;padding:0 7px;min-width:18px;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.dm-daychip.empty{opacity:.55}
+.dm-daychip.empty em{background:#f3f6f1;color:#9aada3}
+.dm-daychip.on{
+  background:linear-gradient(180deg,#13806a,#0f6a58);border-color:transparent;
+  box-shadow:0 8px 18px -14px rgba(15,106,88,.95),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.dm-daychip.on i{color:#b7ddcd}
+.dm-daychip.on b{color:#fff}
+.dm-daychip.on em{background:rgba(255,255,255,.2);color:#fff}
+.dm-daychip.all{border-style:dashed;min-width:58px}
+.dm-daypick{display:flex;align-items:center;gap:6px;font-size:10px;color:#8ba398;flex:none}
+.dm-daypick input{height:30px;min-height:30px;padding:2px 8px;font-size:11.5px;border-radius:8px}
+@media(max-width:900px){
+  .dm-daypick span{display:none}
+  .dm-daychip{min-width:56px;padding:4px 7px 5px}
+}
+
+.dm-daysep{flex:none;width:1px;align-self:stretch;margin:4px 5px;background:#d6e3d4}

@@ -109,7 +109,7 @@
     return scripts.get(src);
   }
   function mountMap(host){host.innerHTML='<p role="status">正在打开调度地图…</p>';
-    mapPromise??=(async()=>{if(!window.L)await script('./vendor/leaflet.js?v=d40f33c2a370');await script('./vendor/us-states.js?v=e67bc2e1c565');await script('./dispatch-map.js?v=13map3')})().catch(e=>{mapPromise=null;throw e});
+    mapPromise??=(async()=>{if(!window.L)await script('./vendor/leaflet.js?v=d40f33c2a370');await script('./vendor/us-states.js?v=e67bc2e1c565');await script('./dispatch-map.js?v=13day3')})().catch(e=>{mapPromise=null;throw e});
     mapPromise.then(()=>{if(current==='map'&&host.isConnected&&!mounted)mounted=window.DispatchMap.mount(host,ctx())}).catch(()=>{if(current==='map'){host.innerHTML='<p>地图资源未能加载，可继续从订单工作台作业。</p><button data-nav="orders">打开订单列表</button> <button data-nav="map">重新加载地图</button>'}});
   }
   function renderPage(force=false){
