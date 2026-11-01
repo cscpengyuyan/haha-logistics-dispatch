@@ -1,10 +1,10 @@
 {
   "environment": "CUA / ChatGPT in-app browser / actual public Pyodide worker",
   "url": "https://cscpengyuyan.github.io/haha-logistics-dispatch/v13/?dataset=sim200#map",
-  "observed_code_commit": "f912c7ab9f7975c93638ad21a115b30b7aedc5da",
+  "observed_code_commit": "3b368e01d1921e24df5837f1c0e84d5adb052655",
   "pages_build": "built",
   "ready_orders": 200,
-  "plan_id": "PLAN-ac2dd3ae3f234478",
+  "plan_id": "PLAN-f20d61c3444748b5",
   "assigned": 6,
   "total": 6,
   "amount_minor": 240000,
@@ -12,7 +12,8 @@
   "adopted": true,
   "version_after_adoption": 2,
   "formal_dispatch": false,
-  "scope": "Synthetic independent browser database; no shared production state; later lock/timeout follow-up separately regression tested",
+  "scope": "Final backend verified in actual public browser; later adoption-label-only UI update covered by 22 frontend tests",
   "screenshot": "browser-online.jpg",
-  "dom": "browser-online.txt"
+  "solve_status": "budget_exhausted_with_solution",
+  "optimality_scope": "verified_feasible"
 }

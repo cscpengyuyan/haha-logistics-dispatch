@@ -4,6 +4,10 @@
 window.DispatchWorkspace = (() => {
   const stores = new Map();
   const clone = x => JSON.parse(JSON.stringify(x));
+  // Match planning.ROUTE_INPUT_FIELDS; solver output is not client input.
+  const routeInputFields = new Set(['id','version','name','warehouse','date','start_time','timezone','order_ids','order_versions','resource_id','crew_id','executor_id','service_minutes','notes','road_basis','road_id','road','checks','stops','return_policy','collections','cost_scenario','rate_card_id']);
+  const routeFacts = route => clone(Object.fromEntries(Object.entries(route).filter(([key])=>routeInputFields.has(key))));
+  const adoptedCandidate = plan => plan.state==='adopted_pending_release'&&plan.validation_status!=='stale'&&typeof plan.adopted_candidate==='string'?plan.adopted_candidate:null;
   const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const labels = {no_feasible_candidates:'当前候选无可行方案',budget_exhausted_with_solution:'预算耗尽，已有可行解',timeout_no_solution:'限时未找到解',generated_candidates:'已生成候选集合内最优',verified_feasible:'已验证可行解',undetermined:'尚无最优性结论',lowest_cost:'低总价',earliest_finish:'较早完成',fewest_transfers:'少转运',delivery_complete:'完整履约',authorized_stage:'已授权阶段',passed:'校验通过',valid:'校验通过',pending:'条件待补',failed:'校验失败',stale:'输入已变更',completed:'计算完成',feasible:'已找到可行解',optimal:'候选集合内最优',not_proven:'未证明最优',not_started:'尚未计算',needs_confirmation:'条件待确认',conditions_pending:'条件待补',cancelled:'已取消'};
   const label = s => labels[s] || s || '待核';
@@ -15,16 +19,17 @@ window.DispatchWorkspace = (() => {
     if (stores.has(key)) return stores.get(key);
     let cached; try { cached = JSON.parse(localStorage.getItem(key)); } catch {}
     const state = {plan_id:'LOCAL-'+(globalThis.crypto?.randomUUID?.()||Date.now()),version:0,order_ids:[],planning_scope:'delivery_complete',objective:'lowest_cost',timezone:'America/Chicago',candidates:[],routes:[],unassigned:[],assumptions:[],locks:{},view:{day:'',from:'',to:'',search:''},...cached,busy:false,error:'',listeners:new Set()};
+    state.adopted_candidate_id=adoptedCandidate(state);
     const save = () => {try {const {listeners,busy,error,...data}=state;localStorage.setItem(key,JSON.stringify(data));} catch {}};
     const emit = () => {save();[...state.listeners].forEach(fn=>fn());};
-    const invalidate = reason => {state.validation_status='stale';state.stale_reason=reason;state.precheck=null;state.version=(Number(state.version)||0)+1;};
+    const invalidate = reason => {state.validation_status='stale';state.stale_reason=reason;state.precheck=null;state.adopted_candidate_id=null;state.adopted_candidate=null;state.version=(Number(state.version)||0)+1;};
     let pollEpoch=0;
     const inputKey=()=>JSON.stringify([state.order_ids,state.planning_scope,state.objective,state.locks,state.manual_routes||null]);
     const store = {state,emit,dataset,subscribe(fn){state.listeners.add(fn);return()=>state.listeners.delete(fn)},
       selection(ids, reason='订单范围已修改，请重新计算') {const next=[...new Set(ids.map(String))];if(JSON.stringify(next)===JSON.stringify(state.order_ids))return;state.undo={order_ids:state.order_ids.slice(),locks:clone(state.locks)};state.order_ids=next;invalidate(reason);emit();},
       edit(reason, patch={}) {Object.assign(state,patch);invalidate(reason);emit();},
       view(patch) {Object.assign(state.view,patch);save();},
-      update(plan) {const selected=state.order_ids.slice();if(plan.validation_status==='passed')state.last_feasible=clone(plan);Object.assign(state,plan);state.plan_id=plan.plan_id||plan.id||state.plan_id;state.order_ids=plan.order_ids||selected;state.stale_reason='';state.input_versions=plan.input_versions||state.input_versions;emit();},
+      update(plan) {const selected=state.order_ids.slice();if(plan.validation_status==='passed')state.last_feasible=clone(plan);Object.assign(state,plan);state.plan_id=plan.plan_id||plan.id||state.plan_id;state.order_ids=plan.order_ids||selected;state.state=plan.state||null;state.adopted_candidate_id=adoptedCandidate(plan);state.adopted_candidate=state.adopted_candidate_id;state.stale_reason='';state.input_versions=plan.input_versions||state.input_versions;emit();},
       checkVersions(orders) {if(!state.input_versions)return;const map=new Map(orders.map(o=>[o.id,o.version]));if(state.validation_status!=='stale'&&Object.entries(state.input_versions).some(([id,v])=>map.get(id)!==v)){invalidate('订单版本已变化，请重新预检与计算');emit();}},
       active(){return state.candidates.find(c=>String(c.id)===String(state.active_candidate_id))||state.candidates[0]||null},
       routes(){return store.active()?.routes||state.routes||[]},
@@ -51,7 +56,7 @@ window.DispatchWorkspace = (() => {
         if(!state.order_ids.length){state.error='请先明确加入本批计划的订单。';emit();return}
         state.busy=true;state.error='';const revision=state.version;emit();
         try {
-          const payload={order_ids:state.order_ids.slice(),planning_scope:state.planning_scope,objective:state.objective,timezone:state.timezone,locks:state.locks,budget_seconds:ctx.publicDemo?30:120,calculate_roads:!ctx.publicDemo&&!!ctx.routingEnabled};if(state.manual_routes?.length)payload.route_candidates=clone(state.manual_routes);
+          const payload={order_ids:state.order_ids.slice(),planning_scope:state.planning_scope,objective:state.objective,timezone:state.timezone,locks:state.locks,budget_seconds:ctx.publicDemo?30:120,calculate_roads:!ctx.publicDemo&&!!ctx.routingEnabled};if(state.manual_routes?.length)payload.route_candidates=state.manual_routes.map(routeFacts);
           if(action==='precheck'){const result=await ctx.api('/api/ops/plans/precheck',{method:'POST',body:payload});if(state.version!==revision)throw Error('预检期间输入已变化，请重新预检');state.precheck=result;}
           else if(action==='optimize') {let response;
             if(ctx.publicDemo)response=await ctx.api('/api/ops/plans/optimize',{method:'POST',body:payload});
@@ -64,7 +69,7 @@ window.DispatchWorkspace = (() => {
             }
             if(state.version!==revision)throw Error('计算期间订单或约束已变化；迟到结果未覆盖当前批次，请重新计算');
             store.update(response.plan||response);state.input_versions=Object.fromEntries((ctx.orders||[]).filter(o=>state.order_ids.includes(o.id)).map(o=>[o.id,o.version]));state.active_candidate_id=state.candidates[0]?.id;state.manual_routes=null;}
-          else if(action==='adopt') {const response=await ctx.api('/api/ops/plans/'+encodeURIComponent(state.plan_id)+'/adopt',{method:'POST',body:{version:state.version,candidate_id:candidateId,idempotency_key:'adopt:'+state.plan_id+':'+state.version+':'+candidateId}});if(state.version===revision){store.update(response.plan||response);state.adopted_candidate_id=candidateId;}else {state.error='原计划已采用为草案；当前修改后的批次已保留，请重新计算。';state.last_adopted_plan=(response.plan||response).plan_id;}ctx.toast?.('方案已采用为草案，正式签发仍须逐段核验。');await ctx.refresh?.();}
+          else if(action==='adopt') {const response=await ctx.api('/api/ops/plans/'+encodeURIComponent(state.plan_id)+'/adopt',{method:'POST',body:{version:state.version,candidate_id:candidateId,idempotency_key:'adopt:'+state.plan_id+':'+state.version+':'+candidateId}});if(state.version===revision){store.update(response.plan||response);}else {state.error='原计划已采用为草案；当前修改后的批次已保留，请重新计算。';state.last_adopted_plan=(response.plan||response).plan_id;}ctx.toast?.('方案已采用为草案，正式签发仍须逐段核验。');await ctx.refresh?.();}
         } catch(error) {state.error=error.message||'请求失败，计划已保留。';}
         finally {state.busy=false;emit();}
       }

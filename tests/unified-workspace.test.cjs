@@ -56,6 +56,60 @@ test('manual route edits are sent through the same optimizer and null-cost candi
  await store.act(ctx,'optimize');assert.equal(store.routes().length,0);assert.equal(store.drafts().length,1);assert.equal(store.state.validation_status,'conditions_pending');
 });
 
+test('adopting then optimizing a different plan with ALT-1 clears the actual panel adoption label',async()=>{
+ const storage=new Map(),W=boot(storage),ctx={user,publicDemo:true,orders:[{id:'A',version:1}]},store=W.open(ctx);
+ const candidate={id:'ALT-1',validation_status:'passed',routes:[],unassigned:[]},initial={id:'P1',version:1,state:'candidates_ready',order_ids:['A'],candidates:[candidate],validation_status:'passed'};
+ store.update(initial);store.state.sim_summary={orders:200,states:{}};
+ const host={innerHTML:'',addEventListener(){},removeEventListener(){}},panel=W.panel(host,ctx);
+ ctx.api=async(path)=>{assert.equal(path,'/api/ops/plans/P1/adopt');return {plan:{...initial,version:2,state:'adopted_pending_release',adopted_candidate:'ALT-1'}}};
+ await store.act(ctx,'adopt','ALT-1');assert.equal(store.state.adopted_candidate_id,'ALT-1');assert.match(host.innerHTML,/>已采用<\/button>/);
+ ctx.api=async(path)=>{assert.equal(path,'/api/ops/plans/optimize');return {plan:{...initial,id:'P2'}}};
+ await store.act(ctx,'optimize');assert.equal(store.state.plan_id,'P2');assert.equal(store.state.version,1);assert.equal(store.state.adopted_candidate_id,null);
+ assert.doesNotMatch(host.innerHTML,/>已采用<\/button>/);assert.match(host.innerHTML,/>采用为草案<\/button>/);
+ assert.equal(boot(storage).open(ctx).state.adopted_candidate_id,null);panel.destroy();
+});
+
+test('input invalidation and cached stale plans cannot retain an adopted marker',()=>{
+ for(const change of [s=>s.selection(['B']),s=>s.edit('new constraint',{locks:{date:'2030-07-11'}}),s=>s.checkVersions([{id:'A',version:2}])]){
+  const storage=new Map(),W=boot(storage),ctx={user},store=W.open(ctx);
+  store.update({id:'P1',version:2,state:'adopted_pending_release',adopted_candidate:'ALT-1',order_ids:['A'],input_versions:{A:1},candidates:[{id:'ALT-1'}],validation_status:'passed'});
+  assert.equal(boot(storage).open(ctx).state.adopted_candidate_id,'ALT-1');change(store);
+  assert.equal(store.state.validation_status,'stale');assert.equal(store.state.adopted_candidate_id,null);assert.equal(boot(storage).open(ctx).state.adopted_candidate_id,null);
+ }
+ const storage=new Map([['haha-v13-plan:default:shared:dispatch',JSON.stringify({plan_id:'P2',version:1,state:'candidates_ready',adopted_candidate_id:'ALT-1',adopted_candidate:'ALT-1'})]]);
+ assert.equal(boot(storage).open({user}).state.adopted_candidate_id,null);
+});
+
+test('adoption markers come from server state and candidate rather than the requested candidate',async()=>{
+ const W=boot(),ctx={user,publicDemo:true},store=W.open(ctx),base={id:'P1',version:1,state:'candidates_ready',order_ids:['A'],candidates:[{id:'ALT-1'},{id:'ALT-2'}],validation_status:'passed'};
+ store.update(base);ctx.api=async()=>({plan:{...base,version:2,state:'adopted_pending_release',adopted_candidate:'ALT-2'}});
+ await store.act(ctx,'adopt','ALT-1');assert.equal(store.state.adopted_candidate_id,'ALT-2');
+ store.update({...base,version:3,adopted_candidate:'ALT-2'});assert.equal(store.state.adopted_candidate_id,null);
+ store.update({...base,state:'adopted_pending_release'});assert.equal(store.state.adopted_candidate_id,null);
+});
+
+test('manual candidates project the backend fact allowlist for browser and queued requests without losing edits',async()=>{
+ const backend=fs.readFileSync('v13/engine/planning.py','utf8'),fields=new Set([...backend.match(/ROUTE_INPUT_FIELDS\s*=\s*\{([\s\S]*?)\}/)[1].matchAll(/'([^']+)'/g)].map(m=>m[1]));
+ for(const publicDemo of [true,false]){
+  const W=boot(),ctx={user,publicDemo,orders:[{id:'A',version:3}]},store=W.open(ctx);
+  const original={id:'C1',version:0,name:'Car',warehouse:'W',date:'2030-07-10',start_time:'08:00',timezone:'America/Chicago',order_ids:['A'],order_versions:{A:3},resource_id:'V1',crew_id:'CREW',executor_id:'SUP',service_minutes:45,notes:'manual note',road_basis:'valhalla_truck',road_id:'ROAD',road:{id:'ROAD',geometry:[[32,-96],[33,-97]]},checks:{driver:'DRIVER'},stops:{A:{service:45}},return_policy:'origin',collections:{A:[{rma_id:'RMA-1',service_minutes:10}]},cost_scenario:{extra:20},rate_card_id:'RATE',_manual:true,
+   kind:'delivery',segments:[],future_segments:[],technical_tasks:[],dependencies:[],cost_items:[{amount_minor:1}],total_minor:1,currency:'USD',occupancy:[{kind:'vehicle'}],activations:{day:1},pools:[],sns:['SN'],load_profile:[],issues:[],validation_status:'passed',planning_scope:'delivery_complete',finish:123,check_result:{issues:[]},warehouse_id:'WAREHOUSE',first_leg_ids:[],type:'route',unknown:'not a fact'};
+  store.update({id:'P1',version:1,state:'candidates_ready',order_ids:['A'],candidates:[{id:'ALT-1',routes:[original]}]});
+  store.edit('manual changes',{locks:{vehicle_id:'V2',station_order:['A']}});store.stageRoute({...original,resource_id:'V2',stops:{A:{service:70}}},0);
+  const finish={id:'P2',version:1,state:'candidates_ready',order_ids:['A'],candidates:[],validation_status:'conditions_pending'};let submissions=0;
+  ctx.api=async(path,options)=>{
+   if(!options)return {job:{id:'J1',state:'completed',result:{plan:finish}}};
+   submissions++;assert.equal(path,publicDemo?'/api/ops/plans/optimize':'/api/ops/jobs');const body=options.body,route=body.route_candidates[0];
+   assert.deepEqual(Object.keys(route).sort(),[...fields].sort());assert.equal(route.resource_id,'V2');assert.equal(route.stops.A.service,70);
+   assert.deepEqual(JSON.parse(JSON.stringify(route.collections)),original.collections);assert.equal(route.road.id,'ROAD');assert.equal(route.cost_scenario.extra,20);
+   assert.equal(body.locks.vehicle_id,'V2');assert.deepEqual(Array.from(body.locks.station_order),['A']);
+   assert.equal(store.state.manual_routes[0].total_minor,1);assert.equal(original.resource_id,'V1');assert.equal(original.stops.A.service,45);
+   return publicDemo?{plan:finish}:{job:{id:'J1',state:'queued'}};
+  };
+  await store.act(ctx,'optimize');assert.equal(submissions,1);assert.equal(store.state.error,'');assert.equal(store.state.plan_id,'P2');
+ }
+});
+
 test('refresh recovery fences old job input after selection changes',async()=>{
  const W=boot(),ctx={user},store=W.open(ctx);store.selection(['A']);store.state.job_id='OLDJOB';store.state.job_state='running';store.state.job_input_key=JSON.stringify([['A'],'delivery_complete','lowest_cost',{},null]);store.selection(['B']);
  ctx.api=async()=>({job:{state:'completed',result:{plan:{id:'OLDPLAN',version:1,order_ids:['A'],candidates:[]}}}});
