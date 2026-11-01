@@ -68,7 +68,7 @@ class Shared(unittest.TestCase):
         self.cookies['sales']=self.hit(None,'/api/demo-login',dict(username='sales'))[2]['Set-Cookie'].split(';')[0]
         self.assertEqual(self.hit('sales','/api/orders',doc,h)[1]['order']['id'],oid)
     def test_two_named_warehouse_accounts_race_same_sn(self):
-        doc=dict(customer='SIM',address='TEST',zip='06103',warehouse='Dallas',model='M01',quantity=1,endpoint='dock')
+        doc=dict(customer='SIM',address='TEST',zip='06103',warehouse='Dallas',model='M01',quantity=1,level='L1',endpoint='dock')
         ids=[self.hit('sales','/api/orders',doc)[1]['order'] for _ in range(2)]
         with closing(server.connect(self.path)) as db:db.execute("INSERT INTO users(username,name,role,passhash) VALUES(?,?,?,?)",('night','SIM night','warehouse',server.password_hash('test-only-123456')))
         self.cookies['night']=self.hit(None,'/api/login',dict(username='night',password='test-only-123456'))[2]['Set-Cookie'].split(';')[0]

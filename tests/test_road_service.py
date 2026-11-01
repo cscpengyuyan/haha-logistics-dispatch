@@ -48,6 +48,17 @@ class RoadInputs(unittest.TestCase):
                               "road_basis":"valhalla_truck","road_id":road["id"]})
 
 
+class TestRoadBoundaries(unittest.TestCase):
+    def test_islands_and_cross_border(self):
+        def check(*pairs):
+            return road_service.continuous_us_road([dict(lat=y,lon=x) for y,x in pairs])
+        check((21.368664,-157.91057),(21.367579,-157.90535))
+        with self.assertRaisesRegex(core.ApiError,"无连续公路"):
+            check((21.36,-157.9),(20.88,-156.45))
+        with self.assertRaisesRegex(core.ApiError,"加拿大"):
+            check((61.563,-149.294),(47.604,-122.326))
+
+
 class TestPlannerContract(RoadInputs):
     def test_provider_contract_changes_rollback_and_fail_closed(self):
         data = self.plan([0,1,2])

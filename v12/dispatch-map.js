@@ -131,9 +131,12 @@
     let records=new Map(), warehouses=[], fleet=[], routes=[], selected=[], focused='', filter='', search='', stateFilter='', warehouse='', vehicle='', routeId='', version=null;
     let name='', notes='', date='', start='08:00', zone='America/Chicago', service=45, message='';
     let costDraft={}, crew='', executor='', routeChecks={}, stopFacts={}, lastCheck=null, drivers=[], grantNote='', pageNo=0, locked='', undoStack=[], splitOut=[];
-    const showLayer={orders:true,warehouses:true,route:true,supplier:false,crew:false};
+    const defaults={orders:true,warehouses:true,route:true,supplier:false,crew:false,assigned:true,pending:true,window:true,draft:true,computed:true};
+    const prefMap=DispatchViews.prefs(ctx,'dispatch');
+    const showLayer={...defaults,...prefMap.get('layers',{})};
     let capabilities=null,capLoad=null,capError='',capFilter='';
     const maySeeScope=()=>['admin','dispatch','procurement','finance'].includes(ctx.user?.role);
+    if(!maySeeScope()){showLayer.supplier=false;showLayer.crew=false}
     const keyPrefix='haha-map-v12:'+ctx.user?.username+':';
     function readPref(key,fallback){try{return JSON.parse(localStorage.getItem(keyPrefix+key))??fallback}catch{return fallback}}
     function writePref(key,value){try{localStorage.setItem(keyPrefix+key,JSON.stringify(value))}catch{}}
@@ -215,7 +218,7 @@
       <div class="dm-shortcuts" aria-label="调度区定位">${btn('jumpList','选单')}${btn('jumpMap','看图')}${btn('jumpPlan','站序')}</div>
       <div class="dm-grid"><section class="dm-mapcard"><header><div><small>DISPATCH COVERAGE</small><h3>交付点与仓点</h3></div><div class="dm-actions"><select data-field="region" aria-label="聚焦区域"><option value="">聚焦区域…</option>${Object.entries(regions).map(([k,v])=>option(k,v[0],'')).join('')}</select>${btn('home','回到本仓')}${btn('nation','全美视图')}</div></header>
         <div class="dm-map" data-box="map" aria-label="美国交付点调度地图"></div>
-        <footer><span class="dm-legend" aria-label="图层开关">${['warehouses','orders','route'].map((k,i)=>btn('layer',['▣ 仓点','● 订单','➝ 站序'][i],`data-key="${k}" aria-pressed="true"`)).join('')}${maySeeScope()?['supplier','crew'].map((k,i)=>btn('capLayer',['◇ 供应商','◆ 班组'][i],`data-key="${k}" aria-pressed="false"`)).join(''):''}<label>底图 <input data-field="opacity" type="range" min="20" max="100" value="80" aria-label="底图透明度"></label></span><span class="dm-live" data-box="layer"></span><button type="button" data-box="retryMap">重试街道底图</button><span data-box="routeCredit"></span><span data-box="counts"></span></footer><div data-box="capabilities" class="dm-capabilities" hidden></div><div class="dm-routebar" data-box="itinerary"></div></section>
+        <footer><div class="dm-baseselect">${DispatchViews.html}</div><span class="dm-legend" aria-label="图层开关">${['warehouses','orders','assigned','pending','window','route','draft','computed'].map((k,i)=>btn('layer',['▣ 仓 / 站','● 交接点','已派','待派','窗异常','➝ 站序','草案','道路结果'][i],`data-key="${k}" aria-pressed="${showLayer[k]}"`)).join('')}${maySeeScope()?['supplier','crew'].map((k,i)=>btn('capLayer',['◇ 供应商','◆ 班组'][i],`data-key="${k}" aria-pressed="${showLayer[k]}"`)).join(''):''}<label>底图 <input data-field="opacity" type="range" min="20" max="100" value="80" aria-label="底图透明度"></label></span><span class="dm-live" data-box="layer"></span><button type="button" data-box="retryMap">重试街道底图</button><span data-box="routeCredit"></span><span data-box="counts"></span></footer><div data-box="capabilities" class="dm-capabilities" hidden></div><div class="dm-routebar" data-box="itinerary"></div></section>
         <section class="dm-queue"><header><div><small>ORDER POOL</small><h3>地图订单池</h3></div><b data-box="total"></b></header><div data-box="list" class="dm-list"></div></section></div>
       <section class="dm-detail" data-box="detail"></section>
       <section class="dm-plan"><header><div><small>MULTI-STOP ROUTE</small><h3>多站排线</h3></div><div class="dm-actions"><select data-field="routeLoad" aria-label="调出共享批次"></select>${btn('clear','新建草案')}</div></header>
@@ -223,7 +226,7 @@
        <p data-box="message" class="dm-msg" role="status"></p></section></section>`;
     function initMap(){
       if (!window.L || !window.US_STATES) {el('map').textContent='地图资源未加载。可继续在订单池查看订单和排线。';return;}
-      map=L.map(el('map'),{minZoom:2,maxZoom:18,zoomSnap:0.25,scrollWheelZoom:false,attributionControl:false});
+      map=L.map(el('map'),{minZoom:0,maxZoom:18,zoomSnap:0.25,zoomAnimation:false,fadeAnimation:false,scrollWheelZoom:true,attributionControl:false});
       const attribution=L.control.attribution({position:'bottomright',prefix:false}).addTo(map).addAttribution('Leaflet · 离线州界');
       map.createPane('dispatchPlan').style.zIndex='430';
       const activeStates=new Set(all().map(o=>o.state));
@@ -259,11 +262,11 @@
         tile.on('remove',()=>states.setStyle({fillOpacity:1}));
       }
       const coords=[...all().map(position),...warehouses.map(position)].filter(Boolean);
-      const view=readPref('view',null);
+      const view=prefMap.get('view',null);
       if(view && position(view))map.setView([view.lat,view.lng],view.zoom);
       else if(position(depot()))map.setView(position(depot()),10);
       else if(coords.length)fit(coords,8);else nationView();
-      map.on('moveend',()=>{const p=map.getCenter();writePref('view',{lat:p.lat,lng:p.lng,zoom:map.getZoom()})});
+      map.on('moveend',()=>{const p=map.getCenter();prefMap.set('view',{lat:p.lat,lng:p.lng,zoom:map.getZoom()})});
       map.on('zoomend',drawMap);
       cleanups.push(()=>map.off('zoomend',drawMap));
       offlineData().then(data=>{
@@ -272,13 +275,17 @@
           if(!ctx.tilesEnabled&&!streetLayer)el('layer').textContent='离线公路与州界';
         }
       }).catch(()=>{if(!destroyed && !ctx.tilesEnabled)el('layer').textContent='离线州界 · 公路图层不可用';});
+      let styleId='local';
+      DispatchViews.bind(map,root,prefMap,{home:()=>{if(position(depot()))map.setView(position(depot()),12)},
+        route:()=>fit([eligibleDepot(),...selected.map(id=>position(byKey(id)))].filter(Boolean),15),
+        style:id=>{styleId=id;streetLayer?.setStyle(id)}});
       function streetMap(){
         if(streetBusy||streetLayer)return;
         streetBusy=true;
         loadBasemap().then(()=>destroyed?null:window.attachDFWBasemap(map,msg=>{
           if(!destroyed)el('layer').textContent=msg;
-        },()=>!destroyed)).then(layer=>{
-          if(!layer || destroyed)return;streetLayer=layer;cleanups.push(()=>streetLayer.remove());
+        },()=>!destroyed,styleId)).then(layer=>{
+          if(!layer || destroyed)return;streetLayer=layer;streetLayer.setStyle(styleId);cleanups.push(()=>streetLayer.remove());
         }).catch(()=>{if(!destroyed)el('layer').textContent='街道底图未载入，仍可使用州界和主干道';})
           .finally(()=>{streetBusy=false;});
       }
@@ -295,7 +302,7 @@
         // Keep the operator's viewport when panels change size.
       });observer.observe(el('map'));
     }
-    function nationView(){if(map) map.fitBounds([[24.5,-125],[49.5,-66.5]],{padding:[8,8],animate:false});}
+    function nationView(){if(map)DispatchViews.fit(map,'us');}
     function fit(points,max=10){if(map && points.length) map.fitBounds(L.latLngBounds(points),{padding:[34,34],maxZoom:max,animate:false});}
     function validRoad(){return road && road.key===roadKey()?road:null;}
     function drawCapabilities(){
@@ -320,7 +327,7 @@
       }
     }
     async function capLayer(b){
-      const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));
+      const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));prefMap.set('layers',showLayer);
       capFilter='';drawMap();await fetchScope();
     }
     async function fetchScope(){
@@ -334,7 +341,12 @@
       if(!map){drawCapabilities();return}
       pins.clearLayers();lines.clearLayers();drawCapabilities();
       const orders=[...new Map([...visible(),...selected.map(byKey).filter(Boolean)].map(o=>[orderKey(o),o])).values()];
-      const points=[...warehouses.filter(w=>showLayer.warehouses&&position(w)).map(w=>({w,p:position(w)})),...orders.filter(o=>showLayer.orders&&position(o)).map(o=>({o,p:position(o)}))];
+      const assignedStatuses=['dispatched','in_transit','at_station','last_mile','delivered','settled'];
+      const delays=new Set(orders.filter(o=>['new','ready','dispatched','in_transit','last_mile'].includes(o.status)
+        && instant(o.window_end,o.timezone)<Date.now()).map(orderKey));
+      const orderPoints=orders.filter(o=>position(o)&&showLayer.orders&&
+        showLayer[assignedStatuses.includes(o.status)?'assigned':'pending']).map(o=>({o,p:position(o)}));
+      const points=[...warehouses.filter(w=>showLayer.warehouses&&position(w)).map(w=>({w,p:position(w)})),...orderPoints];
       const cells=new Map(),radius=map.getZoom()<7?45:17;
       for(const item of points){
         const pixel=map.project(item.p);
@@ -345,7 +357,7 @@
       }
       for(const {items} of cells.values()){
         const os=items.filter(i=>i.o).map(i=>i.o), ws=items.filter(i=>i.w).map(i=>i.w), pos=items[0].p;
-        const chosen=os.filter(o=>selected.includes(orderKey(o))),alerts=os.filter(o=>o.status==='exception');
+        const chosen=os.filter(o=>selected.includes(orderKey(o))),alerts=os.filter(o=>o.status==='exception'||(showLayer.window&&delays.has(orderKey(o))));
         const plural=items.length>1,city=ws[0]?.name||os[0]?.city||'订单';
         const title=plural?`${city} · ${ws.length} 仓 / ${os.length} 票${alerts.length?' / 异常 '+alerts.length:''}`:ws[0]?.name||os[0].id;
         const index=chosen.length?selected.indexOf(orderKey(chosen[0]))+1:0;
@@ -369,7 +381,9 @@
       }
       if(selected.length && eligibleDepot() && selected.every(id=>position(byKey(id)))){
         const r=validRoad();
-        if(!showLayer.route)return;const points=r?r.geometry:[eligibleDepot(),...selected.map(id=>position(byKey(id)))];
+        const visibleLine=r&&!r.cached?showLayer.computed:showLayer.draft;
+        if(!showLayer.route||!visibleLine)return;
+        const points=r?r.geometry:[eligibleDepot(),...selected.map(id=>position(byKey(id)))];
         L.polyline(points,{pane:'dispatchPlan',interactive:false,color:'#176d60',weight:3.5,opacity:0.92,dashArray:r?null:'7 7'}).addTo(lines);
         if(r && points.length>3){
           for(const fraction of [0.23,0.55,0.81]){
@@ -382,13 +396,14 @@
           }
         }
       }else if(!selected.length && byKey(focused)){
-        if(!showLayer.route)return;const pts=ticketPoints(byKey(focused));
-        if(pts.every(Boolean))L.polyline(pts,{pane:'dispatchPlan',interactive:false,color:'#486b99',weight:3,dashArray:'4 6'}).addTo(lines);
+        if(!showLayer.route||!showLayer.draft)return;const pts=ticketPoints(byKey(focused));
+        if(pts.length>1&&pts.every(Boolean))L.polyline(pts,{pane:'dispatchPlan',interactive:false,color:'#486b99',weight:3,dashArray:'4 6'}).addTo(lines);
       }
     }
     function ticketPoints(o){
       const points=[position(warehouses.find(w=>w.name===o.warehouse))];
       if(o.pickup)return points;
+      if(['ltl','platform'].includes(o.procurement_mode))return [];
       if(viaStation(o))points.push(position(warehouses.find(w=>w.name===o.station_name)));
       points.push(position(o));return points;
     }
@@ -661,7 +676,7 @@
       if(a==='prefs'){writePref('filters',{filter,search,stateFilter});notice('已保存当前账号的筛选');return}
       if(a==='unfilter'){filter='';stateFilter='';search='';pageNo=0;writePref('filters',{});root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';paint();return}
       if(a==='pool'){root.querySelector('.dm-grid').classList.toggle('hide-pool');return}
-      if(a==='layer'){const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));drawMap();return}
+      if(a==='layer'){const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));prefMap.set('layers',showLayer);drawMap();return}
       if(a==='undo'&&undoStack.length){const x=undoStack.pop();selected=x.ids;splitOut=x.split;stopFacts=x.facts;locked=x.locked;lastCheck=null;invalidateRoad();paint();return}
       if(a==='split'&&selected.length>1){if(locked===selected.at(-1)){notice('请先解锁末站');return}checkpoint();splitOut.push(selected.pop());invalidateRoad();paint();return}
       if(a==='lock'){locked=locked===id?'':id;plan();return}
@@ -733,7 +748,7 @@
     const pref=readPref('filters',{});filter=pref.filter||'';search=pref.search||'';stateFilter=pref.stateFilter||'';
     root.querySelector('[data-field=filter]').value=filter;root.querySelector('[data-field=search]').value=search;
     if(canEdit())ctx.api?.('/api/drivers').then(result=>{if(!destroyed){drivers=result.drivers||[];config()}}).catch(()=>{});
-    initMap();el('layer').textContent=ctx.tilesEnabled?'内网街道底图':'离线州界';paint();
+    initMap();if(maySeeScope())fetchScope();el('layer').textContent=ctx.tilesEnabled?'内网街道底图':'离线州界';paint();
     if(ctx.demo || ctx.publicDemo)demoLegs().then(data=>{if(!destroyed){demoCache=data;plan();}}).catch(()=>{});
     if(ctx.focusOrderId && byKey(ctx.focusOrderId))focusOrder(ctx.focusOrderId,true);
     function dragStart(ev){const row=ev.target.closest('[data-stop]');if(row && canEdit())ev.dataTransfer.setData('text/plain',row.dataset.stop)}

@@ -32,6 +32,7 @@ def provision_training(db):
     db.execute("INSERT OR IGNORE INTO supplier_logins VALUES('supplier','SIM-SUB-B')")
     routing.example_plan(db,dict(id="SIM-RESOURCE-CATALOG",version=1,warehouse="Dallas",window_start=DAY+"T09:00"),{"role":"admin","username":"demo-fixture"},executor="SIM-SUB-B")
     provision_sailings(db)
+    provision_ocean_demo(db)
 
 def provision_sailings(db):
     if not db.execute("SELECT 1 FROM metadata WHERE key='training_sailings_v1'").fetchone():
@@ -48,6 +49,32 @@ def provision_sailings(db):
                            pickup_eta="2026-10-24T14:00:00-05:00",planned_warehouse="2026-10-25T10:00:00-05:00")
             ids=supply.register_sailings(db,{"candidates":[base,alternate]},{"role":"admin","username":"demo-fixture"})["ids"]
             db.execute("INSERT INTO metadata VALUES('training_sailings_v1',?)",(ids[0],))
+def provision_ocean_demo(db):
+    """Book two fictional training batches only in the isolated demo data set."""
+    import supply, lifecycle
+    if db.execute("SELECT 1 FROM metadata WHERE key='ocean_two_batches_v1'").fetchone():
+        return
+    opts=db.execute("SELECT id,data FROM sailing_options WHERE json_extract(data,'$.voyage') IN ('SIM-SHA-HOU-01','SIM-SHA-HOU-02') ORDER BY json_extract(data,'$.voyage') LIMIT 2").fetchall()
+    if len(opts)!=2:
+        return
+    actor={"username":"demo-fixture","role":"admin"}
+    for i, row in enumerate(opts, 1):
+        candidate=json.loads(row["data"])
+        count=28 if i==1 else 4
+        booking=dict(candidate,candidate_id=row["id"], batch=f"SIM-OCEAN-{i}", container=f"SIM-CN-{i}", asn=f"SIM-OCEAN-ASN-{i}",
+            mode="FCL",inland="road",owner="demo-fixture",procurement_ref=f"SIM-WRITTEN-BOOKING-{i}",evidence=f"SIM-WRITTEN-BOOKING-{i}",seal=f"SIM-SEAL-{i}",
+            bill_of_lading=f"SIM-BL-{i}",pickup_site="SIM Houston terminal",inland_owner="SIM Houston dray",
+            units=[dict(sn=f"SIM-OCEAN-{i}-{n:03}",model="M01") for n in range(1,count+1)])
+        ship=supply.book(db,booking,actor)["shipment"]
+        if i==1:
+            supply.milestone(db,dict(id=ship["id"],version=ship["version"],kind="eta",at="2026-10-24T10:00:00-05:00",
+                       custodian="SIM line",evidence="SIM carrier revised ETA +2 days"),actor)
+    for n in (1,2):
+        lifecycle.receipt(db,dict(sn=f"SIM-RFQ-M01-{n:02}",warehouse="Dallas",model="M01",bin=f"D-{n}",
+            condition="合格 · 演练",evidence="SIM receiving inspection",batch="SIM available",state="available"),actor)
+    db.execute("INSERT INTO metadata VALUES('ocean_two_batches_v1','1')")
+
+
 def table(db):
     db.execute("CREATE TABLE IF NOT EXISTS practice_run (id INTEGER PRIMARY KEY CHECK(id=1), cursor INTEGER NOT NULL, state TEXT NOT NULL)")
 def state(db):
@@ -106,7 +133,7 @@ def advance(db,body,user):
         serials=[*SN,*(f"DFW-40HQ-{i:02d}" for i in range(3,29))]
         # Explicitly fictional pallet measurements, never reused as a real equipment specification.
         packing=dict(length_cm=100,width_cm=83,height_cm=191,weight_kg=226,upright=True,nonstackable=True)
-        sea("book",candidate_id=candidate,batch="DFW-Q01-B",container="SIM-40HQ-01",seal="SIM-SEAL-01",
+        sea("book",procurement_ref=ref,candidate_id=candidate,batch="DFW-Q01-B",container="SIM-40HQ-01",seal="SIM-SEAL-01",
             bill_of_lading="SIM-BL-DFW",pickup_site="Houston 演练堆场 H1",inland_owner="演练车组",
             asn="SIM-ASN-Q01",mode="FCL",inland="road",owner=user["username"],evidence=ref,
             units=[dict(sn=k,model="M01",order_id=oid if k in SN else None,packing=packing) for k in serials])

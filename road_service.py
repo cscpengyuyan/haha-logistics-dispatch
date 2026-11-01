@@ -5,6 +5,8 @@ import os
 import threading
 import time
 import uuid
+from functools import lru_cache
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -16,6 +18,42 @@ POOL = threading.BoundedSemaphore(4)
 MAX_BYTES = 3 * 1024 * 1024
 TRUCK = {"length":"truck_length_m", "width":"truck_width_m", "height":"truck_height_m",
          "weight":"gross_t", "axle_load":"axle_load_t"}
+
+
+@lru_cache(maxsize=1)
+def hawaiian_islands():
+    # Shared offline state outlines, used only to distinguish physically separate islands.
+    raw = (Path(__file__).parent / "v12/vendor/us-states.js").read_text(encoding="utf8")
+    states = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
+    geometry = next(f["geometry"] for f in states["features"] if f["properties"]["abbr"] == "HI")
+    return [polygon[0] for polygon in geometry["coordinates"]]
+
+
+def island_at(point):
+    x, y = point["lon"], point["lat"]
+    for index, ring in enumerate(hawaiian_islands()):
+        inside = False
+        a, b = ring[-1]
+        for c, d in ring:
+            if (b > y) != (d > y) and x < a + (c - a) * (y - b) / (d - b):
+                inside = not inside
+            a, b = c, d
+        if inside:
+            return index
+    return None
+
+
+def continuous_us_road(points):
+    hawaii = [p for p in points if 18.7 < p["lat"] < 22.5 and -160.7 < p["lon"] < -154.6]
+    if hawaii:
+        islands = {island_at(p) for p in hawaii}
+        if len(hawaii) != len(points) or len(islands - {None}) > 1:
+            raise ApiError(422, "无连续公路，跨岛或跨海运输须拆段安排海运及两端交接")
+        if None in islands:
+            raise ApiError(422, "近岸入口所属岛待核，确认具体公路入口后重算")
+    alaska = any(p["lat"] > 51 and (p["lon"] < -129.7 or p["lon"] > 170) for p in points)
+    if alaska and any(24 < p["lat"] < 49.6 and -125 < p["lon"] < -66 for p in points):
+        raise ApiError(422, "阿拉斯加与本土48州间须跨加拿大或海运，须单独核准跨境及多式联运")
 
 
 def configured():
@@ -183,6 +221,7 @@ def matrix(data, count):
 
 def compute(db, body, user):
     ids, points, jobs, vehicle, truck, resources = inputs(db, body, user)
+    continuous_us_road(points)
     if not configured():
         raise ApiError(503, "货车路网未配置，请联系运营方")
     # Release the read snapshot before external IO. Saving verifies all versions again.
@@ -231,7 +270,8 @@ def compute(db, body, user):
     ordered = [ids[i-1] for i in order]
     result = {"id":uuid.uuid4().hex, "source":"Valhalla truck / VROOM", "timestamp":now(),
               "order_ids":ordered, "unassigned":unassigned, "legs":legs, "geometry":geometry,
-              "truck":truck, "resources":resources}
+              "truck":truck, "resources":resources, "graph_date":os.environ.get("HH_ROAD_DATA_DATE",""),
+              "coverage":os.environ.get("HH_ROAD_COVERAGE","")}
     # Only a server-generated plan can supply road evidence to a saved dispatch.
     signature = routing.road_signature(body,ordered,resources)
     db.execute("BEGIN IMMEDIATE")

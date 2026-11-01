@@ -16,7 +16,7 @@ ZONES = {"America/New_York", "America/Chicago", "America/Denver", "America/Los_A
 TEXT_FIELDS = {"customer", "address", "zip", "city", "state", "warehouse", "model", "level",
                "route", "endpoint", "contact", "timezone", "window_start", "window_end", "notes",
                "site_note", "delivery_actions", "exclusions", "crm_ref","pack_version","procurement_mode","location_precision","coordinate_ref"}
-TEXT_FIELDS.add("a_channel")
+TEXT_FIELDS.update({"a_channel","endpoint_ref"})
 FLAGS = {"addon_l4", "addon_l5", "pickup"}
 FIELDS = TEXT_FIELDS | FLAGS | {"quantity", "lat", "lng"}
 REQUIRED = {"customer", "address", "zip", "model", "endpoint", "warehouse"}
@@ -126,19 +126,17 @@ def normalize_input(data, body):
         raise ApiError(400, "经纬度须成对提供")
     if not re.fullmatch(r"\d{5}(?:-\d{4})?", data["zip"], re.ASCII):
         raise ApiError(400, "美国邮编请填五位或 ZIP+4")
-    if data["route"] not in {"A", "B", "C1", "C2"} or data["level"] not in {"L1", "L2", "L3"}:
+    if data["route"] not in {"", "A", "B", "C1", "C2"} or data["level"] not in {"", "L1", "L2", "L3"}:
         raise ApiError(400, "路径或服务层级不匹配")
     if data.get("pickup") and data["route"] != "A":
         raise ApiError(400, "仓内自提须使用 A 路径")
     if data.get("pickup") and data["level"] != "L1":
         raise ApiError(400, "仓内自提的合同终点为 L1 仓口交接")
-    if data["route"] == "A" and (data["level"] == "L3" or data["addon_l4"]):
-        raise ApiError(400, "机位或复杂搬运请按 B 或 C 路径确认专业承接方")
     if data["route"] != "A" or data.get("pickup"):
         data.pop("a_channel",None)
     elif data.get("a_channel") not in {None,"","amazon","terminal"}:
         raise ApiError(400,"原卡派送须选择亚马逊或经销商／终端")
-    if data["timezone"] not in ZONES:
+    if data["timezone"] and data["timezone"] not in ZONES:
         raise ApiError(400, "请选择有效美国当地时区")
     if data.get("location_precision") not in {None,"","unknown","zip","street","dock"}:
         raise ApiError(400,"定位精度请选择未核、ZIP 代表点、街址或已核装卸口")
@@ -162,7 +160,7 @@ def actions(order, role):
     if status == "new":
         if admin or role in {"sales", "dispatch"}:
             available.append("edit")
-        if admin or role == "warehouse":
+        if (admin or role == "warehouse") and order.get("level") in {"L1","L2","L3"}:
             available.append("ready")
     if status == "ready":
         if (admin or role == "warehouse") and not order.get("completed_sns") and order.get("order_kind")!="repair_redelivery":
@@ -192,6 +190,8 @@ def actions(order, role):
             available.append("service_complete")
         if (not order.get("addon_l5") or order.get("result_ref")) and (admin or role == "finance"):
             available.append("settle")
+    if order.get("sales_review_pending"):
+        return [a for a in available if a in {"note","upload","unrelease","exception"}]
     return available
 
 
@@ -203,7 +203,7 @@ def create_order(db, body, user):
     if user["role"] not in {"admin", "dispatch", "sales"}:
         raise ApiError(403, "此岗位不能建单")
     timestamp = now()
-    data = {"route": "B", "level": "L1", "timezone": "America/Chicago", "addon_l4": False,
+    data = {"route": "", "level": "", "timezone": "", "addon_l4": False,
             "addon_l5": False, "pickup": False, "lat": None, "lng": None,
             "owner": user["username"], "created_at": timestamp, "updated_at": timestamp}
     normalize_input(data, body)
@@ -231,11 +231,23 @@ def get_order(db, oid, user):
     order = unpack(row)
     if user["role"] == "driver" and order.get("driver") != user["username"]:
         raise ApiError(404, "订单不存在")
+    if user["role"]=="sales" and order.get("sales_revision") and order.get("owner")!=user["username"]:
+        raise ApiError(404,"订单不存在")
     return order
 
 
 def present(order, user):
     result = dict(order, allowed_actions=actions(order, user["role"]))
+    result["legacy_scope_review"] = (order.get("route"),order.get("level"),order.get("timezone"))==("B","L1","America/Chicago") and not any(
+        order.get(k) for k in ("scope_confirmed_at","endpoint_ref","selected_quote","release_ref","dispatch_ref","receipt_ref"))
+    if user["role"] not in {"admin","sales","dispatch","service"}:
+        for key in ("sms_consent","sms_consent_ref","customer_wants","sales_impact"):
+            result.pop(key,None)
+        if order.get("sales_revision"):
+            result.pop("notes",None)
+        if user["role"]!="driver":
+            for key in ("contact","phone"):
+                result.pop(key,None)
     if user["role"] == "driver":
         result.pop("chain_contract",None)
         for key in ("approved_cost", "actual_cost", "invoice_ref", "notes", "change_cost",
@@ -247,6 +259,9 @@ def present(order, user):
 def list_orders(db, user):
     if user["role"] == "driver":
         rows = db.execute("SELECT * FROM orders WHERE json_extract(data,'$.driver')=? ORDER BY rowid DESC", (user["username"],))
+    elif user["role"]=="sales":
+        rows=db.execute("""SELECT * FROM orders WHERE json_extract(data,'$.sales_revision') IS NULL
+                           OR json_extract(data,'$.owner')=? ORDER BY rowid DESC""",(user["username"],))
     else:
         rows = db.execute("SELECT * FROM orders ORDER BY rowid DESC")
     return [present(unpack(row), user) for row in rows]
@@ -590,6 +605,10 @@ def add_file(db, oid, body, user):
 def order_detail(db, oid, user):
     order = get_order(db, oid, user)
     events = [dict(x) for x in db.execute("SELECT id,ts,actor,action,note FROM events WHERE order_id=? ORDER BY id DESC", (oid,))]
+    if user["role"] not in {"admin","sales","dispatch","service"}:
+        for item in events:
+            if item["action"] in {"edit","logistics_handoff","sales_revision"} or item["action"].startswith("contact_"):
+                item["note"]="记录已更新"
     files = [dict(x) for x in db.execute("SELECT id,name,category,ts,actor FROM files WHERE order_id=? ORDER BY id DESC", (oid,))]
     if user["role"] == "driver":
         files = [f for f in files if f["category"] in {"pod", "site", "release"}]

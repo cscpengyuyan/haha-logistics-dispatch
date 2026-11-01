@@ -24,7 +24,7 @@ class SupplyTests(unittest.TestCase):
         self.supplier=resource(type="supplier",name="Demo principal",ability="T2",address="Demo bay",qualification="S3")
         self.book=dict(voyage="QA vessel",batch="B-1",container="C-1",asn="ASN-1",origin="Demo origin",port="Demo Houston",
                        warehouse_id=self.wh,warehouse_zone="America/Chicago",mode="FCL",inland="road",owner="wh",
-                       evidence="REF-B",seal="SIM-SEAL",bill_of_lading="SIM-BL",pickup_site="SIM terminal",inland_owner="SIM crew",
+                       procurement_ref="REF-B",evidence="REF-B",seal="SIM-SEAL",bill_of_lading="SIM-BL",pickup_site="SIM terminal",inland_owner="SIM crew",
                        planned_etd="2030-01-01T08:00:00+08:00",planned_eta="2030-01-12T08:00:00-06:00",
                        planned_warehouse="2030-01-13T08:00:00-06:00",units=[dict(sn=sn,model="M01") for sn in ["QA-A","QA-B"]])
         self.db.commit()
@@ -57,6 +57,29 @@ class SupplyTests(unittest.TestCase):
         self.assertEqual(self.ship["warehouse_eta"],"2030-01-15T14:00:00+00:00")
         self.assertEqual(self.db.execute("SELECT count(*) FROM events WHERE action='supply_review'").fetchone()[0],1)
         self.assertEqual(set(r[0] for r in self.db.execute("SELECT sn FROM assets")),{"EXISTING"})
+
+    def test_stock_count_isolates_one_unit_and_requires_independent_approval(self):
+        item=dict(sn="COUNT-M01",model="M01",batch="SIM-GRN",warehouse="Test DFW",state="available",bin="A",condition="ok",evidence="SIM-GRN")
+        lifecycle.receipt(self.db,item,self.warehouse)
+        report=dict(action="report",version=1,sn=item["sn"],evidence="SIM-COUNT",reason="托位与台账不符")
+        self.assertEqual(self.call("stock-count",report,self.warehouse)["asset"]["state"],"hold")
+        self.assertTrue(self.call("stock-count",report,self.warehouse)["replayed"])
+        with self.assertRaisesRegex(core.ApiError,"盘点差异"):
+            lifecycle.inspect_asset(self.db,dict(item,version=2),self.warehouse)
+        fix=dict(action="resolve",version=2,sn=item["sn"],state="available",approval_ref="SIM-APP",
+                 bin="B",condition="复点、检验合格",evidence="SIM-FIX")
+        with self.assertRaises(core.ApiError):self.call("stock-count",fix,self.warehouse)
+        with self.assertRaisesRegex(core.ApiError,"另一名"):
+            self.call("stock-count",fix,dict(self.admin,username=self.warehouse["username"]))
+        self.assertEqual(self.call("stock-count",fix,self.admin)["asset"]["bin"],"B")
+        self.assertTrue(self.call("stock-count",fix,self.admin)["replayed"])
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM life_log WHERE item=?", (item["sn"],)).fetchone()[0],3)
+
+    def test_booking_requires_purchase_authority(self):
+        self.book.pop("procurement_ref")
+        with self.assertRaisesRegex(core.ApiError,"头程采购确认"):
+            self.start()
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM shipments").fetchone()[0],0)
 
     def test_release_receipt_and_replay(self):
         self.start()

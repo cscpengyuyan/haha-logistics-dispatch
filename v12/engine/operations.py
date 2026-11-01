@@ -32,6 +32,10 @@ REQUIRED = {
     "quote": ("order_id","carrier","path","scope","valid_until","evidence"),
 }
 def init_db(db):
+    import communications, sales, procurement
+    communications.init_db(db)
+    sales.init_db(db)
+    procurement.init_db(db)
     supply.init_db(db)
     lifecycle.init_db(db)
     review.init_db(db)
@@ -105,6 +109,10 @@ def iso_date(value):
 
 def save_resource(db,body,user):
     kind=required(body,"type",24)
+    if kind=="quote" and body.get("id") and db.execute(
+        "SELECT 1 FROM registry WHERE type='quote' AND id=? AND json_extract(data,'$.rfq_id') IS NOT NULL",
+        (body["id"],)).fetchone():
+        raise ApiError(409,"请在本票采购页修订询价回执，以保留完整范围与费用版本")
     if kind not in FIELDS:raise ApiError(400,"资源类型无效")
     if user["role"] not in EDITORS[kind]|{"admin"}:raise ApiError(403,"本岗位不能修改此类记录")
     data={"name":required(body,"name",140)}
@@ -196,13 +204,15 @@ def import_v8(db,body,user):
     db.execute("INSERT INTO v8_links VALUES(?,?)",(old_id,order["id"]))
     return {"order":order}
 
-def award_quote(db,body,user):
+def award_quote(db,body,user,*,written_commission=None):
     if user["role"] not in {"admin","dispatch","procurement"}:raise ApiError(403,"仅采购或调度可确认中选委托")
     row=db.execute("SELECT * FROM registry WHERE id=? AND type='quote'",(required(body,"id",100),)).fetchone()
     if not row:raise ApiError(404,"报价不存在")
     q=record(row)
     if q["version"]!=body.get("quote_version"):raise ApiError(409,"报价已更新，请重新核对")
     o=get_order(db,q["order_id"],user)
+    if o.get("active_rfq") and (not written_commission or q.get("rfq_id")!=o["active_rfq"]):
+        raise ApiError(409,"请在本票采购页先确认主备方案并审批，再登记正式书面委托")
     check_version(o,body)
     if o["status"] not in ("new","ready") or o.get("pickup"):raise ApiError(409,"此票当前不可选择运输委托")
     review.validate_quote(o,q)
@@ -215,9 +225,23 @@ def award_quote(db,body,user):
     o["selected_quote"]={k:q[k] for k in ("id","version","carrier","amount","path","evidence","scope","valid_until","comparison_ref")+COSTS}
     o["selected_quote"].update({k:q.get(k) for k in ("supplier_id","executor_id","accepted_ref","condition_ref","product","scope_snapshot")})
     o["selected_quote"].update(capability_snapshot=capabilities,ref=q["evidence"],approval_ref=approval)
+    if written_commission:
+        o["selected_quote"]["commission_ref"]=written_commission
     return {"order":save_order(db,o,user,"award_quote","中选 "+q["name"]+" · "+str(q["amount"])+" USD · "+approval)}
 
 def handle(db,method,path,body,user):
+    if path.startswith("/api/practice/ticket/"):
+        import ticket_training
+        return ticket_training.handle(db,method,path,body,user)
+    if path.startswith("/api/sales/"):
+        import sales
+        return sales.dispatch(db,method,path,body,user)
+    if path.startswith("/api/ops/procurement"):
+        import procurement
+        return procurement.handle(db,method,path,body,user)
+    if path.startswith("/api/communications/"):
+        import communications
+        return communications.handle(db,method,path,body,user)
     if method=="GET" and path=="/api/ops/map-capabilities":
         from routing import capability_sites
         return capability_sites(db,user)

@@ -24,7 +24,7 @@ class HandoffBranches(unittest.TestCase):
 
     def create(self,route,**fields):
         self.o=core.create_order(self.db,dict(customer="SIM Customer",address="SIM Dock",city="Dallas",state="TX",zip="75201",lat=32.77,lng=-96.8,
-            route=route,model="M01",quantity=1,warehouse="Dallas",level="L1",endpoint="Door 5",window_start=self.day+"T09:00",window_end=self.day+"T17:00",
+            route=route,model="M01",quantity=1,warehouse="Dallas",level="L1",endpoint="Door 5",timezone="America/Chicago",window_start=self.day+"T09:00",window_end=self.day+"T17:00",
             procurement_mode="platform",**fields),ADMIN)
         return self.o
 

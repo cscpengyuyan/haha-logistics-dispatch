@@ -118,6 +118,8 @@ def inspect_asset(db,body,user):
     if not row:
         raise ApiError(404,"设备不存在")
     expect_version(row,body)
+    if json.loads(row["data"]).get("count_open"):
+        raise ApiError(409,"本台盘点差异待核，须由另一管理岗凭授权更正")
     if row["state"] not in {"pending_qc","available","hold"} or body.get("state") not in {"available","hold"}:
         raise ApiError(409,"已锁定或交运的设备不能更改在库状态，请先处理订单交接")
     fields={k:required(body,k,300) for k in ("bin","condition","evidence")}

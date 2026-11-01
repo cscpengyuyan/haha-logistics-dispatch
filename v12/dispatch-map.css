@@ -70,3 +70,10 @@
 }
 @media(prefers-reduced-motion:reduce){.dm *{scroll-behavior:auto!important;transition-duration:0s!important;animation-duration:0s!important}}
 .dm-direction i{display:block;color:#075c50;font:700 14px/12px sans-serif;text-shadow:0 0 2px white}.dm-direction{pointer-events:none}
+
+.dm-baseselect,.pr-tools:has([data-map-style]){display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.dm-baseselect select,.pr-tools [data-map-view],.pr-tools [data-map-style]{max-width:100%;font:inherit}
+.dm-map[data-basemap=light],.pr-map[data-basemap=light]{background:#f3f6f7}
+[data-basemap=light] .leaflet-overlay-pane path.leaflet-interactive,
+[data-basemap=light] .leaflet-overlay-pane svg path[fill-rule=evenodd]{fill:#e8edef;stroke:#cad3d9}
+.pr-tools button[aria-pressed=false]{opacity:.55;text-decoration:line-through}

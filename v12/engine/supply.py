@@ -219,6 +219,10 @@ def book(db, body, user):
         packed = packing_specs(unit)
         if packed:
             data.setdefault("packing", {})[sn] = packed
+    if body.get("procurement_ref"):
+        data["procurement_ref"] = required(body,"procurement_ref",200)
+    if body.get("ocean_rfq_id"):
+        data["ocean_rfq_id"]=required(body,"ocean_rfq_id",80)
     existing = db.execute("SELECT id FROM shipments WHERE asn=?", (data["asn"],)).fetchone()
     if existing:
         prior = shipment(db, existing[0])
@@ -227,9 +231,16 @@ def book(db, body, user):
               (u["sn"], u["model"], u["order_id"]) for u in prior["units"]} and len(rows)==len(set(rows)):
             return {"shipment": prior, "replayed": True}
         raise ApiError(409, "该 ASN 已登记且内容不一致，请核对原装箱清单")
+    if not data.get("procurement_ref"):
+        raise ApiError(422,"请先取得头程采购确认，填写书面承接或批准订舱的凭据号")
+    if data.get("ocean_rfq_id"):
+        import procurement
+        data["ocean_award"]=procurement.booking_award(db,data["ocean_rfq_id"],body.get("candidate_id"),data["mode"],len(rows),data["procurement_ref"])
     sid = "SEA-" + uuid.uuid4().hex[:10].upper()
     try:
         db.execute("INSERT INTO shipments VALUES(?,?,1,?)", (sid, data["asn"], encode(data)))
+        if data.get("ocean_rfq_id"):
+            db.execute("UPDATE ocean_rfq SET shipment=? WHERE id=?",(sid,data["ocean_rfq_id"]))
         for sn, model, oid in rows:
             if db.execute("SELECT 1 FROM assets WHERE sn=?", (sn,)).fetchone():
                 raise ApiError(409, "SN 已在实物台账中，请核对批次和重码")
@@ -360,6 +371,71 @@ def schedule(db, body, user):
     versions=s.setdefault("schedules",{}).setdefault(kind,[])
     versions.append(next_plan)
     return {"shipment":update(db,s,user,dict(next_plan,kind=kind,revision=len(versions)))}
+
+
+def stock_count(db, body, user):
+    action = choice(body, "action", {"report","resolve"})
+    allow(user, {"admin","warehouse"} if action=="report" else {"admin"})
+    sn = required(body,"sn",120).upper()
+    row = db.execute("SELECT * FROM assets WHERE sn=?", (sn,)).fetchone()
+    if row is None:
+        raise ApiError(404,"未找到已实收 SN，新增或错码须走 ASN 差异")
+    data = json.loads(row["data"])
+    if action=="report":
+        details = {"count_ref":required(body,"evidence",300), "count_issue":required(body,"reason",300),
+                   "count_reporter":user["username"]}
+        if data.get("count_ref")==details["count_ref"]:
+            if all(data.get(k)==v for k,v in details.items()):
+                return {"asset":lifecycle.row_obj(row),"replayed":True}
+            raise ApiError(409,"同一盘点回执已登记不同内容")
+        if data.get("count_open") or row["order_id"] or row["state"] not in {"available","pending_qc","hold"}:
+            raise ApiError(409,"仅能登记未锁、仍在仓内且没有待核差异的实收设备")
+        details.update(count_open=True,count_previous=row["state"],count_reported_at=core.now())
+        for key in ("count_approval","count_reviewer","count_resolution","count_resolved_at"):
+            data.pop(key,None)
+        state="hold"
+    else:
+        details={"count_approval":required(body,"approval_ref",300),"count_resolution":required(body,"evidence",300),
+                 "count_reviewer":user["username"],"bin":required(body,"bin",300),"condition":required(body,"condition",300)}
+        state=choice(body,"state",{"available","hold","pending_qc"})
+        if not data.get("count_open"):
+            if all(data.get(k)==v for k,v in details.items()) and row["state"]==state:
+                return {"asset":lifecycle.row_obj(row),"replayed":True}
+            raise ApiError(409,"没有待处理的盘点差异")
+        if data.get("count_reporter")==user["username"]:
+            raise ApiError(403,"盘点差异须由另一名管理岗核准")
+        if row["state"]!="hold" or row["order_id"]:
+            raise ApiError(409,"设备保管已变更，请核查实物交接")
+        details.update(count_open=False,count_resolved_at=core.now())
+    lifecycle.expect_version(row,body)
+    asset=lifecycle.update_asset(db,row,state,user,{**data,**details},row["order_id"])
+    return {"asset":asset}
+
+
+def receive_batch(db, body, user):
+    allow(user, {"admin","warehouse"})
+    values = body.get("serials")
+    if not isinstance(values,list) or not 1 <= len(values) <= 100 or any(
+        not isinstance(sn,str) or not sn.strip() or len(sn)>120 for sn in values):
+        raise ApiError(400,"请扫描 1 至 100 台同一 ASN 的 SN，分批提交")
+    if body.get("photo"):
+        raise ApiError(400,"不同设备的收货照片须按单台关联")
+    serials = list(dict.fromkeys(sn.strip().upper() for sn in values))
+    version = body.get("version")
+    added = 0
+    db.execute("SAVEPOINT batch_grn")
+    try:
+        for sn in serials:
+            result = receive(db,dict(body,sn=sn,version=version),user)
+            if not result.get("replayed"):
+                added += 1
+                version = result["shipment"]["version"]
+    except Exception:
+        db.execute("ROLLBACK TO batch_grn")
+        raise
+    finally:
+        db.execute("RELEASE batch_grn")
+    return {"shipment":result["shipment"],"accepted":added,"replayed":len(serials)-added}
 
 
 def receive(db, body, user):
@@ -725,15 +801,21 @@ def handle(db,method,path,body,user):
             if not record:
                 raise ApiError(404,"未找到本批次该台设备的照片")
             return {"mime":record["mime"],"base64":base64.b64encode(record["content"]).decode("ascii")}
-        handlers = {"book":book,"milestone":milestone,"schedule":schedule,"receive":receive,"qualify":qualify,"tariff":tariff,"stock-plan":stock_plan,"transfer":transfer,"position":position,
+        handlers = {"book":book,"milestone":milestone,"schedule":schedule,"receive":receive,"receive-batch":receive_batch,"stock-count":stock_count,"qualify":qualify,"tariff":tariff,"stock-plan":stock_plan,"transfer":transfer,"position":position,
                     "head-quote":head_quote,"difference":discrepancy,"candidates":register_sailings,
                     "preview-eta":preview_eta,"close-review":close_review}
         if action in handlers:
             return handlers[action](db,body,user)
     if method=="GET" and action=="candidates":
         allow(user, SHIP_READ)
-        return {"candidates":[dict(json.loads(r["data"]),id=r["id"])
-                              for r in db.execute("SELECT * FROM sailing_options ORDER BY rowid DESC")]}
+        candidates=[dict(json.loads(r["data"]),id=r["id"]) for r in db.execute("SELECT * FROM sailing_options ORDER BY rowid DESC")]
+        if user["role"] in SHIP_WRITE and db.execute("SELECT 1 FROM sqlite_master WHERE name='ocean_rfq'").fetchone():
+            by_candidate={c["id"]:c for c in candidates}
+            for r in db.execute("SELECT id,candidate,data FROM ocean_rfq WHERE shipment IS NULL AND json_extract(data,'$.award.ref') IS NOT NULL"):
+                if r["candidate"] in by_candidate:
+                    f=json.loads(r["data"]);a=f["award"]
+                    by_candidate[r["candidate"]].setdefault("booking_awards",[]).append(dict(id=r["id"],ref=a["ref"],units=f["units"],mode=a["mode"]))
+        return {"candidates":candidates}
     if method=="GET" and action=="shipments":
         allow(user,SHIP_READ)
         shipments=[shipment(db,r[0]) for r in db.execute("SELECT id FROM shipments ORDER BY rowid DESC")]

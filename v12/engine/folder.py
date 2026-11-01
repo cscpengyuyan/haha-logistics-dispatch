@@ -369,6 +369,8 @@ def handle(db,method,path,body,user):
     if method=="GET" and not sub:
         return get_folder(db,order,user)
     if method=="POST" and sub:
+        if order.get("sales_review_pending") and sub in {"platform-instruction","second-leg","station-mandate","technical"}:
+            raise ApiError(409,"销售范围变更待物流复核，禁止签订新委托")
         check_version(order,body)
         return {"order":{"attempts":add_attempt,"receipts":record_receipt,"technical":technical,"platform-instruction":platform_instruction,"second-leg":second_leg,"station-mandate":station_mandate}[sub](db,order,body,user)}
     raise ApiError(405,"作业夹操作不支持此方法")

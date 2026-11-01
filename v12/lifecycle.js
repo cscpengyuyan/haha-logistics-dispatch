@@ -32,7 +32,7 @@
   function mount(host,ctx,view){
     const asset=view==='inventory',kind=asset?'assets':'cases',api='/api/lifecycle/'+kind;
     const role=ctx.user.role,canWrite=asset?['admin','warehouse'].includes(role):['admin','dispatch','warehouse','service','finance'].includes(role);
-    let records=[],alive=true,dialog=null,search=asset?(new URLSearchParams(location.hash.split('?')[1]||'').get('sn')||''):'',filter='',generation=0;
+    let records=[],shipments=[],alive=true,dialog=null,search=asset?(new URLSearchParams(location.hash.split('?')[1]||'').get('sn')||''):'',filter='',generation=0;
     const showError=e=>ctx.toast?.(e.message||'操作失败');
     function close(){
       if(dialog){dialog.close();dialog.remove();dialog=null;}
@@ -127,6 +127,12 @@
       if(asset){
         const trace=document.createElement('div');form.querySelector('.lc-body').prepend(trace);
         if(o.batch){const link=document.createElement('button');link.type='button';link.textContent='追溯海运 ASN';link.onclick=()=>{close();window.Supply.openASN(ctx,o.batch)};trace.append(link)}
+        if(canWrite&&!o.order_id&&['available','pending_qc','hold'].includes(o.state)&&
+          (!o.count_open||(role==='admin'&&o.count_reporter!==ctx.user.username))){
+          const b=document.createElement('button');b.type='button';b.textContent=o.count_open?'授权更正盘点差异':'登记盘点差异';
+          b.onclick=()=>{close();window.Supply.stockCount(ctx,o,load)};trace.append(b);
+        }
+        if(o.count_open){const note=document.createElement('p');note.textContent='盘点隔离 · '+o.count_issue+' · '+o.count_ref;trace.append(note)}
         if(canWrite&&o.state==='available'){const b=document.createElement('button');b.type='button';b.textContent='申请未售前置 D';b.onclick=()=>{close();window.Supply.positionRequest(ctx,o,load)};trace.append(b)}
         if(canWrite&&['transfer','available'].includes(o.state)){const b=document.createElement('button');b.type='button';b.textContent=o.state==='transfer'?'接收调拨':'申请调拨';b.onclick=()=>{close();window.Supply.transfer(ctx,o,load)};trace.append(b)}
       }
@@ -143,14 +149,32 @@
       const cats=asset?['available','pending_qc','hold','reserved','transit','station','delivered','transfer','returning','returned_hold']:['restore','claim','rma'];
       host.innerHTML='<section class="lc-panel"><div class="lc-heading"><div><small>'+ (asset?'UNIT INVENTORY':'SERVICE & RECOVERY') +'</small><h2>'+(asset?'逐台库存与交接':'售后、索赔与退件')+'</h2><p>'+(asset?'按 SN 查收货批次、实测货况和去向。隔离设备不能放货。':'以订单和设备分别追踪客户恢复、赔付与实物去向。')+'</p></div>'+(canWrite?'<button class="primary" data-add>＋ '+(asset?'逐台实收':'新建工单')+'</button>':'')+'</div><div class="lc-controls"><input aria-label="搜索台账" type="search" placeholder="'+(asset?'搜索 SN、仓、库位、机型、货况或订单':'搜索工单、SN、订单或经办人')+'" value="'+esc(search)+'"><select aria-label="筛选记录">'+options([['','全部'+(asset?'状态':'分支')],...cats.map(s=>[s,names[s]])])+'</select><span class="lc-count"></span></div><div class="lc-rows"></div></section>';
       if(!asset&&['admin','finance','dispatch','service'].includes(role))window.Settlement.mount(host,ctx,'recovery');
+      if(asset)inventoryTotals();
       if(asset){const plan=document.createElement('button');plan.textContent='补货测算';plan.onclick=()=>window.Supply.stockPlan(ctx);host.querySelector('.lc-heading').append(plan);if(['admin','warehouse','dispatch','finance'].includes(role)){const pos=document.createElement('button');pos.textContent='未售前置审批';pos.onclick=()=>window.Supply.positions(ctx).catch(showError);host.querySelector('.lc-heading').append(pos)}}
       if(!asset&&role==='admin'){const b=document.createElement('button');b.textContent='授权维修工位';b.onclick=benchForm;host.querySelector('.lc-heading').append(b)}
       host.querySelector('[data-add]')?.addEventListener('click',()=>asset?receive():openCase());
       const query=host.querySelector('input'),sel=host.querySelector('select');sel.value=filter;
       query.oninput=()=>{search=query.value;rows()};sel.onchange=()=>{filter=sel.value;rows()};rows();
     }
+    function inventoryTotals(){
+      const groups=new Map();
+      function cell(wh,model,state){
+        const key=JSON.stringify([wh,model]);
+        if(!groups.has(key))groups.set(key,{wh,model});
+        const g=groups.get(key);g[state]=(g[state]||0)+1;
+      }
+      for(const s of shipments)for(const u of s.units)if(!u.receipt)cell(s.warehouse,u.model,'expected');
+      for(const r of records)cell(r.warehouse,r.model,r.state);
+      const cols=['expected','pending_qc','available','reserved','hold','transfer'];
+      const table=document.createElement('div');table.className='sc-scroll';
+      table.innerHTML='<h3>各仓设备汇总</h3><table><thead><tr>'+['仓库','型号','预计到仓','实收待检','合格可用','已锁','隔离','调拨在途'].map(t=>'<th>'+t+'</th>').join('')+'</tr></thead><tbody>'+
+        [...groups.values()].sort((a,b)=>(a.wh+a.model).localeCompare(b.wh+b.model)).map(g=>'<tr><td>'+esc(g.wh)+'</td><td>'+esc(g.model)+'</td>'+cols.map(k=>'<td>'+(g[k]||0)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+      host.querySelector('.lc-controls').before(table);
+    }
     function rows(){
-      const list=records.filter(o=>(!filter||o[asset?'state':'kind']===filter)&&
+      const ticket=asset&&ctx.focusOrderId?ctx.orders.find(o=>o.id===ctx.focusOrderId):null;
+      const list=records.filter(o=>(!ticket||(o.warehouse===ticket.warehouse&&o.model===ticket.model&&
+        (o.state==='available'||o.order_id===ticket.id)))&&(!filter||o[asset?'state':'kind']===filter)&&
         (!search||[o.sn,o.id,o.model,o.warehouse,o.bin,o.condition,o.order_id,o.owner,o.batch].some(v=>String(v||'').toLowerCase().includes(search.toLowerCase()))));
       host.querySelector('.lc-count').textContent=list.length+' 条记录';
       const box=host.querySelector('.lc-rows');
@@ -168,7 +192,8 @@
     }
     async function load(){
       const id=++generation;
-      try{const data=await ctx.api(api);if(!alive||id!==generation)return;records=data.records;draw();}
+      try{const [data,incoming]=await Promise.all([ctx.api(api),asset&&['admin','warehouse','dispatch','sales','finance','procurement'].includes(role)?ctx.api('/api/supply/shipments'):Promise.resolve({shipments:[]})]);
+        if(!alive||id!==generation)return;records=data.records;shipments=incoming.shipments;draw();}
       catch(e){if(!alive||id!==generation)return;host.innerHTML='<div class="lc-empty" role="alert">'+esc(e.message)+' <button>重试</button></div>';host.querySelector('button').onclick=load;}
     }
     host.innerHTML='<div class="lc-empty">正在读取共享台账…</div>';load();

@@ -1,6 +1,7 @@
 """Optional loopback worker for an operator-owned Valhalla graph and native VROOM."""
 import argparse
 import json
+import os
 import subprocess
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -22,7 +23,8 @@ def serve(config, port):
 
         def do_GET(self):
             if self.path == "/status":
-                self.answer(200, {"version": __version__})
+                self.answer(200, {"version": __version__, "data_date": os.environ.get("HH_ROAD_DATA_DATE", ""),
+                                      "coverage": os.environ.get("HH_ROAD_COVERAGE", "")})
             else:
                 self.answer(404, {"error": "Unknown operation"})
 

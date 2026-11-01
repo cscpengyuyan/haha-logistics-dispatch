@@ -43,3 +43,36 @@ node tests/road-map-browser.cjs
 ```
 
 上面的回环端口是本次验收的服务地址；应先部署相应路网服务。第一条运行供应商协议、角色权限、入口精度、伪造计划、改约、未接网和旧版草案门禁测试。启用真实 DFW 服务后，另外覆盖两组三站、锁定手工反序、完整几何及草案恢复。共享演练和真实员工服务各自使用独立 SQLite 库。所有验收地址、仓、车、员工名、货物和客户均为演示数据，不对应经过现场验证的真实客户。
+
+## 本次覆盖验收与扩容
+
+2026-11-01 以《TIGER/Line 2025 Primary Roads》公路中心线选取 50 州和 DC 各一对非私人道路坐标，TX 采用本票的达拉斯演练路口。每州两点在同州同一路段；四组额外检查为 TX–OK、NJ–NY、夏威夷跨岛、AK–本土。样点不是客户仓址、实地验过的装卸入口或车辆通行保证。坐标见 `tests/road-sample-pairs.json`，请求结果见 `docs/verification/road-coverage.csv`。一组计算成功只能说明样本覆盖。
+
+当前现有 Dallas 数据日期为 2026-10-31。本次直接向本机运营方图发出 55 个 Valhalla 3.8.3 truck 请求，TX 市内 1.7175 英里，其余 54 组无匹配道路，未通过全国货车服务验收。跨海或须穿越加拿大的任务可保存草案，在业务服务器另行拦截签发。AK 州内、HI 同岛现阶段仍缺已部署的货车图。图源 OSM 在项目中按 ODbL 署名，图构建、持久卷、备份、传输费用由运营方承担。
+
+两个地图的「范围」均可选美国全国、48州、AK、HI、当前仓和全线。默认使用本地 Census 州界、Dallas PMTiles。浅色样式省略地类和建筑，以低对比度绘制道路。另可主动选用 [OpenFreeMap 官方全国街道和浅色样式](https://openfreemap.org/quick_start/)，浏览器仅向图源请求视野瓦片、图标和字形。在线样式依赖图源网络；加载失败时可重试或切回本地。业务算路始终使用独立货车引擎，底图不能用于派车放行。
+
+**运营方更换图数据**
+
+1. 在另一个有持久盘的 Linux 主机建立单独的版本目录。下载 [Geofabrik US](https://download.geofabrik.de/north-america/us.html) 的固定日期美国 PBF 并校验发布校验和，确认含 AK、HI、DC。2026-10-31 快照的压缩 PBF 约 11.4 GiB，建图临时文件、大于源数据的图及前版备份另计。可选用多个州合并，但须在同一次构建中保留跨州拓扑。
+2. 在新目录生成与运行服务同版本的 Valhalla 配置和图。以下命令在已安装对应版本的 Valhalla CLI、pyvalhalla 和 pyvroom 的新版本目录执行。仓库内 `road_host.py` 使用本机绑定，无公网业务数据端口。
+
+   ```sh
+   valhalla_build_config --mjolnir-tile-dir "$PWD/tiles" --mjolnir-tile-extract "$PWD/graph.tar" > valhalla.json
+   mkdir -p tiles
+   valhalla_build_tiles -c valhalla.json us.osm.pbf
+   valhalla_build_extract -c valhalla.json
+   export HH_ROAD_DATA_DATE=2026-10-31
+   export HH_ROAD_COVERAGE='US OSM candidate; verification pending'
+   python /srv/haha/road_host.py valhalla.json --port 18803
+   ```
+
+3. 从应用所在的主机运行采样，保留服务版本、与 PBF 对应的日期、几何及英里数。分别检查跨海/跨境禁发，复测两组 Dallas 三站、排程、断网、可写草案和重新签发。当前 Windows 本机没有构建或托管全国图。
+
+   ```sh
+   python tests/probe_truck_coverage.py --base http://127.0.0.1:18803 --out coverage-candidate.csv
+   ```
+
+4. 合格后将业务进程 `HH_VALHALLA_URL` 与 `HH_VROOM_URL` 指向已验证的新端口，同时登记 `HH_ROAD_DATA_DATE` 和实测 `HH_ROAD_COVERAGE`。保留旧图、旧服务及上次采样报告。回滚时将两个 URL 与图日期/覆盖说明一并切回上一版，再复测后重新计算待签路线。请勿将公共测试路由端点用作生产依赖。
+
+本地无痕 Edge 通过 `node tests/map-interaction-browser.cjs` 发送真实滚轮和 Chromium 双触点，检查两个入口的缩放及图层、视野和底图保存。部署后可设置 `HH_PUBLIC_MAP_URL` 为以 `/v12/` 结尾的 HTTPS 地址再跑同一组。该测试验证触屏输入事件，不等同于真机手指操作。

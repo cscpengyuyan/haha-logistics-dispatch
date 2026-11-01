@@ -42,6 +42,14 @@ def required_quote(db,oid,qid):
 
 def scope_snapshot(order):
     scope={key: order.get(key) for key in SCOPE}
+    # Keep old, evidenced snapshots comparable until additional site facts actually exist.
+    for key in ("endpoint_ref","door_width_cm","door_height_cm","dock","liftgate","site_type",
+                "access","entrance","floor","forklift","admission","site_access","path_survey_ref","technical_ref","packaging_ref","intake_revision",
+                "l4_evidence","l5_evidence","unload_ref"):
+        if order.get(key) not in ("",None):
+            scope[key]=order[key]
+    if order.get("sales_review_pending"):
+        scope["pending_sales_revision"]=order.get("sales_revision",True)
     if order.get("a_channel"):
         scope["a_channel"]=order["a_channel"]
     return scope
@@ -51,6 +59,11 @@ def validate_quote(order, quote):
     """Both quotation comparison and release evaluate the saved enquiry scope."""
     if quote.get("scope_snapshot") != scope_snapshot(order):
         raise ApiError(409, "询价时的订单范围已变或旧版缺少范围，请重新确认本票报价")
+    if quote.get("rfq_id"):
+        import procurement
+        problems=procurement.offer_problems(order,quote)
+        if problems:
+            raise ApiError(409,"；".join(problems))
     if quote.get("valid_until", "") < max(now()[:10], str(order.get("window_end") or "")[:10]):
         raise ApiError(409, "报价已过期或不覆盖作业窗口，请重新询价")
     if quote.get("pricing_status") != "itemized" or not all(quote.get(key) for key in

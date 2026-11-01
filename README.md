@@ -1,5 +1,7 @@
 # HAHA Logistics V12
 
+[销售导表到核账 · 操作与验收口径](docs/SALES-TO-SETTLEMENT.md)
+
 [打开我的待办](https://cscpengyuyan.github.io/haha-logistics-dispatch/v12/#dock) · [达拉斯三站道路试排](https://cscpengyuyan.github.io/haha-logistics-dispatch/v12/#road) · [员工服务部署与迁移](docs/V12-DEPLOY.md)
 
 # HAHA Logistics V8

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const stages = {
-    new: '待仓库核验', ready: '已就绪', dispatched: '已派车', in_transit: '运输中',
+    intake: '销售待交接', new: '待仓库核验', ready: '已就绪', dispatched: '已派车', in_transit: '运输中',
     at_station: '站点保管', last_mile: '二程运输', delivered: '已签交', settled: '已结算', exception: '异常挂起'
   };
   const routes = {A: '普通卡派', B: '原仓专业直送', C1: '经站统包', C2: '经站分采'};
@@ -33,7 +33,7 @@
   const can = (o, key) => (o.allowed_actions || []).includes(key);
   const routeText = o => o.pickup ? 'A · 仓口自提' : o.route==='A' ? ({amazon:'A · 原卡派送亚马逊',terminal:'A · 原卡派送经销商 / 终端'}[o.a_channel||o.channel_release?.channel]||'A · 原卡渠道待核') : [o.route,routes[o.route]].filter(Boolean).join(' · ');
   const issuedLine = r => r?`${r.date} · ${r.name} · 第 ${r.stop} / ${r.stops} 站`:'';
-  const stageTag = o => `<span class="wf-status wf-${esc(o.status)}">${esc(stages[o.status] || o.status)}</span>`;
+  const stageTag = o => `<span class="wf-status wf-${esc(o.status)}">${esc(stages[o.status] || o.status)}${o.legacy_scope_review?' · 旧默认值待复核':''}${o.sales_review_pending?' · 销售改版待复核':''}</span>`;
   const next = o => operationKeys.find(k => can(o,k));
   const btn = (key,label,style='') => `<button type="button" class="${style}" data-cmd="${esc(key)}">${esc(label)}</button>`;
   const zoneNames = {'America/New_York':'美国东部', 'America/Chicago':'美国中部','America/Denver':'美国山地','America/Phoenix':'亚利桑那',
@@ -161,7 +161,7 @@
     if(editing)linkDrawer(el,ctx,o.id);
     const warehouses=(ctx.resources || []).filter(x=>x.type==='warehouse').map(x=>x.name).filter(Boolean);
     const modes={'':'选择履约分支',pickup:'A · 客户到仓自提',amazon:'A · 原卡派送亚马逊',A:'A · 原卡派送经销商 / 终端',B:'B · 原仓专业直送',C1:'C1 · 经站统包',C2:'C2 · 经站分采'};
-    const mode=v.pickup?'pickup':v.route==='A'?({amazon:'amazon',terminal:'A'}[v.a_channel]||''):(v.route||'B');
+    const mode=v.pickup?'pickup':v.route==='A'?({amazon:'amazon',terminal:'A'}[v.a_channel]||''):(v.route||'');
     const whList='wf-warehouse-'+dialogSerial;
     body.innerHTML=`<form class="wf-form">${section('01','客户与终点',
       field('customer','客户 / 收货单位',v.customer,req)+field('crm_ref','CRM / 原订单关联号',v.crm_ref,{ph:'用于销售交接或旧单迁入'})+
@@ -170,21 +170,22 @@
       field('city','城市',v.city)+field('state','州代码',v.state,{extra:'pattern="[A-Za-z]{2}" title="两位州代码" maxlength="2"',ph:'TX'})+
       field('zip','目的 ZIP',v.zip,{req:true,extra:'pattern="[0-9]{5}(-[0-9]{4})?" inputmode="numeric"',ph:'75001'})+
       field('endpoint','合同约定交接点',v.endpoint,{req:true,ph:'例如一楼大厅东侧指定机位'})+
+      field('endpoint_ref','已购终点凭据',v.endpoint_ref,{ph:'合同条款、客户书面确认编号或受控链接'})+
       field('location_precision','定位精度',v.location_precision||'unknown',{opts:{unknown:'待核',zip:'ZIP 代表点',street:'街址',dock:'已核装卸口'}})+
       field('coordinate_ref','定位／现场校正凭据',v.coordinate_ref)+field('lat','终点纬度',v.lat,{type:'number',extra:'min="-90" max="90" step="any"',ph:'例如 32.7767'})+
       field('lng','终点经度',v.lng,{type:'number',extra:'min="-180" max="180" step="any"',ph:'例如 -96.7970'}))}
       ${section('02','货物与已购范围',
       field('warehouse','设备持货仓',v.warehouse,{req:true,extra:'list="'+whList+'"'})+`<datalist id="${whList}">${warehouses.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>`+
       field('procurement_mode','运输采购方式',v.procurement_mode||'company',{opts:{company:'公司自主采购',platform:'平台指定承运',ltl:'普通 LTL 网络',brand_fleet:'批准内部用车'}})+field('pack_version','本次包装版本',v.pack_version||'')+
-      field('mode','履约路径',mode,{req:true,opts:modes})+'<div class="wf-hint wf-full" data-route-hint></div>'+
+      field('mode','履约路径',mode,{opts:modes})+'<div class="wf-hint wf-full" data-route-hint></div>'+
       field('model','设备型号',v.model||'',{req:true,opts:{'':'选择型号',...Object.fromEntries(Array.from({length:7},(_,i)=>['M0'+(i+1),'M0'+(i+1)]))}})+
       field('quantity','台数',v.quantity||1,{req:true,type:'number',extra:'min="1" max="999" step="1"'})+
-      field('level','基础服务档',v.level||'L1',{req:true,opts:{L1:'L1 · 基础交接',L2:'L2 · 指定入口',L3:'L3 · 室内机位'}})+
+      field('level','基础服务档',v.level||'',{opts:{'':'待判定',L1:'L1 · 基础交接',L2:'L2 · 指定入口',L3:'L3 · 室内机位'}})+
       `<fieldset class="wf-addons"><legend>另购服务</legend><label><input type="checkbox" name="addon_l4" ${v.addon_l4?'checked':''}> L4 专项搬运</label><label><input type="checkbox" name="addon_l5" ${v.addon_l5?'checked':''}> L5 技术启用</label></fieldset>`+
       field('delivery_actions','已购作业',v.delivery_actions,{area:true,ph:'按合同填写卸车、拆托、摆位等'})+field('exclusions','范围外作业 / 责任方',v.exclusions,{area:true})+
       field('site_note','现场条件及专项承接',v.site_note,{area:true,full:true,ph:'限高、门宽、楼梯、停车、物业许可与复核人'}))}
       ${section('03','客户窗口与交接',
-      field('timezone','作业地时区',v.timezone||'America/Chicago',{opts:{...zoneNames,...(v.timezone && !zoneNames[v.timezone]?{[v.timezone]:v.timezone}:{})},full:true})+
+      field('timezone','作业地时区',v.timezone||'',{opts:{'':'待确认',...zoneNames,...(v.timezone && !zoneNames[v.timezone]?{[v.timezone]:v.timezone}:{})},full:true})+
       field('window_start','预约开始（当地）',v.window_start,{type:'datetime-local'})+field('window_end','预约结束（当地）',v.window_end,{type:'datetime-local'})+
       field('notes','随单说明',v.notes,{area:true,full:true,ph:'硬性时窗、客户书面确认编号或待补资料'}))}
       ${formEnd(editing?'保存修改':'创建订单','cancel')}</form>`;
@@ -197,7 +198,6 @@
       payload.pickup=mode==='pickup';payload.route=payload.pickup||mode==='amazon'?'A':mode;
       if(payload.route==='A'&&!payload.pickup)payload.a_channel=mode==='amazon'?'amazon':'terminal';
       if(payload.pickup && payload.level!=='L1')throw Error('仓口自提请选 L1 基础交接，并在合同终点中写明装车交接点。');
-      if(payload.route==='A' && (payload.level==='L3' || fd.has('addon_l4')))throw Error('A 路径适配基础交接或入口交付。已购机位交付、专项搬运需确认专业承接路径。');
       if(payload.addon_l4 && !payload.site_note.trim())throw Error('L4 专项搬运需要填写现场条件及专项承接。');
       if(Boolean(payload.window_start)!==Boolean(payload.window_end)|| (payload.window_end && payload.window_end<=payload.window_start))throw Error('请同时填写预约起止时间，且结束晚于开始。');
       if(Boolean(payload.lng)!==Boolean(payload.lat))throw Error('地图定位需要同时填写经度和纬度。');
@@ -372,6 +372,10 @@
       <div class="wf-handoff-actions">${data.folder?.rights.attempt?btn('attempt','登记到场'):''}${primary?btn(primary,names[primary],'wf-primary'):''}</div></div>`+
       `<div class="wf-commands">${commissionCommands(o,ctx.user.role)}${controls.map(k=>btn(k,names[k],k==='exception'?'wf-risk':'')).join('')}</div>
       <div class="wf-tabs"><button type="button" data-packet>导出本版作业单</button>${Object.entries(tabs).map(([k,v])=>`<button type="button" data-tab="${k}" aria-pressed="${tab===k}">${esc(v)}</button>`).join('')}</div><div class="wf-tab-body"></div>`;
+    const jumps=[['procurement','运输方案 / 本票询价',['admin','procurement','dispatch','finance']],['communications','本票预约与短信',['admin','dispatch','service']],['map','本票地图',['dispatch','admin']],['inventory','核对本单库存',['admin','warehouse','dispatch']]];
+    for (const [page,label] of jumps.filter(x=>x[2].includes(ctx.user.role))){
+      const b=document.createElement('button');b.textContent=label;b.onclick=()=>{modal.el.close();ctx.navigate(page+'?focus='+encodeURIComponent(o.id))};body.querySelector('.wf-commands').append(b)
+    }
     const pane=body.querySelector('.wf-tab-body');
     if(tab==='log'){
       pane.innerHTML=events.length?`<ol class="wf-log">${events.map(e=>`<li><div><b>${esc(names[e.action] || (e.action==='create'?'创建订单':e.action))}</b> <small>${esc(e.actor)} · ${esc(timestamp(e.ts))}（查看地）</small></div><p>${recordNote(e)}</p></li>`).join('')}</ol>`:'<div class="wf-empty">当前身份暂无可见轨迹。</div>';

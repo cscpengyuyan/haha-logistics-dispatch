@@ -53,6 +53,7 @@ def signature(o,leg):
     q=source(o,leg)
     return hashlib.sha256(core.encode([leg,q,[(k,o.get(k)) for k in ('sn','warehouse','station_name','model','quantity','zip','endpoint','level','addon_l4','addon_l5','site_note','delivery_actions','address','window_start','window_end','timezone','pack_version')]]).encode()).hexdigest()
 def validate(db,o,g):
+    if o.get("sales_review_pending"):raise E(409,"销售范围变更待物流复核，禁止承接或放行")
     leg=g['leg'];l=obj(db.execute("SELECT * FROM gate_links WHERE id=?",(g['link_id'],)).fetchone())
     if not l or l['version']!=g['link_version'] or signature(o,leg)!=g['scope_key']:raise E(409,"委托、范围或人车关系已变；请重新授权并重签")
     wh=reg(db,'warehouse',l['warehouse_id'])
@@ -107,6 +108,7 @@ def require_released(db,o):
     g=active(db,o['id'],o.get('gate_leg',1))
     if not g or g['state']!='released' or g.get('issue_version')!=o.get('issue_version'):raise E(409,"仓管尚未按本票当前签发版逐台验放，实物仍由仓库保管")
 def verify(db,o,b,u):
+    if o.get("sales_review_pending"):raise E(409,"销售范围变更待物流复核，禁止仓口放行")
     role(u,'warehouse');leg=2 if o.get('station_pending') or o['status']=='at_station' else 1
     g=active(db,o['id'],leg)
     if not g or g['state']!='issued':raise E(409,"暂停放行：没有本段已签发的人车授权。SN 留在当前库位，补录授权、承接并重签后再验")

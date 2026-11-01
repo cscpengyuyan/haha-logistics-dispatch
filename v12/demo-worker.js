@@ -7,7 +7,7 @@ async function initialize(){
   py=await loadPyodide({indexURL:new URL('./runtime/',location.href).href});
   self.postMessage({progress:'正在打开本机 SQLite 并校验业务模块…'});
   await py.loadPackage('sqlite3');
-  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py", "review.py", "folder.py", "practice.py", "gate.py","partner.py","team.py","settlement.py","billing.py", "supply.py", "routing.py", "routing_zones.py"]){
+  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py", "review.py", "folder.py", "practice.py", "gate.py","partner.py","team.py","settlement.py","billing.py", "supply.py", "routing.py", "routing_zones.py", "communications.py", "sales.py", "sales_workbook.py", "ticket_training.py", "procurement.py"]){
     const res=await fetch('./engine/'+file+location.search);if(!res.ok)throw Error('演练引擎未能加载：'+file);
     py.FS.writeFile('/home/pyodide/'+file,await res.text());
   }
@@ -32,8 +32,8 @@ async function sync(){
   py.runPython('if platform.db is not None: platform.db.close(); platform.db = None');
   if(prev){
     const tx=store.transaction('state','readwrite'),states=tx.objectStore('state');
-    const backup=states.get('before-flow-upgrade');
-    backup.onsuccess=()=>{if(!backup.result)states.put(prev,'before-flow-upgrade')};
+    const backup=states.get('before-sales-flow-v1');
+    backup.onsuccess=()=>{if(!backup.result)states.put(prev,'before-sales-flow-v1')};
     await new Promise((done,fail)=>{tx.oncomplete=done;tx.onerror=tx.onabort=()=>fail(tx.error)});
     py.FS.writeFile('/practice.sqlite3',prev.bytes);
   }

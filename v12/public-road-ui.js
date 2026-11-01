@@ -15,11 +15,19 @@ window.PublicRoadUI = (() => {
     const e=ctx.escape;
     const root=document.createElement('section');root.className='public-road';host.replaceChildren(root);
     let state=sample(),last=null,lastKey='',generation=0,busy=false,alive=true,rev=0;
-    let map,lines,markers,base,controller,dragged;
-    root.innerHTML='<div class="pr-bar"><div><b>Dallas 市区　·　公开演练</b><p>样例使用演练入口。自选站请核实经纬度；未标注限高、限重的路段仍须车组复核。</p></div><button data-act="import">导入地图已选单（'+selected.length+'）</button></div>'+
+    const ticket=ctx.focusOrderId&&(ctx.demo||ctx.publicDemo)&&ctx.orders?.find(o=>o.id===ctx.focusOrderId&&o.crm_ref==='DEMO-DAL-02'
+      &&o.location_precision==='dock'&&o.coordinate_ref&&o.warehouse==='Dallas'&&Number(o.lat)===32.779&&Number(o.lng)===-96.799);
+    if(ticket){
+      state.stops=[{...stop(ticket.address||'Dallas 演练机位',Number(ticket.lat),Number(ticket.lng)),
+        open:ticket.window_start?.slice(11,16)||'09:00',close:ticket.window_end?.slice(11,16)||'16:00',service:45,kg:440}];
+    }
+    const draftKey=ticket?storageKey+':'+ticket.id:storageKey;
+    let map,lines,markers,base,controller,dragged,styleId='local',loadingBase=false;
+    const pref=DispatchViews.prefs(ctx,'road'),layers={origin:true,stops:true,line:true,...pref.get('layers',{})};
+    root.innerHTML='<div class="pr-bar"><div><b>Dallas 市区　·　'+(ticket?'本票试排 '+e(ticket.id):'公开演练')+'</b><p>样例使用演练入口。自选站请核实经纬度；未标注限高、限重的路段仍须车组复核。</p></div><button data-act="import">导入地图已选单（'+selected.length+'）</button></div>'+
       '<div class="pr-layout"><form class="pr-inputs"><div data-fields></div><div class="pr-tools"><button type="submit" class="primary">规划道路路线</button><button type="button" data-act="cancel" hidden>取消等待</button></div><p data-status role="status" aria-live="polite"></p></form>'+
-      '<section class="pr-output"><div class="pr-map" aria-label="达拉斯道路与停靠点"></div><p class="pr-base" role="status">正在载入街道底图…</p><div data-results></div>'+
-      '<div class="pr-tools"><button data-act="save">保存演练草案</button><button data-act="restore">恢复已存草案</button></div><small data-saved></small></section></div>';
+      '<section class="pr-output"><div class="pr-tools">'+DispatchViews.html+'</div><div class="pr-map" aria-label="全国视野与达拉斯道路试排"></div><div class="pr-tools">'+Object.entries({origin:'出发仓',stops:'站序',line:'道路'}).map(([k,label])=>'<button type="button" data-map-layer="'+k+'" aria-pressed="'+layers[k]+'">'+label+'</button>').join('')+'<button type="button" data-act="retryBase">重试底图</button></div><p class="pr-base" role="status">正在载入街道底图…</p><div data-results></div>'+
+      '<div class="pr-tools">'+(ticket?'<button type="button" data-act="saveTicket">保存本票道路试排</button>':'')+'<button data-act="save">保存演练草案</button><button data-act="restore">恢复已存草案</button></div><small data-saved></small></section></div>';
     const find=sel=>root.querySelector(sel),form=find('form'),status=find('[data-status]');
     const input=(label,type,section,k,val,props='')=>'<label><span>'+label+'</span><input type="'+type+'" data-row="'+section+'" data-k="'+k+'" '+props+' '+(type==='checkbox'?(val?'checked':''):'value="'+e(val??'')+'"')+'></label>';
     const coords=(p,i)=>input(i==='origin'?'仓址 / 演练入口':'交货地址 / 入口','text',i,'name',p.name,'required maxlength="160"')+
@@ -42,20 +50,21 @@ window.PublicRoadUI = (() => {
       lines.clearLayers();markers.clearLayers();
       const valid=last&&lastKey===key(state),points=[state.origin,...state.stops];
       for(const [i,p] of points.entries()){
+        if(!layers[i?'stops':'origin'])continue;
         if(p.lat===''||p.lon===''||!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lon)))continue;
         const index=i&&valid?last.order.indexOf(i)+1:i;
         const label=document.createElement('span');label.textContent=p.name||'待核址';
         L.marker([Number(p.lat),Number(p.lon)],{icon:L.divIcon({className:'pr-pin '+(!p.verified?'pr-unverified':i?'':'pr-warehouse'),html:i?String(index):'仓',iconSize:[24,24],iconAnchor:[12,12]})}).bindTooltip(label).addTo(markers);
       }
-      if(valid&&last.geometry?.length){
+      if(layers.line&&valid&&last.geometry?.length){
         const shape=L.polyline(last.geometry,{pane:'roadGeometry',color:'#196e50',weight:5,opacity:.9}).addTo(lines);
         for(let index=30;index<last.geometry.length-1;index+=75){
           const a=last.geometry[index],b=last.geometry[index+1],from=map.project(a),to=map.project(b);
           const angle=Math.atan2(to.y-from.y,to.x-from.x)*180/Math.PI;
           L.marker(a,{interactive:false,keyboard:false,icon:L.divIcon({className:'pr-direction',html:'<span style="transform:rotate('+angle+'deg)">➤</span>',iconSize:[12,12],iconAnchor:[6,6]})}).addTo(lines);
         }
-        if(fit)map.fitBounds(shape.getBounds(),{padding:[25,25],maxZoom:15});
-      }else if(fit&&markers.getLayers().length)map.fitBounds(markers.getBounds(),{padding:[25,25],maxZoom:14});
+        if(fit)map.fitBounds(shape.getBounds(),{animate:false,padding:[25,25],maxZoom:15});
+      }else if(fit&&markers.getLayers().length)map.fitBounds(markers.getBounds(),{animate:false,padding:[25,25],maxZoom:14});
     }
     function results(fit=false){
       find('[data-act=cancel]').hidden=!busy;
@@ -112,13 +121,13 @@ window.PublicRoadUI = (() => {
     function save(){
       try{
         const payload={state,last,lastKey,revision:rev+1,savedAt:new Date().toISOString()};
-        localStorage.setItem(storageKey,JSON.stringify(payload));rev=payload.revision;
+        localStorage.setItem(draftKey,JSON.stringify(payload));rev=payload.revision;
         find('[data-saved]').textContent='已保存在本设备　v'+rev+'　'+payload.savedAt;status.textContent='演练草案已保存。';
       }catch(err){status.textContent='草案保存失败　'+err.message}
     }
     function restore(){
       try{
-        const draft=JSON.parse(localStorage.getItem(storageKey));
+        const draft=JSON.parse(localStorage.getItem(draftKey));
         if(!draft){status.textContent='本设备尚无已存道路草案。';return}
         if(!draft.state?.origin||!Array.isArray(draft.state.stops)||!draft.state.truck)throw Error('无法识别草案版本');
         controller?.abort();generation++;busy=false;state=draft.state;last=draft.last;lastKey=draft.lastKey;rev=draft.revision;
@@ -126,8 +135,23 @@ window.PublicRoadUI = (() => {
       }catch(err){status.textContent='无法恢复草案　'+err.message}
     }
     root.onclick=ev=>{
+      const toggle=ev.target.closest('[data-map-layer]');
+      if(toggle){const id=toggle.dataset.mapLayer;layers[id]=!layers[id];pref.set('layers',layers);toggle.setAttribute('aria-pressed',String(layers[id]));drawMap();return}
       const b=ev.target.closest('[data-act]');if(!b)return;
       const a=b.dataset.act,i=Number(b.dataset.index);
+      if(a==='retryBase')base?base.retry():loadBase();
+      if(a==='saveTicket'&&ticket){
+        if(!last||lastKey!==key(state)||state.stops.length!==1||state.origin.lat!==32.781||state.origin.lon!==-96.815
+          ||Number(state.stops[0].lat)!==Number(ticket.lat)||Number(state.stops[0].lon)!==Number(ticket.lng)){
+          status.textContent='须以本票已核的仓和交付入口重算一站道路。';return;
+        }
+        b.disabled=true;
+        ctx.api('/api/practice/ticket/'+encodeURIComponent(ticket.id)+'/road',{method:'POST',body:{version:ticket.version,
+          kilometers:last.legs[0].distance/1000,duration_min:last.legs[0].duration/60,source:last.source,
+          origin:[Number(state.origin.lat),Number(state.origin.lon)],stop:[Number(state.stops[0].lat),Number(state.stops[0].lon)]}})
+          .then(()=>{status.textContent='本票演练道路已登记。';find('[data-saved]').textContent=ticket.id+' · '+(last.legs[0].distance/1609.344).toFixed(2)+' mi';})
+          .catch(err=>{status.textContent=err.message;b.disabled=false});return;
+      }
       if(a==='restore')restore();
       if(a==='save')save();
       if(a==='cancel'){controller?.abort();generation++;busy=false;status.textContent='已取消本次等待，输入保留。';results()}
@@ -153,16 +177,31 @@ window.PublicRoadUI = (() => {
       dragged=undefined;
     };
     root.ondragend=()=>{dragged=undefined};
+    async function loadBase(){
+      if(loadingBase||!alive||!map)return;
+      loadingBase=true;
+      try {
+        if(!window.attachDFWBasemap)await script('./vendor/basemap/dfw-layer.js');
+        if(alive)base=await window.attachDFWBasemap(map,msg=>{if(alive)find('.pr-base').textContent=msg},()=>alive,styleId);
+        base?.setStyle(styleId);
+      } catch(err){if(alive)find('.pr-base').textContent='底图加载失败，可重试。'+err.message}
+      finally{loadingBase=false}
+    }
     fields();results();
     (async()=>{
       if(!window.L)await script('./vendor/leaflet.js');if(!alive)return;
-      map=L.map(find('.pr-map'),{scrollWheelZoom:false}).setView([32.78,-96.803],13);
+      if(!window.US_STATES)await script('./vendor/us-states.js');if(!alive)return;
+      map=L.map(find('.pr-map'),{minZoom:1,maxZoom:18,zoomAnimation:false,fadeAnimation:false,scrollWheelZoom:true}).setView([32.78,-96.803],13);
       map.createPane('roadGeometry').style.zIndex=450;
       lines=L.layerGroup().addTo(map);markers=L.featureGroup().addTo(map);drawMap(true);
-      if(!window.attachDFWBasemap)await script('./vendor/basemap/dfw-layer.js');
-      if(alive)base=await window.attachDFWBasemap(map,msg=>{if(alive)find('.pr-base').textContent=msg},()=>alive);
+      L.geoJSON(window.US_STATES,{interactive:false,style:{color:'#abc2b7',weight:1,fillColor:'#eff3ee',fillOpacity:.75}}).addTo(map);
+      const view=pref.get('view',null);
+      if(view&&[view.lat,view.lng,view.zoom].every(Number.isFinite))map.setView([view.lat,view.lng],view.zoom,{animate:false});
+      map.on('moveend',()=>{if(!alive)return;const pos=map.getCenter();pref.set('view',{lat:pos.lat,lng:pos.lng,zoom:map.getZoom()})});
+      DispatchViews.bind(map,root,pref,{home:()=>{if(state.origin.lat!==''&&state.origin.lon!=='')map.setView([Number(state.origin.lat),Number(state.origin.lon)],13,{animate:false})},route:()=>drawMap(true),style:id=>{styleId=id;base?.setStyle(id)}});
+      await loadBase();
     })().catch(err=>{if(alive)find('.pr-base').textContent='底图未载入。'+err.message+'；可继续核对地址与站序。'});
-    return {destroy(){alive=false;generation++;controller?.abort();base?.remove();map?.remove()}};
+    return {destroy(){alive=false;generation++;controller?.abort();map?.stop();base?.remove();map?.remove()}};
   }
   return {mount,storageKey};
 })();

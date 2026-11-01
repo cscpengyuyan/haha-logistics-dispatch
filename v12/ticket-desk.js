@@ -22,6 +22,8 @@ window.TicketDesk = (() => {
       subtitle:[o.warehouse,o.model+' × '+o.quantity,o.customer].filter(Boolean).join(' · '),
       dueLabel:'预约截止',due:due(o.window_end,o.timezone)
     });
+    if((o.status==='intake'||o.sales_review_pending)&&['sales','dispatch','admin'].includes(ctx.user.role))
+      return row(3,'F01 · 交单待核',o.sales_owner||'销售 / 物流',o.sales_review_pending?'销售交单已改版，须复核受影响的作业。':'待补销售资料或明确物流接手终点。','办理本条销售交单','','sales?focus='+encodeURIComponent(o.id),0);
     if(can('settle'))return row(4,'F08 · 核账','财务','核报价、变更、现场凭据与发票。','核对本票费用','settle','',0);
     if(can('service_complete'))return row(4,'F07 · 技术启用','技师','已购 L5，待测试和客户确认。','核对 '+o.quantity+' 台技术验收','service_complete');
     if(can('resolve'))return row(4,'F06 · 异常','调度 / 客服',o.reason||o.next_step||'待登记恢复依据。','办理异常恢复','resolve');
@@ -31,8 +33,8 @@ window.TicketDesk = (() => {
     if(can('depart'))return row(3,'F04 · 离仓',o.driver||'执行车组','待核派车授权、实际人车和设备。','核对离仓交接','depart');
     if(o.status==='dispatched'&&ctx.user.role==='warehouse')return row(3,'F04 · 仓口验放','仓管','待核本段提货号与实到车组。','验放 '+remaining+' 台设备','','gate?focus='+encodeURIComponent(o.id));
     if(can('pickup'))return row(3,'F04 · 客户自提','仓管','自提在原库存仓交接，须核人车和提货授权。','核验自提授权',o.pickup_gate?'pickup':'pickup_gate');
+    if(o.status==='ready'&&['procurement','dispatch','admin'].includes(ctx.user.role)&&!o.pickup&&!o.selected_quote&&!o.platform_instruction)return row(3,'F03 · 比价与委托','采购','核对本票已购范围、正式回价与书面承接。',o.active_rfq?'办理本票采购':'生成本票询价包','','procurement?order='+encodeURIComponent(o.id),1);
     if(can('dispatch'))return row(3,'F04 · 待调度','调度','库存已锁定，核对线路、车组与书面承接。','定位本票并排线','','map?focus='+encodeURIComponent(o.id),1);
-    if(o.status==='ready'&&ctx.user.role==='procurement'&&!o.pickup&&!o.selected_quote)return row(3,'F03 · 比价与委托','采购','待同范围同窗报价与书面承接。','核对本票采购资料','');
     if(can('ready'))return row(3,'F02 · 锁定实物','仓管','待核实际库存仓、机型及合格 SN。','核对 '+o.quantity+' 台可锁设备','ready');
     if(o.status==='new'&&can('edit')&&!o.endpoint)return row(3,'F01 · 交接点','销售','客户交接终点待确认。','补录客户交接点','edit');
   }
@@ -58,24 +60,26 @@ window.TicketDesk = (() => {
   function mount(host,ctx,params) {
     const role=ctx.user.role,e=ctx.escape,requested=Number(params.get('stage')),filter=[1,2,3,4].includes(requested)?requested:0;
     const section=document.createElement('section');section.className='ticket-desk';host.append(section);
-    let shipments=[],seaError='',loading=mayReadSea(role),practiceTitle='跟做一票达拉斯演练';
+    let expanded=false,shipments=[],seaError='',loading=mayReadSea(role),practiceTitle='原有达拉斯演练 · 海运与技术单';
     const orderRows=ctx.orders.map(o=>orderTask(o,ctx)).filter(Boolean);
     function draw(){
       if(!section.isConnected)return;
       const all=[...shipments.flatMap(s=>seaTasks(s,role)),...orderRows].sort((a,b)=>a.rank-b.rank);
-      const rows=all.filter(r=>!filter||r.stage===filter);
+      const matching=all.filter(r=>!filter||r.stage===filter);
+      const rows=expanded||filter?matching:matching.slice(0,5);
       section.innerHTML='<nav class="td-steps" aria-label="按全程阶段筛选">'+stages.map(([title,sub,code],i)=>
         '<button type="button" data-stage="'+(i+1)+'" aria-pressed="'+(filter===i+1)+'"><span class="td-step-top"><i>0'+(i+1)+'</i><small>'+code+'</small></span><b>'+title+'</b><span>'+sub+'</span></button>'
-      ).join('')+'</nav><section class="td-queue"><header><div><span class="td-kicker">WORK QUEUE　/　'+e(ctx.roleNames[role]||role)+'</span><h2>'+(filter?stages[filter-1][0]:'待我办理')+' <em>'+rows.length+'</em></h2></div>'+(ctx.demo?'<button data-practice class="td-practice">'+e(practiceTitle)+'　→</button>':'')+'</header>'+
+      ).join('')+'</nav><section class="td-queue"><header><div><span class="td-kicker">WORK QUEUE　/　'+e(ctx.roleNames[role]||role)+'</span><h2>'+(filter?stages[filter-1][0]:'待我办理')+' <em>'+matching.length+'</em></h2></div>'+(ctx.demo?'<button data-practice class="td-practice">'+e(practiceTitle)+'　→</button>':'')+'</header>'+
       (filter?'<button class="td-all" data-stage="0">← 全部阶段</button>':'')+
       (loading?'<p role="status" class="td-message">正在读取海运与收货任务…</p>':'')+
       (seaError?'<p class="td-message" role="alert">海运待办读取失败 · '+e(seaError)+' <button data-retry>重试</button></p>':'')+
       (rows.length?rows.map((r,i)=>'<article class="td-row"><div class="td-row-ref"><small>阶段 0'+r.stage+'　/　'+e(r.node)+'</small>'+
         (r.order?'<button data-ticket="'+i+'">'+e(r.ref)+'</button>':'<b>'+e(r.ref)+'</b>')+'<span>'+e(r.subtitle)+'</span></div><div class="td-row-body"><p>'+e(r.reason)+'</p><small>负责　'+e(r.owner||'待认领')+'　·　'+e(r.dueLabel)+'　'+e(r.due)+'</small></div><button data-do="'+i+'" class="td-do">'+e(r.label)+'　›</button></article>').join(''):
-        '<div class="td-empty"><b>本岗位在'+(filter?'这一阶段':'当前队列')+'暂无待办</b><p>其他岗位完成交接后，新任务会按当前业务状态出现。</p></div>')+'</section>';
+        '<div class="td-empty"><b>本岗位在'+(filter?'这一阶段':'当前队列')+'暂无待办</b><p>其他岗位完成交接后，新任务会按当前业务状态出现。</p></div>')+(matching.length>5&&!filter?'<button class="td-all" data-expand>'+ (expanded?'收起':'查看全部 '+matching.length+' 条待办')+'</button>':'')+'</section>';
       section.onclick=ev=>{
         const b=ev.target.closest('button');if(!b)return;
-        if(b.hasAttribute('data-stage')){const st=Number(b.dataset.stage);ctx.navigate(st?'dock?stage='+st:'dock')}
+        if(b.hasAttribute('data-expand')){expanded=!expanded;draw()}
+        else if(b.hasAttribute('data-stage')){const st=Number(b.dataset.stage);ctx.navigate(st?'dock?stage='+st:'dock')}
         else if(b.hasAttribute('data-practice'))ctx.navigate('tasks');
         else if(b.hasAttribute('data-retry'))loadSea();
         else if(b.hasAttribute('data-ticket'))ctx.openOrder(rows[Number(b.dataset.ticket)].order);

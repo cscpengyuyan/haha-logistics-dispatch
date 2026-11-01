@@ -1,0 +1,13 @@
+.rfq{display:grid;gap:1rem;max-width:1440px;margin:auto}
+.rfq header,.rfq section,.rfq-line{background:var(--surface,#fff);border:1px solid #d7dfdf;border-radius:10px;padding:16px}
+.rfq h2,.rfq h3,.rfq h4,.rfq p{margin:.35em 0}
+.rfq small{color:#476362;font-weight:700}
+.rfq-tools,.rfq-filters,.rfq-check{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rfq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;margin-top:12px}
+.rfq-grid article{padding:12px;border:1px solid #d5dddd;border-radius:8px;min-width:0;overflow-wrap:anywhere}
+.rfq-offer strong{font-size:1.5rem;display:block}
+.rfq-offer details,.rfq-dialog fieldset{margin:12px 0}
+.rfq-best{border-color:#22806e!important;background:#f0f8f5}
+.rfq dt{color:#546867}.rfq dd{margin:0 0 8px}
+.rfq-delta,.rfq-missing{color:#854912}.rfq pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.rfq-line{display:flex;align-items:center;gap:12px;margin-bottom:6px}.rfq-line div{flex:1}.rfq-check input{width:auto}

@@ -148,8 +148,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Referrer-Policy","no-referrer")
         self.send_header("X-Frame-Options","DENY")
         training = urlsplit(self.path).path.startswith("/training/")
-        wasm = " 'wasm-unsafe-eval'" if training else ""
-        self.send_header("Content-Security-Policy", f"default-src 'self'; script-src 'self'{wasm}; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        wasm = " 'wasm-unsafe-eval'" if training or self.server.demo else ""
+        self.send_header("Content-Security-Policy", f"default-src 'self'; script-src 'self'{wasm}; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' blob: https://tiles.openfreemap.org; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
         for key, value in (extra or {}).items():
             self.send_header(key, value)
         self.end_headers()
@@ -257,6 +257,16 @@ class Handler(BaseHTTPRequestHandler):
         import partner
         limited=partner.restrict(db,path,method,body,user)
         if limited is not None:return limited
+        live_sms=re.fullmatch(r"/api/communications/authorize/([a-zA-Z0-9_-]+)",path)
+        if live_sms and method=="POST":
+            if self.server.demo or not self.server.secure:raise ApiError(403,"正式短信须使用员工 HTTPS 服务")
+            import sms_worker
+            from datetime import timezone
+            return sms_worker.authorize(db,live_sms[1],body,user,sms_worker.settings(),datetime.now(timezone.utc))
+        if path=="/api/communications/service" and method=="GET":
+            import communications, sms_worker
+            if user["role"] not in communications.ROLES:raise ApiError(403,"无通讯操作权限")
+            return {"live":bool(not self.server.demo and self.server.secure and sms_worker.settings())}
         if method == "POST" and path == "/api/road/practice" and self.server.demo:
             import road_practice
             return road_practice.prepare(db,user)
@@ -358,6 +368,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self.origin_check()
             path = urlsplit(self.path).path
+            if re.fullmatch(r"/api/twilio/(incoming|status/[a-f0-9]{24})",path):
+                self.twilio_callback(path)
+                return
             if not path.startswith("/api/"):
                 self.static(path)
                 return
@@ -390,6 +403,21 @@ class Handler(BaseHTTPRequestHandler):
             self.json(500, {"error":"服务内部错误，修改已回滚"})
 
     do_HEAD=do_GET=do_POST=do_PATCH=do_PUT=do_DELETE=execute
+
+    def twilio_callback(self,path):
+        import sms_worker
+        if self.command!="POST" or self.server.demo or not self.server.secure or self.path!=path:raise ApiError(403,"回调入口不可用")
+        if self.headers.get_content_type()!="application/x-www-form-urlencoded":raise ApiError(415,"无效回调类型")
+        try:size=int(self.headers.get("Content-Length",""))
+        except ValueError:raise ApiError(411,"缺回调长度")
+        if not 0<size<=32768:raise ApiError(413,"无效回调大小")
+        raw=self.rfile.read(size)
+        with closing(connect(self.server.path)) as db:
+            db.execute("BEGIN IMMEDIATE")
+            with db:sms_worker.webhook(db,sms_worker.settings(),path,raw,self.headers.get("X-Twilio-Signature",""))
+        out=b"<Response/>" if path==sms_worker.INCOMING else b""
+        self.headers_out(200,"application/xml",len(out))
+        self.wfile.write(out)
 
 
 def main():

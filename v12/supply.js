@@ -4,7 +4,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const warehouses = ctx => ctx.resources.filter(r => r.type === 'warehouse');
   const findName = (ctx,id) => ctx.resources.find(r => r.id === id)?.name || id;
-  const titles = {
+  const titles = {reason:"实盘差异与发现位置",procurement_ref:"头程采购确认 / 书面订舱凭据号",
     free_until:'免仓截止日期（仓库当地）',doc_cutoff:'截单时间 · 含 UTC 偏移',gate_cutoff:'截港时间 · 含 UTC 偏移',pickup_eta:'预计可提 · 含 UTC 偏移',
     transshipment:'直航 / 转船港及次数',source:'班期来源及版本',confirmation:'班期确认状态',seal:'FCL 柜封',
     bill_of_lading:'提单 / 分单',pickup_site:'提单指定实际交接场站',inland_owner:'内陆段责任方',
@@ -99,10 +99,11 @@
   }
   function book(ctx,done,c){
     const header=c?'<p class="sc-route"><b>'+esc(c.voyage)+'</b> '+esc(c.origin)+' → '+esc(c.port)+' → '+esc(c.warehouse)+' · '+esc(c.source)+'</p>':'';
+    const awards=c?.booking_awards||[],awardField=awards.length?'<label class="field"><span>关联本航次头程中选</span><select name="ocean_rfq_id"><option value="">其他书面订舱凭据</option>'+awards.map(a=>'<option value="'+esc(a.id)+'">'+esc(a.ref+' · '+a.mode+' · '+a.units+' 台')+'</option>').join('')+'</select></label>':'';
     const voyageFields=c?'':cols(field('voyage'),field('origin'),field('origin_zone',zones,'',null,true),field('port'),field('port_zone',zones,'',null,true),field('warehouse_id',whOptions(ctx)),field('planned_etd',null,iso()),field('planned_eta'),field('planned_warehouse'));
-    const d=dialog('S01 · 登记航次与装箱清单',header+voyageFields+cols(field('batch'),field('container'),field('asn'),field('seal',null,'','text',true),
+    const d=dialog('S01 · 登记航次与装箱清单',header+'<p>取得头程采购批准或书面承接后，在凭据栏填写确认号。仅取得班期请保存为候选。</p>'+voyageFields+cols(field('batch'),field('container'),field('asn'),field('seal',null,'','text',true),
       field('mode',['FCL','LCL']),field('inland',[['road','公路直送'],['rail','铁路 + 短驳']]),field('bill_of_lading',null,'','text',true),field('pickup_site',null,'','text',true),field('inland_owner',null,'','text',true),
-      field('owner',null,ctx.user.name),field('evidence'),field('csv')),
+      field('owner',null,ctx.user.name),awardField,field('procurement_ref'),field('csv')),
       '登记订舱',async f=>{
         const units=f.csv.trim().split(/\r?\n/).filter(Boolean).map(line=>{
           const parts=line.split(',').map(x=>x.trim());if(![2,3,9].includes(parts.length))throw Error('每行应有 2、3 或 9 列，请核对 CSV 表头与规格');
@@ -113,8 +114,10 @@
           }
           return unit;
         });delete f.csv;
-        const out=await api(ctx,'book',{...f,units,candidate_id:c?.id,warehouse_zone:warehouses(ctx).find(w=>w.id===f.warehouse_id)?.timezone});await done(out.shipment.id);
+        const out=await api(ctx,'book',{...f,evidence:f.procurement_ref,units,candidate_id:c?.id,warehouse_zone:warehouses(ctx).find(w=>w.id===f.warehouse_id)?.timezone});await done(out.shipment.id);
       });
+    const award=d.querySelector('[name=ocean_rfq_id]');
+    if(award)award.onchange=()=>{const a=awards.find(x=>x.id===award.value);if(a){d.querySelector('[name=procurement_ref]').value=a.ref;d.querySelector('[name=mode]').value=a.mode}};
     d.querySelector('[type=file]').onchange=async ev=>{
       const file=ev.target.files[0];if(!file)return;
       if(file.size>200000){d.querySelector('.error-line').textContent='CSV 超过 200 KB';return}
@@ -202,6 +205,27 @@
       return '<tr><th>'+esc(steps[kind])+'</th><td>'+esc(list[0].source_time)+'</td><td class="'+(late?'late':'')+'">'+esc(last.source_time)+'</td><td>'+esc(actual?.source_time||actual?.at||'待回执')+'</td><td><details><summary>v'+list.length+' · '+esc(last.evidence)+'</summary>'+list.map((p,i)=>'<p>v'+(i+1)+' · '+esc(p.source_time)+' · '+esc(p.owner)+' · '+esc(p.evidence)+'</p>').join('')+'</details></td></tr>'
     }).join('')+'</tbody></table></div></details>';
   }
+  function stockCount(ctx,o,done){
+    const resolving=!!o.count_open;
+    const fields=resolving?cols(field('approval_ref'),field('bin',null,o.bin),field('condition'),field('state',
+      [['hold','保持隔离'],['pending_qc','实收待检'],['available','有质检及审批依据，恢复可用']]),field('evidence'))
+      :cols(field('reason'),field('evidence'));
+    dialog((resolving?'授权更正':'登记盘点差异')+' · '+o.sn,
+      '<p>'+esc(resolving?'原差异：'+o.count_issue+' · '+o.count_ref:'登记后本台隔离，由另一位管理岗核准处置。')+'</p>'+fields,
+      resolving?'确认处置':'隔离本台并登记',async f=>{
+        await api(ctx,'stock-count',{...f,sn:o.sn,version:o.version,action:resolving?'resolve':'report'});await done();
+      });
+  }
+  function receiveBatch(ctx,s,done){
+    dialog('ASN · 批量扫码验收','<p>同一 ASN、仓位、验收结论和签收依据可连续扫描。货况不同请分开提交。</p>'+
+      '<label class="field">SN，每行一台<textarea name="serials" rows="5" required></textarea></label>'+cols(
+        field('state',[['pending_qc','实收待检'],['available','质检合格'],['hold','隔离']]),field('bin'),field('condition'),field('custodian',null,ctx.user.name),field('evidence')),
+      '确认本批收货',async f=>{
+        const serials=f.serials.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const out=await api(ctx,'receive-batch',{...f,serials,id:s.id,version:s.version});
+        ctx.toast('新增 '+out.accepted+' 台，已有回执 '+out.replayed+' 台');await done(s.id);
+      });
+  }
   function receive(ctx,s,done){
     const d=dialog('ASN · 实物到仓逐台验收','<label class="field"><span>扫描或手输 SN 后按 Tab</span><input data-scan autocomplete="off"></label>'+cols(field('sn',s.units.filter(u=>!u.receipt).map(u=>[u.sn,u.sn+' · '+u.model])),
       field('state',[['pending_qc','仅确认实收，待质检'],['available','已质检合格，可锁机'],['hold','隔离，暂停放行']]),field('free_until',null,'','date',true),field('bin'),field('condition'),field('custodian',null,ctx.user.name),field('evidence'))+
@@ -246,13 +270,14 @@
     return '<div class="sc-scroll" tabindex="0" aria-label="可横向滚动的航次时间轴"><div class="sc-timeline" style="--ticks:'+ticks+';min-width:'+Math.max(420,ticks*55)+'px"><div class="sc-axis">'+Array.from({length:ticks},(_,i)=>'<span>'+fmt(new Date(min+i*interval*utcDay),s.warehouse_zone).split(' ')[0]+'</span>').join('')+'</div>'+lines.map(([t,c,a,b])=>'<div class="sc-track"><span class="sc-bar '+c+'" style="left:'+offset(a)+'%;width:'+Math.max(.5,offset(b)-offset(a))+'%" title="'+esc(fmt(a,s.warehouse_zone)+' — '+fmt(b,s.warehouse_zone))+'">'+t+'</span></div>').join('')+'</div></div>';
   }
   function inventory(ctx,sn){ctx.navigate('inventory?sn='+encodeURIComponent(sn))}
-  async function sea(host,ctx){
+  async function sea(host,ctx,onRecords){
     let records=[],selected=new URLSearchParams(location.hash.split('?')[1]||'').get('batch')||'',scale='week',query='',held=false;
     const can=['admin','warehouse','inbound'].includes(ctx.user.role);
     async function load(id){
       try{
         records=(await ctx.api('/api/supply/shipments')).shipments;
         if(!host.isConnected)return;
+        onRecords?.(records);
         const trace=focusASN;focusASN='';
         selected=id||records.find(s=>s.asn===trace)?.id||selected||records[0]?.id||'';
         if(trace&&!records.some(s=>s.asn===trace)){query=trace;selected='';ctx.toast('旧批次 '+trace+' 没有对应的航次清单，请在原入仓回执核查')}
@@ -266,7 +291,7 @@
       if(!s){host.insertAdjacentHTML('beforeend','<p class="sc-empty">暂无符合条件的航次。订舱时登记装箱清单，收货岗即可按 ASN 核对。</p>')}
       else {
         const gap=Math.round((Date.parse(s.eta)-Date.parse(s.planned_eta))/3600000),events=s.events,complete=s.units.filter(u=>u.receipt).length;
-        host.insertAdjacentHTML('beforeend','<div class="sc-controls">'+field('voyage',subset.map(i=>[i.id,i.voyage+' / '+i.batch+' / '+i.container]),s.id)+'<label>时间刻度<select data-scale><option value="day">日</option><option value="week">周</option></select></label></div><div class="sc-route"><b>'+esc(s.origin)+' → '+esc(s.port)+' → '+esc(s.warehouse)+'</b><span>'+esc(s.mode)+' · '+(s.inland==='rail'?'铁路 + 短驳':'公路')+' · '+esc(s.asn)+'</span></div>'+chart(s,scale)+'<div class="sc-status"><b>'+esc(s.warehouse_zone)+'</b><span>原到港 '+esc(fmt(s.planned_eta,s.port_zone||s.warehouse_zone)+' '+(s.port_zone||s.warehouse_zone))+'</span><span>最新到港 '+esc(fmt(s.eta,s.port_zone||s.warehouse_zone)+' '+(s.port_zone||s.warehouse_zone))+'</span><b class="'+(gap>0?'late':'')+'">'+(gap>0?'晚 '+gap+' 小时':gap<0?'提前 '+(-gap)+' 小时':'按原计划')+'</b><span>预计到仓 '+esc(fmt(s.warehouse_eta,s.warehouse_zone))+'</span></div><div class="sc-head"><h3>回执与影响订单</h3>'+(can?'<button data-event>登记节点 / ETA</button>':'')+'</div><div class="sc-scroll"><table><thead><tr><th>节点</th><th>作业地时间</th><th>保管人 / 凭据</th><th>受影响订单</th></tr></thead><tbody>'+events.slice().reverse().map(v=>'<tr><td>'+esc(steps[v.kind])+'</td><td>'+esc(fmt(v.at,v.zone||s.warehouse_zone)+' '+(v.zone||s.warehouse_zone))+'</td><td>'+esc(v.custodian)+' / '+esc(v.evidence)+'</td><td>'+(v.order_ids||[]).map(id=>'<button data-order="'+esc(id)+'">'+esc(id)+'</button>').join(' ')+'</td></tr>').join('')+'<tr><td>订舱</td><td>计划装船 '+esc(fmt(s.planned_etd,s.origin_zone||s.warehouse_zone)+' '+(s.origin_zone||s.warehouse_zone))+'</td><td>'+esc(s.owner)+' / '+esc(s.evidence)+'</td><td>—</td></tr></tbody></table></div><div class="sc-head"><h3>装箱 / ASN　'+complete+'/'+s.units.length+' 台实收</h3>'+(complete<s.units.length&&['admin','warehouse'].includes(ctx.user.role)?'<button data-receive>逐台验收</button>':'')+'</div><div class="sc-units">'+s.units.map(u=>'<div><b>'+esc(u.sn)+'</b> · '+esc(u.model)+' · '+esc(u.receipt?(u.state==='hold'?'隔离实收':u.state==='reserved'?'合格，已锁机':u.state==='pending_qc'?'实收待质检':u.state==='available'?'合格实收':'已实收'):'预报待收')+(u.packing?'<small>'+esc([u.packing.length_cm,u.packing.width_cm,u.packing.height_cm].join(' × ')+' cm · '+u.packing.weight_kg+' kg'+(u.packing.upright?' · 直立':'')+(u.packing.nonstackable?' · 不可叠放':''))+'</small>':'')+' '+(u.order_id?'<button data-order="'+esc(u.order_id)+'">关联订单</button>':'')+(u.receipt?.photo_sha256&&['admin','inbound','warehouse','dispatch'].includes(ctx.user.role)?'<button data-photo="'+esc(u.sn)+'">收货照片</button>':'')+(u.receipt?'<button data-stock="'+esc(u.sn)+'">查看仓内 SN</button>':'')+'</div>').join('')+'</div>');
+        host.insertAdjacentHTML('beforeend','<div class="sc-controls">'+field('voyage',subset.map(i=>[i.id,i.voyage+' / '+i.batch+' / '+i.container]),s.id)+'<label>时间刻度<select data-scale><option value="day">日</option><option value="week">周</option></select></label></div><div class="sc-route"><b>'+esc(s.origin)+' → '+esc(s.port)+' → '+esc(s.warehouse)+'</b><span>'+esc(s.mode)+' · '+(s.inland==='rail'?'铁路 + 短驳':'公路')+' · '+esc(s.asn)+'</span></div>'+chart(s,scale)+'<div class="sc-status"><b>'+esc(s.warehouse_zone)+'</b><span>原到港 '+esc(fmt(s.planned_eta,s.port_zone||s.warehouse_zone)+' '+(s.port_zone||s.warehouse_zone))+'</span><span>最新到港 '+esc(fmt(s.eta,s.port_zone||s.warehouse_zone)+' '+(s.port_zone||s.warehouse_zone))+'</span><b class="'+(gap>0?'late':'')+'">'+(gap>0?'晚 '+gap+' 小时':gap<0?'提前 '+(-gap)+' 小时':'按原计划')+'</b><span>预计到仓 '+esc(fmt(s.warehouse_eta,s.warehouse_zone))+'</span></div><div class="sc-head"><h3>回执与影响订单</h3>'+(can?'<button data-event>登记节点 / ETA</button>':'')+'</div><div class="sc-scroll"><table><thead><tr><th>节点</th><th>作业地时间</th><th>保管人 / 凭据</th><th>受影响订单</th></tr></thead><tbody>'+events.slice().reverse().map(v=>'<tr><td>'+esc(steps[v.kind])+'</td><td>'+esc(fmt(v.at,v.zone||s.warehouse_zone)+' '+(v.zone||s.warehouse_zone))+'</td><td>'+esc(v.custodian)+' / '+esc(v.evidence)+'</td><td>'+(v.order_ids||[]).map(id=>'<button data-order="'+esc(id)+'">'+esc(id)+'</button>').join(' ')+'</td></tr>').join('')+'<tr><td>订舱</td><td>计划装船 '+esc(fmt(s.planned_etd,s.origin_zone||s.warehouse_zone)+' '+(s.origin_zone||s.warehouse_zone))+'</td><td>'+esc(s.owner)+' / '+esc(s.evidence)+'</td><td>—</td></tr></tbody></table></div><div class="sc-head"><h3>装箱 / ASN　'+complete+'/'+s.units.length+' 台实收</h3>'+(complete<s.units.length&&['admin','warehouse'].includes(ctx.user.role)?'<button data-receive>逐台验收</button> <button data-receive-batch>批量扫码验收</button>':'')+'</div><div class="sc-units">'+s.units.map(u=>'<div><b>'+esc(u.sn)+'</b> · '+esc(u.model)+' · '+esc(u.receipt?(u.state==='hold'?'隔离实收':u.state==='reserved'?'合格，已锁机':u.state==='pending_qc'?'实收待质检':u.state==='available'?'合格实收':'已实收'):'预报待收')+(u.packing?'<small>'+esc([u.packing.length_cm,u.packing.width_cm,u.packing.height_cm].join(' × ')+' cm · '+u.packing.weight_kg+' kg'+(u.packing.upright?' · 直立':'')+(u.packing.nonstackable?' · 不可叠放':''))+'</small>':'')+' '+(u.order_id?'<button data-order="'+esc(u.order_id)+'">关联订单</button>':'')+(u.receipt?.photo_sha256&&['admin','inbound','warehouse','dispatch'].includes(ctx.user.role)?'<button data-photo="'+esc(u.sn)+'">收货照片</button>':'')+(u.receipt?'<button data-stock="'+esc(u.sn)+'">查看仓内 SN</button>':'')+'</div>').join('')+'</div>');
         const bar=document.createElement('div');bar.className='sc-controls';
         const button=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=fn;bar.append(b)};
         const day=fmt(s.warehouse_eta,s.warehouse_zone).split(' ')[0];
@@ -276,7 +301,7 @@
         warehouseNote.innerHTML='<b>目的仓预计到货</b><p>'+esc(s.warehouse)+' · '+esc(day)+' · '+sameDay.length+' 批，'+loadCount+' 台待收。</p>'+
           '<p>本批实收 '+complete+' / '+s.units.length+' 台 · 当前可用 '+s.units.filter(u=>u.state==='available').length+
           ' · 已锁 '+s.units.filter(u=>u.state==='reserved').length+' · 隔离 '+s.units.filter(u=>u.state==='hold').length+'</p>'+
-          (s.candidate?'<p>冻结班期 '+esc(s.candidate.source)+' · '+esc(confirmations[s.candidate.confirmation])+'</p>':'')+
+          '<p>'+esc(s.procurement_ref?'已确认采购订舱 · '+s.procurement_ref:'历史订舱回执 · '+(s.evidence||'待核'))+'</p>'+(s.candidate?'<p>冻结班期 '+esc(s.candidate.source)+' · '+esc(confirmations[s.candidate.confirmation])+'</p>':'')+
           '<p>提单 '+esc(s.bill_of_lading||'待核')+' · '+(s.mode==='FCL'?'柜封 '+esc(s.seal||'待核'):'分单 '+esc(s.container))+
           ' · 实际交接场站 '+esc(s.pickup_site||'待核')+' · 内陆段 '+esc(s.inland_owner||'待核')+'</p>';
         host.querySelector('.sc-status').after(warehouseNote);
@@ -305,6 +330,7 @@
         host.querySelector('[data-scale]').value=scale;host.querySelector('[data-scale]').onchange=ev=>{scale=ev.target.value;draw()};
         host.querySelector('[name=voyage]').onchange=ev=>{selected=ev.target.value;draw()};
         host.querySelector('[data-event]')?.addEventListener('click',()=>milestone(ctx,s,load));
+        host.querySelector('[data-receive-batch]')?.addEventListener('click',()=>receiveBatch(ctx,s,load));
         host.querySelector('[data-receive]')?.addEventListener('click',()=>receive(ctx,s,load));
       }
       host.querySelector('[data-candidates]').onclick=()=>candidates(ctx,load,can);
@@ -451,6 +477,6 @@
         await api(ctx,'position',{...f,id:r.id,version:r.version});d.close();await window.Supply.positions(ctx);
       })});
   }
-  window.Supply={sea,supplierPanel,stockPlan,transfer,positions,positionRequest,
-    openASN(ctx,asn){focusASN=asn;window.Resources.focusTab('ledger','inbound');ctx.navigate('ledger')}};
+  window.Supply={sea,stockCount,supplierPanel,stockPlan,transfer,positions,positionRequest,
+    openASN(ctx,asn){focusASN=asn;ctx.navigate('ocean')}};
 })();
