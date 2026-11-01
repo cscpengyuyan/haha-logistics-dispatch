@@ -158,7 +158,9 @@ class Contracts(unittest.TestCase):
             if calls:raise core.ApiError(409,'simulated second route conflict')
             calls.append(1);self.db.execute("INSERT INTO registry VALUES('SIM-FIRST','route',1,'{}')")
             return {'route':{'id':'SIM-FIRST','check_result':{'issues':[]}}}
-        with patch.object(operations,'save_route',side_effect=save):
+        # This unit test isolates savepoint rollback; real structure/coverage
+        # validation is exercised by the lock/candidate acceptance suite.
+        with patch.object(planning,'validate_adoption'),patch.object(operations,'save_route',side_effect=save):
             with self.assertRaises(core.ApiError):planning.adopt(self.db,pid,dict(version=1,candidate_id='a',idempotency_key='once'),self.user)
         self.assertEqual(self.db.execute("SELECT COUNT(*) FROM registry WHERE id='SIM-FIRST'").fetchone()[0],0)
         self.assertEqual(planning.plan_get(self.db,pid)['version'],1)

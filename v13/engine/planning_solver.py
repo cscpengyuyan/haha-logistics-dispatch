@@ -164,6 +164,7 @@ def _cp(ids, candidates, budget, objective, cp):
         model.Minimize(price)
     solver.parameters.max_time_in_seconds = max(.001, budget - (time.monotonic()-start))
     status = solver.Solve(model)
-    indices = [i for i, x in enumerate(xs) if solver.Value(x)] if status in (cp.OPTIMAL, cp.FEASIBLE) else first
-    return dict(indices=indices, solver='OR-Tools CP-SAT', exhausted=status != cp.OPTIMAL,
+    second = [i for i, x in enumerate(xs) if solver.Value(x)] if status in (cp.OPTIMAL, cp.FEASIBLE) else first
+    indices = min((first,second),key=lambda choice:score([candidates[i] for i in choice],objective))
+    return dict(indices=indices, solver='OR-Tools CP-SAT', exhausted=not coverage_optimal or status != cp.OPTIMAL,
                 proven=coverage_optimal and status == cp.OPTIMAL, seconds=time.monotonic()-start, nodes=solver.NumBranches())

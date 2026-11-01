@@ -21,6 +21,12 @@ import planning_solver
 READ = {'admin', 'dispatch', 'finance', 'procurement'}
 SCOPES = {'delivery_complete', 'authorized_stage'}
 OBJECTIVES = {'lowest_cost', 'earliest_finish', 'fewest_transfers'}
+ROUTE_INPUT_FIELDS = {'id','version','name','warehouse','date','start_time','timezone','order_ids','order_versions',
+    'resource_id','crew_id','executor_id','service_minutes','notes','road_basis','road_id','road','checks','stops',
+    'return_policy','collections','cost_scenario','rate_card_id'}
+# Existing saved route responses may be submitted again; these display fields
+# are accepted but are never trusted as planning facts.
+ROUTE_DISPLAY_FIELDS = {'type','phase','check_result','warehouse_id','first_leg','first_leg_ids'}
 
 
 def init_db(db):
@@ -264,7 +270,7 @@ def strict_load(db, route, orders):
 
 
 def evaluated(db, route, order_map, scope, future=False):
-    r = copy.deepcopy(route)
+    r = copy.deepcopy({k:v for k,v in route.items() if k in ROUTE_INPUT_FIELDS})
     ids = r.get('order_ids', [])
     orders = [order_map[i] for i in ids]
     r.setdefault('id', 'C-' + digest(r)[:12])
@@ -320,7 +326,7 @@ def evaluated(db, route, order_map, scope, future=False):
             if rid:
                 # A verified return to origin can connect the next route. An open
                 # route ends at its last stop and requires explicit repositioning.
-                ending = r.get('end_location') or (r['warehouse'] if float(r['checks'].get('return_min') or 0) > 0 else ids[-1])
+                ending = r['warehouse'] if float(r['checks'].get('return_min') or 0) > 0 else ids[-1]
                 r['occupancy'].append(dict(kind=kind, id=rid, start=start, end=end, start_location=r['warehouse'], end_location=ending))
     return r
 
@@ -353,8 +359,6 @@ receipt and the existing revalidation/release API.
             arrived=datetime.fromisoformat(first['check_result']['timeline'][-1]['departure'])+timedelta(minutes=handling)
             if datetime.fromisoformat(second['check_result']['start_utc']) < arrived:continue
             # Each physical resource remains occupied independently across legs.
-            for occupied in first['occupancy']:
-                occupied['end_location']=first['warehouse']
             a={**first,'order_ids':[],'sns':[]};b={**second,'order_ids':[],'sns':[]}
             if planning_solver.conflict(a,b):continue
             combined=copy.deepcopy(first)
@@ -563,6 +567,34 @@ def plan_get(db, pid):
     return json.loads(row[0])
 
 
+def lock_issues(route, locks):
+    """Apply hard locks to every controlled leg and every supplier promise."""
+    errors=[]
+    segments=[route]+[segment for segment in route.get('segments',[])
+                      if any(segment.get(k)!=route.get(k) for k in ('order_ids','resource_id','crew_id','date'))]
+    for key,field in (('vehicle_id','resource_id'),('crew_id','crew_id'),('date','date')):
+        if not locks.get(key):continue
+        values=[segment.get(field) or None for segment in segments]
+        if any(value!=locks[key] for value in values):
+            e=issue('LOCK_CONFLICT','候选不满足人工锁定 '+key,route['id'],'locks.'+key,
+                    '保留当前锁定；可由调度确认调整该锁值，或补充满足锁定的合法候选后重算。')
+            e.update(lock=key,requested_value=locks[key],candidate_values=values,
+                     suggested_values=list(dict.fromkeys(value for value in values if value is not None)),
+                     otherwise_feasible=not route['issues'],automatic_relaxation=False)
+            errors.append(e)
+    if locks.get('station_order'):
+        for segment in segments:
+            ids=segment['order_ids'];expected=[oid for oid in locks['station_order'] if oid in ids]
+            actual=[oid for oid in ids if oid in expected]
+            if actual!=expected:
+                e=issue('LOCK_CONFLICT','候选停靠顺序不满足人工锁定',route['id'],'locks.station_order',
+                        '保留锁定站序；可确认调整站序或补充按原锁定顺序计算的合法路线后重算。')
+                e.update(lock='station_order',requested_value=locks['station_order'],candidate_values=[actual],
+                         suggested_values=[actual],otherwise_feasible=not route['issues'],automatic_relaxation=False)
+                errors.append(e)
+    return errors
+
+
 def optimize(db, body, user, publish=True):
     started = time.monotonic()
     checked = precheck(db, body, user)
@@ -592,6 +624,11 @@ def optimize(db, body, user, publish=True):
     supplied = body.get('route_candidates', [])
     if not isinstance(supplied, list) or len(supplied) > 500:
         raise ApiError(400, '候选路线最多 500 条')
+    for r in supplied:
+        if not isinstance(r,dict):raise ApiError(422,'候选路线必须为 JSON 对象')
+        derived=set(r)-ROUTE_INPUT_FIELDS-ROUTE_DISPLAY_FIELDS
+        if derived:
+            raise ApiError(422,'ROUTE_DERIVED_FIELDS：候选仅接受路线事实，以下字段由服务端生成：'+','.join(sorted(derived)))
     raw, trimmed = generated(db, orders, body)
     raw = saved + supplied + raw
     road_errors = []
@@ -633,12 +670,6 @@ def optimize(db, body, user, publish=True):
         rids = r.get('order_ids')
         if not isinstance(rids, list) or not rids or len(set(rids)) != len(rids) or not set(rids) <= set(ids):
             continue
-        if any(locks.get(lock) and r.get(field) != locks[lock] for lock, field in [('vehicle_id','resource_id'),('crew_id','crew_id'),('date','date')]):
-            continue
-        if locks.get('station_order'):
-            sequence = [oid for oid in locks['station_order'] if oid in rids]
-            if [oid for oid in rids if oid in sequence] != sequence:
-                continue
         signature = digest({k:v for k,v in r.items() if k not in {'id', 'version', 'phase', 'check_result'}})
         if signature in seen:
             continue
@@ -649,12 +680,16 @@ def optimize(db, body, user, publish=True):
         routes.extend(complete_chains(db,routes,order_map,body))
         routes=technical_candidates(db,routes,order_map)
     routes=list({r['id']:r for r in routes}.values())
+    lock_conflicts=[]
     for route in routes:
         for oid in route['order_ids']:
             found={item['rma_id'] for segment in route.get('segments',[route]) for item in segment.get('collections',{}).get(oid,[])}
             if set(required_collections.get(oid,[]))-found:
                 route['issues'].append(issue('COLLECTION_SCOPE_INCOMPLETE','候选未覆盖本停靠点已指定的回收任务，不能以较便宜的仅配送替代',oid,'required_collections','补充包含指定 RMA 的完整送收候选及作业时间'))
                 route['validation_status']='conditions_pending'
+        violations=lock_issues(route,locks)
+        route['issues'].extend(violations);lock_conflicts.extend(violations)
+        if violations:route['validation_status']='conditions_pending'
     bad_orders = {r['id'] for r in checked['orders'] if r['issues']}
     feasible = [r for r in routes if not r['issues'] and not set(r['order_ids']) & bad_orders]
     currencies = {r['currency'] for r in feasible}
@@ -670,10 +705,12 @@ def optimize(db, body, user, publish=True):
         for oid in ids:
             if oid not in covered:
                 reasons = next(x['issues'] for x in checked['orders'] if x['id'] == oid)
-                if not reasons and any(oid in r['order_ids'] for r in feasible):
+                if not reasons and result['exhausted'] and any(oid in r['order_ids'] for r in feasible):
+                    reasons=[issue('SEARCH_BUDGET_EXHAUSTED','搜索预算已耗尽，本票尚未纳入当前可行方案；未证明无解',oid,'budget_seconds','保留已有可行结果，可增加预算或补充候选后重试；不会自动解除硬锁。')]
+                elif not reasons and any(oid in r['order_ids'] for r in feasible):
                     reasons=[issue('CAPACITY_CONFLICT','单票存在可行候选，但与已选方案的车辆、班组、技师、共享额度或跨起点调位相冲突',oid,'occupancy','补充对应资源或核实调位时间后重新计算，不解除已确认硬条件')]
                 elif not reasons:
-                    reasons = [i for r in routes if oid in r['order_ids'] for i in r['issues']][:12]
+                    reasons = sorted([i for r in routes if oid in r['order_ids'] for i in r['issues']],key=lambda i:i['code']!='LOCK_CONFLICT')[:12]
                 if not reasons:
                     reasons = [issue('CAPACITY_CONFLICT', '当前候选中无可同时满足约束的资源', oid, 'resource', '补充车辆、班组、确认时段或更多合法候选')]
                 unassigned.append({'order_id':oid, 'reasons':reasons})
@@ -691,7 +728,13 @@ def optimize(db, body, user, publish=True):
                          optimality_scope='generated_candidates' if result['proven'] and selected else 'verified_feasible' if selected else 'undetermined')
         if not any([r['id'] for r in c['routes']] == [r['id'] for r in selected] for c in candidates):
             candidates.append(candidate)
+    primary_exhausted=candidates[0]['solver']['exhausted']
+    # Later objective passes may time out or recover a better feasible incumbent.
+    # Never replace a verified solution with an empty result from another pass.
+    candidates.sort(key=lambda c:planning_solver.score(c['routes'],objective))
     best = candidates[0]
+    solve_status=('budget_exhausted_with_solution' if best['routes'] else 'timeout_no_solution') if primary_exhausted else best['solve_status']
+    optimality=best['optimality_scope'] if not primary_exhausted and best['objective']==objective else ('verified_feasible' if best['routes'] else 'undetermined')
     pid = 'PLAN-' + uuid.uuid4().hex[:16]
     assumptions = ['候选为有限枚举；最优性只适用于本次已生成且已校验候选。', '未知道路、未确认价格及缺少包装/班次证据不会按零值参与可行方案。']
     if any('SIM-' in str(r.get('stops',{})) or 'SIM-' in str(r.get('commitment',{})) for r in routes):
@@ -702,8 +745,8 @@ def optimize(db, body, user, publish=True):
                 planning_scope=scope, objective=objective, input_hash=checked['input_hash'],required_collections=required_collections,
                 candidates=candidates, draft_routes=routes, routes=best['routes'], unassigned=best['unassigned'],
                 coverage=best['coverage'], cost_items=best['cost_items'], total_minor=best['total_minor'], currency=best['currency'],
-                solve_status=best['solve_status'], validation_status=best['validation_status'], optimality_scope=best['optimality_scope'],
-                assumptions=assumptions, locks=locks, road_errors=road_errors, precheck=checked, metrics=dict(candidate_count=len(routes), feasible_count=len(feasible), seconds=time.monotonic()-started),
+                solve_status=solve_status, validation_status=best['validation_status'], optimality_scope=optimality,
+                assumptions=assumptions, locks=locks, lock_conflicts=lock_conflicts,road_errors=road_errors, precheck=checked, metrics=dict(candidate_count=len(routes), feasible_count=len(feasible), seconds=time.monotonic()-started),
                 pending_legs=[{'order_id':o['id'], 'leg':'second_leg'} for o in orders if scope == 'authorized_stage' and o.get('route') == 'C2' and not o.get('second_leg')])
     return {'plan':plan_save(db, plan) if publish else plan}
 
@@ -712,6 +755,47 @@ def save_result(db, plan, user):
     if snapshot(db, plan['order_ids'], user)[1] != plan['input_hash']:
         raise ApiError(409, 'STALE_INPUT：计算期间业务输入已变化')
     return plan_save(db, plan)
+
+
+def validate_adoption(db,plan,candidate,user):
+    """Check persisted structure before any draft is saved, including old plans."""
+    expected=set(plan['order_ids']);covered=[]
+    def reject(message):raise ApiError(409,'PLAN_STRUCTURE_CONFLICT：'+message)
+    routes=candidate.get('routes')
+    if not isinstance(routes,list) or not routes:reject('方案没有可落地的路线或正式承诺')
+    for route in routes:
+        ids=route.get('order_ids')
+        if not isinstance(ids,list) or not ids or len(ids)!=len(set(ids)) or not set(ids)<=expected:reject('候选订单范围不合法')
+        covered.extend(ids)
+        orders=[get_order(db,oid,user) for oid in ids]
+        if route.get('order_versions')!={o['id']:o['version'] for o in orders}:reject('路线关联版本不一致')
+        chain=route.get('segments')
+        if chain is not None:
+            if (not isinstance(chain,list) or len(chain)!=2 or len(ids)!=1 or
+                orders[0].get('route') not in {'C1','C2'} or orders[0]['status']!='ready' or
+                plan.get('planning_scope')!='delivery_complete' or not orders[0].get('second_leg')):
+                reject('仅完整经站履约允许服务端组合首程和未来二程')
+            if route.get('future_segments')!=chain[1:]:reject('未来运段与完整履约链不一致')
+            for segment in chain:
+                if not isinstance(segment,dict) or segment.get('order_ids')!=ids or segment.get('order_versions')!=route['order_versions']:
+                    reject('组合运段遗漏或额外包含订单')
+                if 'segments' in segment or segment.get('future_segments'):reject('不允许嵌套组合运段')
+            facts=ROUTE_INPUT_FIELDS-{'id','version','notes','cost_scenario','rate_card_id'}
+            if any(route.get(k)!=chain[0].get(k) for k in facts):reject('顶层已核路线与实际落地首段不一致')
+        else:
+            if route.get('future_segments'):reject('非组合路线不能附加未来运段')
+            chain=[route]
+            if plan.get('planning_scope')=='delivery_complete' and any(o.get('route') in {'C1','C2'} and o['status']=='ready' and not o.get('pickup') for o in orders):
+                reject('完整履约不能遗漏未来二程')
+        for segment in chain:
+            kind=segment.get('kind')
+            if kind:
+                if kind not in {'supplier_commitment','pickup'}:reject('内部路线类型无效')
+                promises=commitment_candidates(db,orders,plan.get('planning_scope','delivery_complete'))
+                if not any(p['kind']==kind and p['order_ids']==segment['order_ids'] and p['commitment']==segment.get('commitment') for p in promises):
+                    reject('承诺类型或授权来源与实际业务不一致')
+        if lock_issues(route,plan.get('locks') or {}):reject('持久候选不满足原人工锁定，请重新计算')
+    if len(covered)!=len(set(covered)) or set(covered)!=expected:reject('实际落地范围必须完整覆盖计划且不得重复')
 
 
 def adopt(db, pid, body, user):
@@ -733,6 +817,7 @@ def adopt(db, pid, body, user):
         raise ApiError(404, '候选方案不存在')
     if candidate['unassigned'] or candidate['validation_status'] != 'passed':
         raise ApiError(422, '方案尚未完整覆盖当前范围或有待补条件，不能采用为可执行草案')
+    validate_adoption(db,plan,candidate,user)
     import operations
     # Savepoint guarantees no partial batch even when a caller catches ApiError.
     db.execute('SAVEPOINT adopt_plan')

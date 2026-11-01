@@ -1,0 +1,365 @@
+- banner:
+  - button "打开导航":
+  - text: 美国物流
+  - generic: /
+  - generic: 地图调度
+  - button "全局查单": ⌕ 查单
+  - generic: 仅本设备演练 · 虚构数据
+- main:
+  - generic: DISPATCH MAP / US OPERATIONS
+  - heading "地图调度" [level=1]
+  - paragraph: 从可发订单组建线路，核对仓点、站序与收货窗口。
+  - button "以当前选单试排道路"
+  - button "刷新本机":
+    - text: 刷新本机
+  - button "＋ 新建订单"
+  - region "统一调度计划":
+    - generic: 统一批次 · 地图 / 日期视图共享
+    - generic: PLAN-ac2dd3ae3f234478 v2
+    - button "日期与时间轴"
+    - button "地图视图"
+    - text: 计算范围
+    - combobox "计算范围":
+      - option "完整履约" [selected]
+      - option "已授权阶段"
+    - text: 优化目标
+    - combobox "优化目标":
+      - option "低总价" [selected]
+      - option "较早完成"
+      - option "少转运"
+    - text: 时间轴时区
+    - combobox "时间轴时区":
+      - option "America/Chicago" [selected]
+      - option "America/Los_Angeles"
+      - option "America/New_York"
+      - option "Asia/Shanghai"
+      - option "UTC"
+    - button "检查资料"
+    - button "生成方案"
+    - button "查看完整批次"
+    - button "撤销选单"
+    - button "恢复上次可行方案"
+    - status:
+      - strong: 6 票纳入计算
+      - generic: 完整履约
+      - generic: 求解：计算完成
+      - generic: 业务：校验通过
+      - generic: 最优性：已生成候选集合内最优
+    - generic "逐票预检 · 6 票条件齐备 · 0 项待处理"
+    - generic "方案比较 · 1 个候选 · 同一批 6 票"
+    - article:
+      - generic: 低总价
+      - generic: US$2,400.00
+      - generic: 校验通过 · 6 车次 / 委托
+      - generic: 未排 0 票 · 已生成候选集合内最优
+      - button "查看明细"
+      - button "已采用"
+    - paragraph: 整票覆盖 6 / 6；阶段覆盖 6 / 6。费用范围：完整履约。
+    - button "1. SIM Dallas · 2026-11-11 · SIM 车辆 05 · 1 票"
+    - button "2. SIM Dallas · 2026-11-11 · SIM 车辆 04 · 1 票"
+    - button "3. SIM Dallas · 2026-11-12 · SIM 车辆 05 · 1 票"
+    - button "4. SIM Dallas · 2026-11-12 · SIM 车辆 04 · 1 票"
+    - button "5. SIM Dallas · 2026-11-12 · SIM 车辆 06 · 1 票"
+    - button "6. SIM Dallas · 2026-11-11 · SIM 车辆 06 · 1 票"
+    - generic "待补资料草案 · 12 条（尚未排定）"
+    - generic "费用明细与付款范围"
+    - button "新建 6 票试排"
+    - button "载入 200 票演练" [disabled]
+    - text: 切换销售岗位可导入；现有订单保留。 本库已导 200 / 200 票 · 待调度 200
+    - link "查看本机演练验收说明":
+      - /url: ./data/acceptance.html
+    - paragraph: 公开演练：本浏览器独立数据；候选计算使用浏览器可用引擎。Dallas 道路试排最多 6 站；全国底图不等于全国货车路网已覆盖。 车辆位置显示业务记录，不代表实时 GPS。 订单、仓口核验和报价均为合成测试事实，非真实客户；测试坐标不能作为正式货车道路依据。
+    - generic "计算假设与范围"
+  - generic: 计算批次 6 票
+  - generic: 本车编辑 0 票 · 筛选外仍纳入 0 票
+  - button "将当前 200 票加入计算"
+  - button "将本车加入计算" [disabled]
+  - button "返回完整批次"
+  - generic: 日期和图层只改变视图，不改变已选范围。
+  - group "按交付日筛选":
+    - button "全部 日期 200" [pressed]:
+      - generic: 全部
+      - generic: 日期
+      - emphasis: "200"
+    - button "周日 11/01 17":
+      - generic: 周日
+      - generic: 11/01
+      - emphasis: "17"
+    - button "周一 11/02 17":
+      - generic: 周一
+      - generic: 11/02
+      - emphasis: "17"
+    - button "周二 11/03 15":
+      - generic: 周二
+      - generic: 11/03
+      - emphasis: "15"
+    - button "周三 11/04 15":
+      - generic: 周三
+      - generic: 11/04
+      - emphasis: "15"
+    - button "周四 11/05 15":
+      - generic: 周四
+      - generic: 11/05
+      - emphasis: "15"
+    - button "周五 11/06 15":
+      - generic: 周五
+      - generic: 11/06
+      - emphasis: "15"
+    - button "周六 11/07 14":
+      - generic: 周六
+      - generic: 11/07
+      - emphasis: "14"
+    - button "周日 11/08 14":
+      - generic: 周日
+      - generic: 11/08
+      - emphasis: "14"
+    - button "周一 11/09 13":
+      - generic: 周一
+      - generic: 11/09
+      - emphasis: "13"
+    - button "周二 11/10 13":
+      - generic: 周二
+      - generic: 11/10
+      - emphasis: "13"
+    - button "周三 11/11 13":
+      - generic: 周三
+      - generic: 11/11
+      - emphasis: "13"
+    - button "周四 11/12 13":
+      - generic: 周四
+      - generic: 11/12
+      - emphasis: "13"
+    - button "周五 11/13 13":
+      - generic: 周五
+      - generic: 11/13
+      - emphasis: "13"
+    - button "周六 11/14 13":
+      - generic: 周六
+      - generic: 11/14
+      - emphasis: "13"
+    - textbox "选择交付日"
+  - button "可排订单 80票":
+    - generic: 可排订单
+    - strong: "80"
+    - text: 票
+  - button "运输在途 0票":
+    - generic: 运输在途
+    - strong: "0"
+    - text: 票
+  - button "异常待处理 0票":
+    - generic: 异常待处理
+    - strong: "0"
+    - text: 票
+  - button "待补定位 0票":
+    - generic: 待补定位
+    - strong: "0"
+    - text: 票
+  - generic: MULTI-STOP · 当前批次
+  - text: 按同仓、约窗与交接位置排线
+  - button "打开排线 ↓"
+  - generic: ⌕
+  - textbox "搜索地图订单":
+    - /placeholder: 搜索单号、SN、ZIP、仓、供应商或路线
+  - combobox "按任务状态筛选":
+    - option "全部任务状态" [selected]
+    - option "可加入批次"
+    - option "当前仓 · 未来七日原窗"
+    - option "全部在途"
+    - option "缺定位"
+    - option "待核验"
+    - option "待调度"
+    - option "已派单"
+    - option "在途"
+    - option "站点保管"
+    - option "二程运输"
+    - option "已签收"
+    - option "已结算"
+    - option "异常"
+  - combobox "按州筛选":
+    - option "全部州" [selected]
+    - option "CA"
+    - option "GA"
+    - option "TX"
+  - combobox "履约方式":
+    - option "全部履约" [selected]
+    - option "A"
+    - option "B"
+    - option "C1"
+    - option "C2"
+    - option "授权自提"
+  - combobox "终点与动作":
+    - option "全部终点 / 动作" [selected]
+    - option "L1"
+    - option "L2"
+    - option "L3"
+    - option "L4"
+    - option "L5"
+  - combobox "实际起仓筛选":
+    - option "全部实际起仓" [selected]
+    - option "SIM Atlanta 接站"
+    - option "SIM Atlanta"
+    - option "SIM Los Angeles 接站"
+    - option "SIM Los Angeles"
+    - option "SIM Houston 接站"
+    - option "SIM Houston"
+    - option "SIM Dallas 接站"
+    - option "SIM Dallas"
+  - button "定位结果"
+  - button "保存筛选"
+  - button "重置"
+  - button "展开 / 收起订单池"
+  - generic "调度区定位":
+    - button "选单"
+    - button "看图"
+    - button "站序"
+  - generic: DISPATCH COVERAGE
+  - heading "交付点与仓点" [level=3]
+  - combobox "聚焦区域":
+    - option "聚焦区域…" [selected]
+    - option "达拉斯 / 沃思堡"
+    - option "新泽西 / 纽约"
+    - option "Fife / 西雅图"
+    - option "洛杉矶"
+  - button "回到本仓"
+  - button "全美视图"
+  - generic "美国交付点调度地图":
+    - button "SIM Atlanta 接站 ▣ 2 仓 ● 20 票":
+      - generic: SIM Atlanta 接站
+      - generic: ▣ 2 仓 ● 20 票
+    - button "SIM Los Angeles 接站 ▣ 2 仓 ● 30 票":
+      - generic: SIM Los Angeles 接站
+      - generic: ▣ 2 仓 ● 30 票
+    - button "SIM Houston 接站 ▣ 2 仓 ● 30 票":
+      - generic: SIM Houston 接站
+      - generic: ▣ 2 仓 ● 30 票
+    - button "SIM Dallas 接站 ▣ 2 仓 ● 103 票":
+      - generic: SIM Dallas 接站
+      - generic: ▣ 2 仓 ● 103 票
+    - button "Dallas ● 17 票":
+      - generic: Dallas
+      - generic: ● 17 票
+    - generic: Atlanta
+    - generic: I-85
+    - generic: I-285
+    - region "Map"
+    - button "Zoom in": +
+    - button "Zoom out": −
+    - generic: 5 mi
+    - text: Leaflet · 离线州界, 道路及地名 U.S. Census 2025, Protomaps · ©
+    - link "OpenStreetMap contributors":
+      - /url: https://www.openstreetmap.org/copyright
+  - text: 范围
+  - combobox "地图范围":
+    - option "选择视野" [selected]
+    - option "美国全国"
+    - option "本土48州"
+    - option "阿拉斯加"
+    - option "夏威夷"
+    - option "当前仓"
+    - option "适配全线"
+  - text: 底图
+  - combobox "底图样式":
+    - option "本地州界 / Dallas 街道" [selected]
+    - option "本地浅色调度"
+    - option "标准街道 · OpenFreeMap"
+    - option "浅色调度 · OpenFreeMap"
+  - generic "图层开关":
+    - button "▣ 仓 / 站" [pressed]
+    - button "● 交接点" [pressed]
+    - button "已派" [pressed]
+    - button "待派" [pressed]
+    - button "窗异常" [pressed]
+    - button "➝ 站序" [pressed]
+    - button "草案" [pressed]
+    - button "道路结果" [pressed]
+    - button "◇ 供应商"
+    - button "◆ 班组"
+    - text: 底图
+    - slider "底图透明度": "80"
+  - generic: 美国州界、城市与主干道
+  - button "重试街道底图"
+  - generic: 200 票演练定位（测试坐标） · 0 票待补定位
+  - generic: 排线起点 点选城市标记下钻，或在订单池中点「＋ 排线」。
+  - generic "逐站时间轴 · 到场 / 准入 / 候场 / 作业 / 回程"
+  - paragraph: 选择候选车次或从左侧排线，底图不可用时仍可核对本表。
+  - strong: 单票调度
+  - generic: 点选地图标记或订单，核对交付点、预约窗和出发仓。
+  - generic "核验与证据 车辆、班次、逐段承运依据与同范围费用试算":
+    - generic: 核验与证据
+    - generic: 车辆、班次、逐段承运依据与同范围费用试算
+  - option "选择已登记仓点"
+  - option "SIM Atlanta 接站"
+  - option "SIM Atlanta" [selected]
+  - option "SIM Los Angeles 接站"
+  - option "SIM Los Angeles"
+  - option "SIM Houston 接站"
+  - option "SIM Houston"
+  - option "SIM Dallas 接站"
+  - option "SIM Dallas"
+  - option "待指定" [selected]
+  - option "SIM driver"
+  - option "SIM 司机 01"
+  - option "SIM 司机 02"
+  - option "SIM 司机 03"
+  - option "SIM 司机 04"
+  - option "SIM 司机 05"
+  - option "SIM 司机 06"
+  - option "SIM 司机 07"
+  - option "SIM 司机 08"
+  - option "SIM 司机 09"
+  - option "SIM 司机 10"
+  - option "SIM 司机 11"
+  - option "SIM 司机 12"
+  - option "SIM 司机 13"
+  - option "SIM 司机 14"
+  - option "SIM 司机 15"
+  - option "SIM 司机 16"
+  - option "SIM 司机 17"
+  - option "SIM 司机 18"
+  - option "演练备援司机"
+  - option "待指定" [selected]
+  - option "SIM 班组 18 · 75201,77002,90012,30303"
+  - option "SIM 班组 17 · 75201,77002,90012,30303"
+  - option "SIM 班组 16 · 75201,77002,90012,30303"
+  - option "SIM 班组 15 · 75201,77002,90012,30303"
+  - option "SIM 班组 14 · 75201,77002,90012,30303"
+  - option "SIM 班组 13 · 75201,77002,90012,30303"
+  - option "SIM 班组 12 · 75201,77002,90012,30303"
+  - option "SIM 班组 11 · 75201,77002,90012,30303"
+  - option "SIM 班组 10 · 75201,77002,90012,30303"
+  - option "SIM 班组 09 · 75201,77002,90012,30303"
+  - option "SIM 班组 08 · 75201,77002,90012,30303"
+  - option "SIM 班组 07 · 75201,77002,90012,30303"
+  - option "SIM 班组 06 · 75201,77002,90012,30303"
+  - option "SIM 班组 05 · 75201,77002,90012,30303"
+  - option "SIM 班组 04 · 75201,77002,90012,30303"
+  - option "SIM 班组 03 · 75201,77002,90012,30303"
+  - option "SIM 班组 02 · 75201,77002,90012,30303"
+  - option "SIM 班组 01 · 75201,77002,90012,30303"
+  - option "待指定" [selected]
+  - option "SIM 车辆 18"
+  - option "SIM 车辆 17"
+  - option "SIM 车辆 16"
+  - option "SIM 车辆 15"
+  - option "SIM 车辆 14"
+  - option "SIM 车辆 13"
+  - option "SIM 车辆 12"
+  - option "SIM 车辆 11"
+  - option "SIM 车辆 10"
+  - option "SIM 车辆 09"
+  - option "SIM 车辆 08"
+  - option "SIM 车辆 07"
+  - option "SIM 车辆 06"
+  - option "SIM 车辆 05"
+  - option "SIM 车辆 04"
+  - option "SIM 车辆 03"
+  - option "SIM 车辆 02"
+  - option "SIM 车辆 01"
+  - option "America/Los_Angeles"
+  - option "America/Phoenix"
+  - option "America/Denver"
+  - option "America/Chicago"
+  - option "America/New_York" [selected]
+  - option "America/Anchorage"
+  - option "Pacific/Honolulu"
+- status: 方案已采用为草案，正式签发仍须逐段核验。
