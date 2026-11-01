@@ -1,0 +1,446 @@
+{
+  "id": "PLAN-69e716bd737545c3",
+  "plan_id": "PLAN-69e716bd737545c3",
+  "version": 1,
+  "state": "candidates_ready",
+  "created_at": "2026-11-01T15:43:19+00:00",
+  "order_ids": [
+    "SIM200-159"
+  ],
+  "planning_scope": "authorized_stage",
+  "objective": "lowest_cost",
+  "input_hash": "138f17ae54147c36d0896ce8d0978aee21b50cd00008a98d4e9b7ea16f6040f9",
+  "candidates": [
+    {
+      "id": "ALT-1",
+      "objective": "lowest_cost",
+      "routes": [
+        {
+          "id": "PROMISE-fc386dc03a07",
+          "name": "供应商承诺 / SIM200-159",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-159"
+          ],
+          "order_versions": {
+            "SIM200-159": 8
+          },
+          "planning_scope": "authorized_stage",
+          "warehouse": "SIM Los Angeles",
+          "date": "2026-11-09",
+          "timezone": "America/Los_Angeles",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-159"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-159",
+                "arrival": "2026-11-09T17:00:00+00:00",
+                "start": "2026-11-09T17:00:00+00:00",
+                "departure": "2026-11-09T18:00:00+00:00",
+                "timezone": "America/Los_Angeles"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T17:00:00+00:00",
+            "end_utc": "2026-11-09T18:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-159",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-4F7BD1650DCA",
+              "source": "stage:SIM200-159",
+              "source_version": 1,
+              "event": "authorized_first_leg",
+              "storage_daily_minor": 1500
+            }
+          ],
+          "sns": [
+            "SIM-SN-159-01"
+          ],
+          "occupancy": [],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Los Angeles:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            }
+          ],
+          "finish": 1794247200,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Los_Angeles",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Los Angeles",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Los Angeles",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "90012",
+              "address": "SIM Los Angeles 演练路口 159",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": false,
+              "addon_l5": true,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Los_Angeles",
+              "endpoint_ref": "SIM-CONTRACT-159",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "标准通道",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l5_evidence": "SIM-L5-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 8,
+            "profile_version": 1
+          },
+          "issues": [],
+          "validation_status": "passed"
+        }
+      ],
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-159",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-4F7BD1650DCA",
+          "source": "stage:SIM200-159",
+          "source_version": 1,
+          "event": "authorized_first_leg",
+          "storage_daily_minor": 1500
+        }
+      ],
+      "unassigned": [],
+      "coverage": {
+        "total": 1,
+        "assigned": 1,
+        "order_complete": 0,
+        "stage_assigned": 1,
+        "order_coverage": 0,
+        "stage_coverage": 1.0
+      },
+      "validation_status": "passed",
+      "solver": {
+        "indices": [
+          0
+        ],
+        "solver": "OR-Tools CP-SAT",
+        "exhausted": false,
+        "proven": true,
+        "seconds": 0.0,
+        "nodes": 0
+      },
+      "solve_status": "completed",
+      "optimality_scope": "generated_candidates"
+    }
+  ],
+  "draft_routes": [
+    {
+      "id": "PROMISE-fc386dc03a07",
+      "name": "供应商承诺 / SIM200-159",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-159"
+      ],
+      "order_versions": {
+        "SIM200-159": 8
+      },
+      "planning_scope": "authorized_stage",
+      "warehouse": "SIM Los Angeles",
+      "date": "2026-11-09",
+      "timezone": "America/Los_Angeles",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-159"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-159",
+            "arrival": "2026-11-09T17:00:00+00:00",
+            "start": "2026-11-09T17:00:00+00:00",
+            "departure": "2026-11-09T18:00:00+00:00",
+            "timezone": "America/Los_Angeles"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T17:00:00+00:00",
+        "end_utc": "2026-11-09T18:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-159",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-4F7BD1650DCA",
+          "source": "stage:SIM200-159",
+          "source_version": 1,
+          "event": "authorized_first_leg",
+          "storage_daily_minor": 1500
+        }
+      ],
+      "sns": [
+        "SIM-SN-159-01"
+      ],
+      "occupancy": [],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Los Angeles:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        }
+      ],
+      "finish": 1794247200,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Los_Angeles",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Los Angeles",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Los Angeles",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "90012",
+          "address": "SIM Los Angeles 演练路口 159",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": false,
+          "addon_l5": true,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Los_Angeles",
+          "endpoint_ref": "SIM-CONTRACT-159",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "标准通道",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l5_evidence": "SIM-L5-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 8,
+        "profile_version": 1
+      },
+      "issues": [],
+      "validation_status": "passed"
+    }
+  ],
+  "routes": [
+    {
+      "id": "PROMISE-fc386dc03a07",
+      "name": "供应商承诺 / SIM200-159",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-159"
+      ],
+      "order_versions": {
+        "SIM200-159": 8
+      },
+      "planning_scope": "authorized_stage",
+      "warehouse": "SIM Los Angeles",
+      "date": "2026-11-09",
+      "timezone": "America/Los_Angeles",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-159"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-159",
+            "arrival": "2026-11-09T17:00:00+00:00",
+            "start": "2026-11-09T17:00:00+00:00",
+            "departure": "2026-11-09T18:00:00+00:00",
+            "timezone": "America/Los_Angeles"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T17:00:00+00:00",
+        "end_utc": "2026-11-09T18:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-159",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-4F7BD1650DCA",
+          "source": "stage:SIM200-159",
+          "source_version": 1,
+          "event": "authorized_first_leg",
+          "storage_daily_minor": 1500
+        }
+      ],
+      "sns": [
+        "SIM-SN-159-01"
+      ],
+      "occupancy": [],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Los Angeles:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        }
+      ],
+      "finish": 1794247200,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Los_Angeles",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Los Angeles",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Los Angeles",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "90012",
+          "address": "SIM Los Angeles 演练路口 159",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": false,
+          "addon_l5": true,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Los_Angeles",
+          "endpoint_ref": "SIM-CONTRACT-159",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "标准通道",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l5_evidence": "SIM-L5-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 8,
+        "profile_version": 1
+      },
+      "issues": [],
+      "validation_status": "passed"
+    }
+  ],
+  "unassigned": [],
+  "coverage": {
+    "total": 1,
+    "assigned": 1,
+    "order_complete": 0,
+    "stage_assigned": 1,
+    "order_coverage": 0,
+    "stage_coverage": 1.0
+  },
+  "cost_items": [
+    {
+      "order_id": "SIM200-159",
+      "amount_minor": 40000,
+      "currency": "USD",
+      "payee": "SUP-4F7BD1650DCA",
+      "source": "stage:SIM200-159",
+      "source_version": 1,
+      "event": "authorized_first_leg",
+      "storage_daily_minor": 1500
+    }
+  ],
+  "total_minor": 40000,
+  "currency": "USD",
+  "solve_status": "completed",
+  "validation_status": "passed",
+  "optimality_scope": "generated_candidates",
+  "assumptions": [
+    "候选为有限枚举；最优性只适用于本次已生成且已校验候选。",
+    "未知道路、未确认价格及缺少包装/班次证据不会按零值参与可行方案。",
+    "SIM 承运商逐段时间、班次和服务依据为受控合成演练；真实道路仅限明确标注 Valhalla truck 的结果。"
+  ],
+  "locks": {},
+  "road_errors": [],
+  "precheck": {
+    "order_ids": [
+      "SIM200-159"
+    ],
+    "planning_scope": "authorized_stage",
+    "input_hash": "138f17ae54147c36d0896ce8d0978aee21b50cd00008a98d4e9b7ea16f6040f9",
+    "orders": [
+      {
+        "id": "SIM200-159",
+        "issues": [],
+        "ready": true
+      }
+    ],
+    "issues": [],
+    "ready_count": 1,
+    "validation_status": "passed"
+  },
+  "metrics": {
+    "candidate_count": 1,
+    "feasible_count": 1,
+    "seconds": 0.046999999998661224
+  },
+  "pending_legs": [
+    {
+      "order_id": "SIM200-159",
+      "leg": "second_leg"
+    }
+  ]
+}

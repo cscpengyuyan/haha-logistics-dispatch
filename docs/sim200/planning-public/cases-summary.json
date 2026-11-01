@@ -1,0 +1,121 @@
+[
+  {
+    "case": "C1",
+    "coverage": {
+      "total": 1,
+      "assigned": 1,
+      "order_complete": 1,
+      "stage_assigned": 1,
+      "order_coverage": 1.0,
+      "stage_coverage": 1.0
+    },
+    "cost_minor": 40000,
+    "seconds": 0.6399999999994179,
+    "metrics": {
+      "candidate_count": 3,
+      "feasible_count": 2,
+      "seconds": 0.6100000000005821
+    },
+    "status": "completed"
+  },
+  {
+    "case": "L5",
+    "coverage": {
+      "total": 1,
+      "assigned": 1,
+      "order_complete": 1,
+      "stage_assigned": 1,
+      "order_coverage": 1.0,
+      "stage_coverage": 1.0
+    },
+    "cost_minor": 40000,
+    "seconds": 0.07800000000133878,
+    "metrics": {
+      "candidate_count": 9,
+      "feasible_count": 6,
+      "seconds": 0.06300000000192085
+    },
+    "status": "completed"
+  },
+  {
+    "case": "C2-stage",
+    "coverage": {
+      "total": 1,
+      "assigned": 1,
+      "order_complete": 0,
+      "stage_assigned": 1,
+      "order_coverage": 0,
+      "stage_coverage": 1.0
+    },
+    "cost_minor": 40000,
+    "seconds": 0.046999999998661224,
+    "metrics": {
+      "candidate_count": 1,
+      "feasible_count": 1,
+      "seconds": 0.046999999998661224
+    },
+    "status": "completed"
+  },
+  {
+    "case": "pickup",
+    "coverage": {
+      "total": 1,
+      "assigned": 1,
+      "order_complete": 1,
+      "stage_assigned": 1,
+      "order_coverage": 1.0,
+      "stage_coverage": 1.0
+    },
+    "cost_minor": 0,
+    "seconds": 0.046999999998661224,
+    "metrics": {
+      "candidate_count": 1,
+      "feasible_count": 1,
+      "seconds": 0.046999999998661224
+    },
+    "status": "completed"
+  },
+  {
+    "case": "browser-six",
+    "coverage": {
+      "total": 6,
+      "assigned": 6,
+      "order_complete": 6,
+      "stage_assigned": 6,
+      "order_coverage": 1.0,
+      "stage_coverage": 1.0
+    },
+    "cost_minor": 240000,
+    "seconds": 3.75,
+    "metrics": {
+      "candidate_count": 48,
+      "feasible_count": 36,
+      "seconds": 3.7190000000045984
+    },
+    "status": "completed"
+  },
+  {
+    "case": "full-200",
+    "coverage": {
+      "total": 200,
+      "assigned": 156,
+      "order_complete": 156,
+      "stage_assigned": 156,
+      "order_coverage": 0.78,
+      "stage_coverage": 0.78
+    },
+    "cost_minor": 5760000,
+    "seconds": 4.25,
+    "metrics": {
+      "candidate_count": 806,
+      "feasible_count": 580,
+      "seconds": 3.7190000000045984
+    },
+    "status": "completed"
+  },
+  {
+    "case": "station-processing-misses-onward",
+    "assigned": 0,
+    "assertion": "passed"
+  }
+]

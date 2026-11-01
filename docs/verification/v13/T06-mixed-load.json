@@ -1,0 +1,217 @@
+{
+  "comparisons": [
+    {
+      "order": "deliver_then_collect",
+      "issues": [],
+      "profile": [
+        {
+          "action": "initial",
+          "stop_id": "origin",
+          "sn": null,
+          "units": 2,
+          "kg": 452.0,
+          "floor_length_cm": 200.0,
+          "tie_slots": 2
+        },
+        {
+          "action": "before_stop",
+          "stop_id": "HH-261101-715C6775",
+          "sn": null,
+          "units": 2,
+          "kg": 452.0,
+          "floor_length_cm": 200.0,
+          "tie_slots": 2
+        },
+        {
+          "action": "deliver",
+          "stop_id": "HH-261101-715C6775",
+          "sn": null,
+          "units": 0,
+          "kg": 0.0,
+          "floor_length_cm": 0.0,
+          "tie_slots": 0
+        },
+        {
+          "action": "collect_after_delivery",
+          "stop_id": "HH-261101-715C6775",
+          "sn": "SIM-SN-053-01",
+          "units": 1,
+          "kg": 226.0,
+          "floor_length_cm": 100.0,
+          "tie_slots": 1
+        },
+        {
+          "action": "return_loaded",
+          "stop_id": "receiver",
+          "sn": null,
+          "units": 1,
+          "kg": 226.0,
+          "floor_length_cm": 100.0,
+          "tie_slots": 1
+        }
+      ],
+      "peak": {
+        "units": 2,
+        "kg": 452.0,
+        "floor_length_cm": 200.0,
+        "tie_slots": 2
+      },
+      "collections": [
+        {
+          "pickup_ref": "SIM-PICKUP",
+          "package_ref": "SIM-MEASURED-RETURN-PACK",
+          "window_start": "2026-11-11T12:00",
+          "window_end": "2026-11-11T17:00",
+          "timezone": "America/Chicago",
+          "cost_approval_ref": "SIM-RECOVERY-COST",
+          "packing": {
+            "length_cm": 100,
+            "width_cm": 83,
+            "height_cm": 191,
+            "weight_kg": 226,
+            "upright": true,
+            "nonstackable": true
+          },
+          "service_minutes": 20,
+          "amount_minor": 2500,
+          "currency": "USD",
+          "lift_extra_kg": 80.0,
+          "asset_version": 4,
+          "source_order_version": 10,
+          "confirmed_by": "service",
+          "confirmed_at": "2026-11-01T16:18:31+00:00",
+          "rma_id": "AC-39480A7FC7",
+          "case_version": 3,
+          "sn": "SIM-SN-053-01",
+          "source_order_id": "SIM200-053",
+          "receiver_id": "WAR-392704800B1C",
+          "stop_id": "HH-261101-715C6775",
+          "before_delivery": false
+        }
+      ],
+      "feasible": true
+    },
+    {
+      "order": "collect_then_deliver",
+      "issues": [
+        {
+          "code": "LOAD_PEAK_CONFLICT",
+          "message": "HH-261101-715C6775 collect_before_delivery 后 units=3 超过 2.0",
+          "object_id": "HH-261101-715C6775",
+          "field": "units",
+          "next_step": "核对授权 RMA、实物、包装、同址资料和逐站动作顺序后重算"
+        },
+        {
+          "code": "LOAD_PEAK_CONFLICT",
+          "message": "HH-261101-715C6775 collect_before_delivery 后 kg=678.0 超过 600.0",
+          "object_id": "HH-261101-715C6775",
+          "field": "kg",
+          "next_step": "核对授权 RMA、实物、包装、同址资料和逐站动作顺序后重算"
+        },
+        {
+          "code": "LOAD_PEAK_CONFLICT",
+          "message": "HH-261101-715C6775 collect_before_delivery 后 floor_length_cm=300.0 超过 200.0",
+          "object_id": "HH-261101-715C6775",
+          "field": "floor_length_cm",
+          "next_step": "核对授权 RMA、实物、包装、同址资料和逐站动作顺序后重算"
+        },
+        {
+          "code": "LOAD_PEAK_CONFLICT",
+          "message": "HH-261101-715C6775 collect_before_delivery 后 tie_slots=3 超过 2.0",
+          "object_id": "HH-261101-715C6775",
+          "field": "tie_slots",
+          "next_step": "核对授权 RMA、实物、包装、同址资料和逐站动作顺序后重算"
+        }
+      ],
+      "profile": [
+        {
+          "action": "initial",
+          "stop_id": "origin",
+          "sn": null,
+          "units": 2,
+          "kg": 452.0,
+          "floor_length_cm": 200.0,
+          "tie_slots": 2
+        },
+        {
+          "action": "before_stop",
+          "stop_id": "HH-261101-715C6775",
+          "sn": null,
+          "units": 2,
+          "kg": 452.0,
+          "floor_length_cm": 200.0,
+          "tie_slots": 2
+        },
+        {
+          "action": "collect_before_delivery",
+          "stop_id": "HH-261101-715C6775",
+          "sn": "SIM-SN-053-01",
+          "units": 3,
+          "kg": 678.0,
+          "floor_length_cm": 300.0,
+          "tie_slots": 3
+        },
+        {
+          "action": "deliver",
+          "stop_id": "HH-261101-715C6775",
+          "sn": null,
+          "units": 1,
+          "kg": 226.0,
+          "floor_length_cm": 100.0,
+          "tie_slots": 1
+        },
+        {
+          "action": "return_loaded",
+          "stop_id": "receiver",
+          "sn": null,
+          "units": 1,
+          "kg": 226.0,
+          "floor_length_cm": 100.0,
+          "tie_slots": 1
+        }
+      ],
+      "peak": {
+        "units": 3,
+        "kg": 678.0,
+        "floor_length_cm": 300.0,
+        "tie_slots": 3
+      },
+      "collections": [
+        {
+          "pickup_ref": "SIM-PICKUP",
+          "package_ref": "SIM-MEASURED-RETURN-PACK",
+          "window_start": "2026-11-11T12:00",
+          "window_end": "2026-11-11T17:00",
+          "timezone": "America/Chicago",
+          "cost_approval_ref": "SIM-RECOVERY-COST",
+          "packing": {
+            "length_cm": 100,
+            "width_cm": 83,
+            "height_cm": 191,
+            "weight_kg": 226,
+            "upright": true,
+            "nonstackable": true
+          },
+          "service_minutes": 20,
+          "amount_minor": 2500,
+          "currency": "USD",
+          "lift_extra_kg": 80.0,
+          "asset_version": 4,
+          "source_order_version": 10,
+          "confirmed_by": "service",
+          "confirmed_at": "2026-11-01T16:18:31+00:00",
+          "rma_id": "AC-39480A7FC7",
+          "case_version": 3,
+          "sn": "SIM-SN-053-01",
+          "source_order_id": "SIM200-053",
+          "receiver_id": "WAR-392704800B1C",
+          "stop_id": "HH-261101-715C6775",
+          "before_delivery": true
+        }
+      ],
+      "feasible": false
+    }
+  ],
+  "scope": "authorized_same_site_load_sequence",
+  "geographic_sequence_unchanged": true
+}

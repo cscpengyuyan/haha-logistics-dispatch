@@ -1,4 +1,5 @@
 .openai/
+.deps/
 v8/__qa_mobile.html
 node_modules/
 *.log
@@ -17,3 +18,11 @@ __pycache__/
 *.db
 *.key
 *.pem
+
+.release/
+
+docs/sim200/run/
+
+docs/sim200/ready/
+
+docs/sim200/planning/

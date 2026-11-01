@@ -1,0 +1,10 @@
+test_two_address_sets_reorder_and_reopen (test_road_service.TestDFWRoads.test_two_address_sets_reorder_and_reopen) ... ok
+test_permissions_cutoff_and_unverified_address (test_road_service.TestPlannerContract.test_permissions_cutoff_and_unverified_address) ... ok
+test_provider_contract_changes_rollback_and_fail_closed (test_road_service.TestPlannerContract.test_provider_contract_changes_rollback_and_fail_closed) ... ok
+test_islands_and_cross_border (test_road_service.TestRoadBoundaries.test_islands_and_cross_border) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 12.937s
+
+OK
+DFW real truck results: [{"source": "Valhalla truck / VROOM", "timestamp": "2026-11-01T15:36:56+00:00", "meters": 3334, "seconds": 351, "points": 204, "revision": 1}, {"source": "Valhalla truck / VROOM", "timestamp": "2026-11-01T15:36:58+00:00", "meters": 4365, "seconds": 412, "points": 240, "revision": 1}]

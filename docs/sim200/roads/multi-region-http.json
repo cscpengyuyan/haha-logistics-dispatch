@@ -1,0 +1,1553 @@
+{
+  "status": {
+    "version": "3.8.3",
+    "data_date": "per-region",
+    "coverage": "DFW, Houston, Los_Angeles, Atlanta",
+    "regions": [
+      {
+        "id": "DFW",
+        "name": "Dallas bounded sample",
+        "bbox": [
+          32.68,
+          -97.12,
+          32.98,
+          -96.65
+        ],
+        "data_date": "unknown - pre-existing graph; no fresh date asserted",
+        "source": "pre-existing local DFW graph",
+        "source_sha256": "53204471da3fafececad5202bcb425d43f5bc81fcfaea9eb3dcd0b02d51d83cf"
+      },
+      {
+        "id": "Houston",
+        "name": "Houston",
+        "bbox": [
+          29.7304,
+          -95.3998,
+          29.7984,
+          -95.3278
+        ],
+        "data_date": "2026-07-24T11:04:51Z",
+        "source": "https://overpass.kumi.systems/api/interpreter",
+        "source_sha256": "041bb7a92253470d70ee56c2c21b3f3af1878dc66e0e761713d2c50fe5d0b8af"
+      },
+      {
+        "id": "Los_Angeles",
+        "name": "Los Angeles",
+        "bbox": [
+          34.0422,
+          -118.2537,
+          34.0702,
+          -118.2217
+        ],
+        "data_date": "2026-11-01T15:30:32Z",
+        "source": "https://overpass-api.de/api/interpreter",
+        "source_sha256": "1049693a2fc343f8090dfb1db47d5cfb4eb6e090d87387e1b2f2f2c1a3f190ec"
+      },
+      {
+        "id": "Atlanta",
+        "name": "Atlanta",
+        "bbox": [
+          33.739,
+          -84.398,
+          33.767,
+          -84.366
+        ],
+        "data_date": "2026-11-01T15:30:32Z",
+        "source": "https://overpass-api.de/api/interpreter",
+        "source_sha256": "ac3aacd4e1d43fd76a7c9873fbfe16a1ebc1dacde3ba8a7afbbf6fa2759c7745"
+      }
+    ],
+    "cross_region_routes": false,
+    "traffic": "static OSM; no live traffic"
+  },
+  "checks": [
+    {
+      "region": "DFW",
+      "path": "/sources_to_targets",
+      "status": "passed",
+      "response": {
+        "sources_to_targets": [
+          [
+            {
+              "from_index": 0,
+              "to_index": 0,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 165.3,
+              "end_heading": 165.3,
+              "begin_lat": 32.777772,
+              "begin_lon": -96.805974,
+              "end_lat": 32.777772,
+              "end_lon": -96.805974
+            },
+            {
+              "from_index": 0,
+              "to_index": 1,
+              "time": 105,
+              "distance": 0.773,
+              "begin_heading": 165.3,
+              "end_heading": 166.3,
+              "begin_lat": 32.777772,
+              "begin_lon": -96.805974,
+              "end_lat": 32.779948,
+              "end_lon": -96.804251
+            }
+          ],
+          [
+            {
+              "from_index": 1,
+              "to_index": 0,
+              "time": 92,
+              "distance": 0.663,
+              "begin_heading": 346.3,
+              "end_heading": 345.3,
+              "begin_lat": 32.779948,
+              "begin_lon": -96.804251,
+              "end_lat": 32.777772,
+              "end_lon": -96.805974
+            },
+            {
+              "from_index": 1,
+              "to_index": 1,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 346.3,
+              "end_heading": 346.3,
+              "begin_lat": 32.779948,
+              "begin_lon": -96.804251,
+              "end_lat": 32.779948,
+              "end_lon": -96.804251
+            }
+          ]
+        ],
+        "sources": [
+          {
+            "lat": 32.777772,
+            "lon": -96.805974
+          },
+          {
+            "lat": 32.779948,
+            "lon": -96.804251
+          }
+        ],
+        "targets": [
+          {
+            "lat": 32.777772,
+            "lon": -96.805974
+          },
+          {
+            "lat": 32.779948,
+            "lon": -96.804251
+          }
+        ],
+        "units": "kilometers",
+        "algorithm": "costmatrix",
+        "coverage_region": {
+          "id": "DFW",
+          "bbox": [
+            32.68,
+            -97.12,
+            32.98,
+            -96.65
+          ],
+          "data_date": "unknown - pre-existing graph; no fresh date asserted",
+          "source": "pre-existing local DFW graph"
+        }
+      }
+    },
+    {
+      "region": "DFW",
+      "path": "/route",
+      "status": "passed",
+      "response": {
+        "trip": {
+          "locations": [
+            {
+              "type": "break",
+              "lat": 32.778,
+              "lon": -96.806,
+              "original_index": 0
+            },
+            {
+              "type": "break",
+              "lat": 32.78,
+              "lon": -96.804,
+              "side_of_street": "left",
+              "original_index": 1
+            },
+            {
+              "type": "break",
+              "lat": 32.778,
+              "lon": -96.806,
+              "original_index": 2
+            }
+          ],
+          "legs": [
+            {
+              "maneuvers": [
+                {
+                  "type": 1,
+                  "instruction": "Drive south.",
+                  "verbal_succinct_transition_instruction": "Drive south. Then Turn right onto Jackson Street.",
+                  "verbal_pre_transition_instruction": "Drive south. Then Turn right onto Jackson Street.",
+                  "verbal_post_transition_instruction": "Continue for 10 meters.",
+                  "bearing_after": 165,
+                  "time": 2.527,
+                  "length": 0.014,
+                  "cost": 6.866,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 2,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Jackson Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto Jackson Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Jackson Street.",
+                  "verbal_post_transition_instruction": "Continue for 100 meters.",
+                  "street_names": [
+                    "Jackson Street"
+                  ],
+                  "bearing_before": 164,
+                  "bearing_after": 256,
+                  "time": 20.436,
+                  "length": 0.143,
+                  "cost": 70.268,
+                  "begin_shape_index": 2,
+                  "end_shape_index": 10,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto South Houston Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto South Houston Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto South Houston Street.",
+                  "verbal_post_transition_instruction": "Continue for 200 meters.",
+                  "street_names": [
+                    "South Houston Street"
+                  ],
+                  "bearing_before": 256,
+                  "bearing_after": 346,
+                  "time": 22.237,
+                  "length": 0.174,
+                  "cost": 100.56,
+                  "begin_shape_index": 10,
+                  "end_shape_index": 18,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Main Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto Main Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Main Street.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "Main Street"
+                  ],
+                  "bearing_before": 345,
+                  "bearing_after": 76,
+                  "time": 37.431,
+                  "length": 0.343,
+                  "cost": 89.013,
+                  "begin_shape_index": 18,
+                  "end_shape_index": 30,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto North Lamar Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto North Lamar Street.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then Turn right.",
+                  "verbal_pre_transition_instruction": "Turn left onto North Lamar Street. Then Turn right.",
+                  "verbal_post_transition_instruction": "Continue for 70 meters.",
+                  "street_names": [
+                    "North Lamar Street"
+                  ],
+                  "bearing_before": 77,
+                  "bearing_after": 346,
+                  "time": 9.107,
+                  "length": 0.065,
+                  "cost": 20.472,
+                  "begin_shape_index": 30,
+                  "end_shape_index": 32,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right.",
+                  "verbal_transition_alert_instruction": "Turn right.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right. Then Turn right.",
+                  "verbal_post_transition_instruction": "Continue for 10 meters.",
+                  "bearing_before": 346,
+                  "bearing_after": 95,
+                  "time": 8.82,
+                  "length": 0.011,
+                  "cost": 60.395,
+                  "begin_shape_index": 32,
+                  "end_shape_index": 33,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right.",
+                  "verbal_transition_alert_instruction": "Turn right.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Turn right. Then Your destination will be on the left.",
+                  "verbal_post_transition_instruction": "Continue for 20 meters.",
+                  "bearing_before": 95,
+                  "bearing_after": 151,
+                  "time": 5.354,
+                  "length": 0.023,
+                  "cost": 11.429,
+                  "begin_shape_index": 33,
+                  "end_shape_index": 37,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 6,
+                  "instruction": "Your destination is on the left.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Your destination is on the left.",
+                  "bearing_before": 166,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 37,
+                  "end_shape_index": 37,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 32.777333,
+                "min_lon": -96.807833,
+                "max_lat": 32.780139,
+                "max_lon": -96.804251,
+                "time": 105.914,
+                "length": 0.773,
+                "cost": 359.006
+              },
+              "shape": "yaro}@ldqswDx@Q|D_A`ApHfC`Sj@lEj@hElEl\\`@|Cp@bFr@nF{Dv@{a@rHqEx@wFjA_MdCmFfA{JpBuDv@k@kEqIsq@uHom@m@_Fe@uDcAyHwCkUiAwIi@cEc@oDaHsk@c@uD{Dv@k\\zGPqFPy@T[\\OdHsA"
+            },
+            {
+              "maneuvers": [
+                {
+                  "type": 2,
+                  "instruction": "Drive north.",
+                  "verbal_succinct_transition_instruction": "Drive north. Then Turn left.",
+                  "verbal_pre_transition_instruction": "Drive north. Then Turn left.",
+                  "verbal_post_transition_instruction": "Continue for 20 meters.",
+                  "bearing_after": 346,
+                  "time": 4.194,
+                  "length": 0.023,
+                  "cost": 11.429,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 4,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left.",
+                  "verbal_transition_alert_instruction": "Turn left.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then Turn left onto North Lamar Street.",
+                  "verbal_pre_transition_instruction": "Turn left. Then Turn left onto North Lamar Street.",
+                  "verbal_post_transition_instruction": "Continue for 10 meters.",
+                  "bearing_before": 331,
+                  "bearing_after": 275,
+                  "time": 2.266,
+                  "length": 0.011,
+                  "cost": 5.395,
+                  "begin_shape_index": 4,
+                  "end_shape_index": 5,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto North Lamar Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto North Lamar Street.",
+                  "verbal_succinct_transition_instruction": "Turn left.",
+                  "verbal_pre_transition_instruction": "Turn left onto North Lamar Street.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "North Lamar Street"
+                  ],
+                  "bearing_before": 275,
+                  "bearing_after": 166,
+                  "time": 34.46,
+                  "length": 0.326,
+                  "cost": 110.188,
+                  "begin_shape_index": 5,
+                  "end_shape_index": 21,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Wood Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto Wood Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Wood Street.",
+                  "verbal_post_transition_instruction": "Continue for 200 meters.",
+                  "street_names": [
+                    "Wood Street"
+                  ],
+                  "bearing_before": 166,
+                  "bearing_after": 272,
+                  "time": 21.552,
+                  "length": 0.173,
+                  "cost": 55.569,
+                  "begin_shape_index": 21,
+                  "end_shape_index": 31,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto South Market Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto South Market Street.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then, in 90 meters, Turn left onto Jackson Street.",
+                  "verbal_pre_transition_instruction": "Turn right onto South Market Street. Then, in 90 meters, Turn left onto Jackson Street.",
+                  "verbal_post_transition_instruction": "Continue for 90 meters.",
+                  "street_names": [
+                    "South Market Street"
+                  ],
+                  "bearing_before": 256,
+                  "bearing_after": 354,
+                  "time": 14.414,
+                  "length": 0.085,
+                  "cost": 42.4,
+                  "begin_shape_index": 31,
+                  "end_shape_index": 36,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto Jackson Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto Jackson Street.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then Turn right.",
+                  "verbal_pre_transition_instruction": "Turn left onto Jackson Street. Then Turn right.",
+                  "verbal_post_transition_instruction": "Continue for 30 meters.",
+                  "street_names": [
+                    "Jackson Street"
+                  ],
+                  "bearing_before": 347,
+                  "bearing_after": 256,
+                  "time": 7.52,
+                  "length": 0.031,
+                  "cost": 12.405,
+                  "begin_shape_index": 36,
+                  "end_shape_index": 38,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right.",
+                  "verbal_transition_alert_instruction": "Turn right.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then You will arrive at your destination.",
+                  "verbal_pre_transition_instruction": "Turn right. Then You will arrive at your destination.",
+                  "verbal_post_transition_instruction": "Continue for 10 meters.",
+                  "bearing_before": 256,
+                  "bearing_after": 344,
+                  "time": 7.692,
+                  "length": 0.014,
+                  "cost": 61.866,
+                  "begin_shape_index": 38,
+                  "end_shape_index": 40,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 4,
+                  "instruction": "You have arrived at your destination.",
+                  "verbal_transition_alert_instruction": "You will arrive at your destination.",
+                  "verbal_pre_transition_instruction": "You have arrived at your destination.",
+                  "bearing_before": 345,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 40,
+                  "end_shape_index": 40,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 32.776961,
+                "min_lon": -96.805974,
+                "max_lat": 32.780139,
+                "max_lon": -96.803619,
+                "time": 92.102,
+                "length": 0.663,
+                "cost": 299.257
+              },
+              "shape": "wivo}@vxmswDeHrA]NUZQx@QpFj\\{GzDw@zDw@jFeAdL_CrBa@xIeBrDw@rCk@hb@mIrDs@nDq@|NwCnSaEfB]lDs@EfG@bAJdD^nD~Dp[d@zDt@xFbA|HtE`_@v@lGyDV_QvBkBTyLdCgEv@r@rFrAdK}D~@y@P"
+            }
+          ],
+          "summary": {
+            "has_time_restrictions": false,
+            "has_toll": false,
+            "has_highway": false,
+            "has_ferry": false,
+            "min_lat": 32.776961,
+            "min_lon": -96.807833,
+            "max_lat": 32.780139,
+            "max_lon": -96.803619,
+            "time": 198.016,
+            "length": 1.436,
+            "cost": 658.263
+          },
+          "status_message": "Found route between points",
+          "status": 0,
+          "units": "kilometers",
+          "language": "en-US"
+        },
+        "coverage_region": {
+          "id": "DFW",
+          "bbox": [
+            32.68,
+            -97.12,
+            32.98,
+            -96.65
+          ],
+          "data_date": "unknown - pre-existing graph; no fresh date asserted",
+          "source": "pre-existing local DFW graph"
+        }
+      }
+    },
+    {
+      "region": "Houston",
+      "path": "/sources_to_targets",
+      "status": "passed",
+      "response": {
+        "sources_to_targets": [
+          [
+            {
+              "from_index": 0,
+              "to_index": 0,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 214.0,
+              "end_heading": 214.0,
+              "begin_lat": 29.760422,
+              "begin_lon": -95.369838,
+              "end_lat": 29.760422,
+              "end_lon": -95.369838
+            },
+            {
+              "from_index": 0,
+              "to_index": 1,
+              "time": 24,
+              "distance": 0.295,
+              "begin_heading": 34.0,
+              "end_heading": 34.6,
+              "begin_lat": 29.760422,
+              "begin_lon": -95.369838,
+              "end_lat": 29.762523,
+              "end_lon": -95.368006
+            }
+          ],
+          [
+            {
+              "from_index": 1,
+              "to_index": 0,
+              "time": 85,
+              "distance": 0.824,
+              "begin_heading": 34.6,
+              "end_heading": 214.0,
+              "begin_lat": 29.762523,
+              "begin_lon": -95.368006,
+              "end_lat": 29.760422,
+              "end_lon": -95.369838
+            },
+            {
+              "from_index": 1,
+              "to_index": 1,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 34.6,
+              "end_heading": 34.6,
+              "begin_lat": 29.762523,
+              "begin_lon": -95.368006,
+              "end_lat": 29.762523,
+              "end_lon": -95.368006
+            }
+          ]
+        ],
+        "sources": [
+          {
+            "lat": 29.760422,
+            "lon": -95.369838
+          },
+          {
+            "lat": 29.762523,
+            "lon": -95.368006
+          }
+        ],
+        "targets": [
+          {
+            "lat": 29.760422,
+            "lon": -95.369838
+          },
+          {
+            "lat": 29.762523,
+            "lon": -95.368006
+          }
+        ],
+        "units": "kilometers",
+        "algorithm": "costmatrix",
+        "coverage_region": {
+          "id": "Houston",
+          "bbox": [
+            29.7304,
+            -95.3998,
+            29.7984,
+            -95.3278
+          ],
+          "data_date": "2026-07-24T11:04:51Z",
+          "source": "https://overpass.kumi.systems/api/interpreter"
+        }
+      }
+    },
+    {
+      "region": "Houston",
+      "path": "/route",
+      "status": "passed",
+      "response": {
+        "trip": {
+          "locations": [
+            {
+              "type": "break",
+              "lat": 29.7604,
+              "lon": -95.3698,
+              "original_index": 0
+            },
+            {
+              "type": "break",
+              "lat": 29.7624,
+              "lon": -95.3678,
+              "side_of_street": "right",
+              "original_index": 1
+            },
+            {
+              "type": "break",
+              "lat": 29.7604,
+              "lon": -95.3698,
+              "original_index": 2
+            }
+          ],
+          "legs": [
+            {
+              "maneuvers": [
+                {
+                  "type": 1,
+                  "instruction": "Drive northeast on Bagby Street.",
+                  "verbal_succinct_transition_instruction": "Drive northeast. Then, in 300 meters, Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Drive northeast on Bagby Street. Then, in 300 meters, Your destination will be on the right.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "Bagby Street"
+                  ],
+                  "bearing_after": 34,
+                  "time": 24.794,
+                  "length": 0.294,
+                  "cost": 104.486,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 24,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 5,
+                  "instruction": "Your destination is on the right.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Your destination is on the right.",
+                  "bearing_before": 35,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 24,
+                  "end_shape_index": 24,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 29.760422,
+                "min_lon": -95.369838,
+                "max_lat": 29.762523,
+                "max_lon": -95.368006,
+                "time": 24.794,
+                "length": 0.294,
+                "cost": 104.486
+              },
+              "shape": "kylww@ze|{tDmA{@{NeKa@Ya@[sCuBeDkBqKsG}CuBaF_EoKaJeG{FqA{AmAqAaBeB_BiBOMi@]mJqIuAoAw@m@iAg@mCkHwHoFsImG"
+            },
+            {
+              "maneuvers": [
+                {
+                  "type": 2,
+                  "instruction": "Drive northeast on Bagby Street.",
+                  "verbal_succinct_transition_instruction": "Drive northeast. Then Turn right onto Texas Avenue.",
+                  "verbal_pre_transition_instruction": "Drive northeast on Bagby Street. Then Turn right onto Texas Avenue.",
+                  "verbal_post_transition_instruction": "Continue for 70 meters.",
+                  "street_names": [
+                    "Bagby Street"
+                  ],
+                  "bearing_after": 35,
+                  "time": 5.754,
+                  "length": 0.067,
+                  "cost": 7.037,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 4,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Texas Avenue.",
+                  "verbal_transition_alert_instruction": "Turn right onto Texas Avenue.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Texas Avenue.",
+                  "verbal_post_transition_instruction": "Continue for 200 meters.",
+                  "street_names": [
+                    "Texas Avenue"
+                  ],
+                  "bearing_before": 33,
+                  "bearing_after": 125,
+                  "time": 16.89,
+                  "length": 0.193,
+                  "cost": 38.481,
+                  "begin_shape_index": 4,
+                  "end_shape_index": 12,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Smith Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto Smith Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Smith Street.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "Smith Street"
+                  ],
+                  "bearing_before": 123,
+                  "bearing_after": 222,
+                  "time": 32.217,
+                  "length": 0.306,
+                  "cost": 75.113,
+                  "begin_shape_index": 12,
+                  "end_shape_index": 25,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Walker Street.",
+                  "verbal_transition_alert_instruction": "Turn right onto Walker Street.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Walker Street.",
+                  "verbal_post_transition_instruction": "Continue for 200 meters.",
+                  "street_names": [
+                    "Walker Street"
+                  ],
+                  "bearing_before": 215,
+                  "bearing_after": 305,
+                  "time": 19.483,
+                  "length": 0.203,
+                  "cost": 34.15,
+                  "begin_shape_index": 25,
+                  "end_shape_index": 33,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto Bagby Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto Bagby Street.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then You will arrive at your destination.",
+                  "verbal_pre_transition_instruction": "Turn left onto Bagby Street. Then You will arrive at your destination.",
+                  "verbal_post_transition_instruction": "Continue for 50 meters.",
+                  "street_names": [
+                    "Bagby Street"
+                  ],
+                  "bearing_before": 305,
+                  "bearing_after": 215,
+                  "time": 11.455,
+                  "length": 0.053,
+                  "cost": 44.921,
+                  "begin_shape_index": 33,
+                  "end_shape_index": 38,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 4,
+                  "instruction": "You have arrived at your destination.",
+                  "verbal_transition_alert_instruction": "You will arrive at your destination.",
+                  "verbal_pre_transition_instruction": "You have arrived at your destination.",
+                  "bearing_before": 214,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 38,
+                  "end_shape_index": 38,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 29.759791,
+                "min_lon": -95.369838,
+                "max_lat": 29.76304,
+                "max_lon": -95.366002,
+                "time": 85.8,
+                "length": 0.823,
+                "cost": 199.704
+              },
+              "shape": "w|pww@lsx{tDaS_O{C{AoAg@yCqB`AkB\\o@hDiGbE}Hl[im@fAuB|K}SfCqFpCtCdCbBba@xYrCdBxAr@pA~@bD`C~^dX`CdB|AjA~@r@bd@`]rCvBqB|DsBbEkW`g@kExIk@fAmThd@[l@{AtCrCtB`@Z`@XzNdKlAz@"
+            }
+          ],
+          "summary": {
+            "has_time_restrictions": false,
+            "has_toll": false,
+            "has_highway": false,
+            "has_ferry": false,
+            "min_lat": 29.759791,
+            "min_lon": -95.369838,
+            "max_lat": 29.76304,
+            "max_lon": -95.366002,
+            "time": 110.595,
+            "length": 1.118,
+            "cost": 304.19
+          },
+          "status_message": "Found route between points",
+          "status": 0,
+          "units": "kilometers",
+          "language": "en-US"
+        },
+        "coverage_region": {
+          "id": "Houston",
+          "bbox": [
+            29.7304,
+            -95.3998,
+            29.7984,
+            -95.3278
+          ],
+          "data_date": "2026-07-24T11:04:51Z",
+          "source": "https://overpass.kumi.systems/api/interpreter"
+        }
+      }
+    },
+    {
+      "region": "Los_Angeles",
+      "path": "/sources_to_targets",
+      "status": "passed",
+      "response": {
+        "sources_to_targets": [
+          [
+            {
+              "from_index": 0,
+              "to_index": 0,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 309.9,
+              "end_heading": 309.9,
+              "begin_lat": 34.052335,
+              "begin_lon": -118.243564,
+              "end_lat": 34.052335,
+              "end_lon": -118.243564
+            },
+            {
+              "from_index": 0,
+              "to_index": 1,
+              "time": 29,
+              "distance": 0.291,
+              "begin_heading": 129.9,
+              "end_heading": 315.0,
+              "begin_lat": 34.052335,
+              "begin_lon": -118.243564,
+              "end_lat": 34.054146,
+              "end_lon": -118.241759
+            }
+          ],
+          [
+            {
+              "from_index": 1,
+              "to_index": 0,
+              "time": 48,
+              "distance": 0.499,
+              "begin_heading": 315.0,
+              "end_heading": 129.9,
+              "begin_lat": 34.054146,
+              "begin_lon": -118.241759,
+              "end_lat": 34.052335,
+              "end_lon": -118.243564
+            },
+            {
+              "from_index": 1,
+              "to_index": 1,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 315.0,
+              "end_heading": 315.0,
+              "begin_lat": 34.054146,
+              "begin_lon": -118.241759,
+              "end_lat": 34.054146,
+              "end_lon": -118.241759
+            }
+          ]
+        ],
+        "sources": [
+          {
+            "lat": 34.052335,
+            "lon": -118.243564
+          },
+          {
+            "lat": 34.054146,
+            "lon": -118.241759
+          }
+        ],
+        "targets": [
+          {
+            "lat": 34.052335,
+            "lon": -118.243564
+          },
+          {
+            "lat": 34.054146,
+            "lon": -118.241759
+          }
+        ],
+        "units": "kilometers",
+        "algorithm": "costmatrix",
+        "coverage_region": {
+          "id": "Los_Angeles",
+          "bbox": [
+            34.0422,
+            -118.2537,
+            34.0702,
+            -118.2217
+          ],
+          "data_date": "2026-11-01T15:30:32Z",
+          "source": "https://overpass-api.de/api/interpreter"
+        }
+      }
+    },
+    {
+      "region": "Los_Angeles",
+      "path": "/route",
+      "status": "passed",
+      "response": {
+        "trip": {
+          "locations": [
+            {
+              "type": "break",
+              "lat": 34.0522,
+              "lon": -118.2437,
+              "side_of_street": "right",
+              "original_index": 0
+            },
+            {
+              "type": "break",
+              "lat": 34.0542,
+              "lon": -118.2417,
+              "side_of_street": "right",
+              "original_index": 1
+            },
+            {
+              "type": "break",
+              "lat": 34.0522,
+              "lon": -118.2437,
+              "side_of_street": "right",
+              "original_index": 2
+            }
+          ],
+          "legs": [
+            {
+              "maneuvers": [
+                {
+                  "type": 2,
+                  "instruction": "Drive southeast on West 1st Street.",
+                  "verbal_succinct_transition_instruction": "Drive southeast. Then Turn left onto North Main Street.",
+                  "verbal_pre_transition_instruction": "Drive southeast on West 1st Street. Then Turn left onto North Main Street.",
+                  "verbal_post_transition_instruction": "Continue for 20 meters.",
+                  "street_names": [
+                    "West 1st Street"
+                  ],
+                  "bearing_after": 130,
+                  "time": 1.809,
+                  "length": 0.02,
+                  "cost": 1.945,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 4,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto North Main Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto North Main Street.",
+                  "verbal_succinct_transition_instruction": "Turn left.",
+                  "verbal_pre_transition_instruction": "Turn left onto North Main Street.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "North Main Street"
+                  ],
+                  "bearing_before": 130,
+                  "bearing_after": 39,
+                  "time": 21.931,
+                  "length": 0.26,
+                  "cost": 37.313,
+                  "begin_shape_index": 4,
+                  "end_shape_index": 11,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto West Temple Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto West Temple Street.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Turn left onto West Temple Street. Then Your destination will be on the right.",
+                  "verbal_post_transition_instruction": "Continue for 10 meters.",
+                  "street_names": [
+                    "West Temple Street"
+                  ],
+                  "bearing_before": 38,
+                  "bearing_after": 315,
+                  "time": 5.453,
+                  "length": 0.01,
+                  "cost": 15.565,
+                  "begin_shape_index": 11,
+                  "end_shape_index": 13,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 5,
+                  "instruction": "Your destination is on the right.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Your destination is on the right.",
+                  "bearing_before": 315,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 13,
+                  "end_shape_index": 13,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 34.052217,
+                "min_lon": -118.243564,
+                "max_lat": 34.054146,
+                "max_lon": -118.241678,
+                "time": 29.194,
+                "length": 0.29,
+                "cost": 54.823
+              },
+              "shape": "}mk}_Avm_p`FR]r@kAdAeBzAaCuFoFyz@ev@qDcDkUoS{KmJ}@u@_E{DmB~B[b@"
+            },
+            {
+              "maneuvers": [
+                {
+                  "type": 2,
+                  "instruction": "Drive northwest on West Temple Street.",
+                  "verbal_succinct_transition_instruction": "Drive northwest. Then Turn left onto North Spring Street.",
+                  "verbal_pre_transition_instruction": "Drive northwest on West Temple Street. Then Turn left onto North Spring Street.",
+                  "verbal_post_transition_instruction": "Continue for 100 meters.",
+                  "street_names": [
+                    "West Temple Street"
+                  ],
+                  "bearing_after": 315,
+                  "time": 10.461,
+                  "length": 0.116,
+                  "cost": 11.507,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 6,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto North Spring Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto North Spring Street.",
+                  "verbal_succinct_transition_instruction": "Turn left.",
+                  "verbal_pre_transition_instruction": "Turn left onto North Spring Street.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "North Spring Street"
+                  ],
+                  "bearing_before": 317,
+                  "bearing_after": 220,
+                  "time": 23.419,
+                  "length": 0.273,
+                  "cost": 42.779,
+                  "begin_shape_index": 6,
+                  "end_shape_index": 16,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 15,
+                  "instruction": "Turn left onto West 1st Street.",
+                  "verbal_transition_alert_instruction": "Turn left onto West 1st Street.",
+                  "verbal_succinct_transition_instruction": "Turn left. Then Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Turn left onto West 1st Street. Then Your destination will be on the right.",
+                  "verbal_post_transition_instruction": "Continue for 100 meters.",
+                  "street_names": [
+                    "West 1st Street"
+                  ],
+                  "bearing_before": 220,
+                  "bearing_after": 130,
+                  "time": 15.075,
+                  "length": 0.108,
+                  "cost": 27.535,
+                  "begin_shape_index": 16,
+                  "end_shape_index": 21,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 5,
+                  "instruction": "Your destination is on the right.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the right.",
+                  "verbal_pre_transition_instruction": "Your destination is on the right.",
+                  "bearing_before": 130,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 21,
+                  "end_shape_index": 21,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 34.052335,
+                "min_lon": -118.244473,
+                "max_lat": 34.05489,
+                "max_lon": -118.241759,
+                "time": 48.956,
+                "length": 0.499,
+                "cost": 81.823
+              },
+              "shape": "e_o}_A~|{o`Fg@r@w@`AsMlPoTpXu@t@sDrEnExE|EdEd]v[t@t@|B|B|I~H|R|Qh_@p\\|@t@nE~EjDsFr@oAbGkKvDiG|P_Y"
+            }
+          ],
+          "summary": {
+            "has_time_restrictions": false,
+            "has_toll": false,
+            "has_highway": false,
+            "has_ferry": false,
+            "min_lat": 34.052217,
+            "min_lon": -118.244473,
+            "max_lat": 34.05489,
+            "max_lon": -118.241678,
+            "time": 78.151,
+            "length": 0.79,
+            "cost": 136.646
+          },
+          "status_message": "Found route between points",
+          "status": 0,
+          "units": "kilometers",
+          "language": "en-US"
+        },
+        "coverage_region": {
+          "id": "Los_Angeles",
+          "bbox": [
+            34.0422,
+            -118.2537,
+            34.0702,
+            -118.2217
+          ],
+          "data_date": "2026-11-01T15:30:32Z",
+          "source": "https://overpass-api.de/api/interpreter"
+        }
+      }
+    },
+    {
+      "region": "Atlanta",
+      "path": "/sources_to_targets",
+      "status": "passed",
+      "response": {
+        "sources_to_targets": [
+          [
+            {
+              "from_index": 0,
+              "to_index": 0,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 19.5,
+              "end_heading": 19.5,
+              "begin_lat": 33.748855,
+              "begin_lon": -84.387509,
+              "end_lat": 33.748855,
+              "end_lon": -84.387509
+            },
+            {
+              "from_index": 0,
+              "to_index": 1,
+              "time": 24,
+              "distance": 0.279,
+              "begin_heading": 19.5,
+              "end_heading": 40.9,
+              "begin_lat": 33.748855,
+              "begin_lon": -84.387509,
+              "end_lat": 33.750956,
+              "end_lon": -84.385942
+            }
+          ],
+          [
+            {
+              "from_index": 1,
+              "to_index": 0,
+              "time": 88,
+              "distance": 0.771,
+              "begin_heading": 40.9,
+              "end_heading": 19.5,
+              "begin_lat": 33.750956,
+              "begin_lon": -84.385942,
+              "end_lat": 33.748855,
+              "end_lon": -84.387509
+            },
+            {
+              "from_index": 1,
+              "to_index": 1,
+              "time": 0,
+              "distance": 0.0,
+              "begin_heading": 40.9,
+              "end_heading": 40.9,
+              "begin_lat": 33.750956,
+              "begin_lon": -84.385942,
+              "end_lat": 33.750956,
+              "end_lon": -84.385942
+            }
+          ]
+        ],
+        "sources": [
+          {
+            "lat": 33.748855,
+            "lon": -84.387509
+          },
+          {
+            "lat": 33.750956,
+            "lon": -84.385942
+          }
+        ],
+        "targets": [
+          {
+            "lat": 33.748855,
+            "lon": -84.387509
+          },
+          {
+            "lat": 33.750956,
+            "lon": -84.385942
+          }
+        ],
+        "units": "kilometers",
+        "algorithm": "costmatrix",
+        "coverage_region": {
+          "id": "Atlanta",
+          "bbox": [
+            33.739,
+            -84.398,
+            33.767,
+            -84.366
+          ],
+          "data_date": "2026-11-01T15:30:32Z",
+          "source": "https://overpass-api.de/api/interpreter"
+        }
+      }
+    },
+    {
+      "region": "Atlanta",
+      "path": "/route",
+      "status": "passed",
+      "response": {
+        "trip": {
+          "locations": [
+            {
+              "type": "break",
+              "lat": 33.749,
+              "lon": -84.388,
+              "side_of_street": "left",
+              "original_index": 0
+            },
+            {
+              "type": "break",
+              "lat": 33.751,
+              "lon": -84.386,
+              "side_of_street": "left",
+              "original_index": 1
+            },
+            {
+              "type": "break",
+              "lat": 33.749,
+              "lon": -84.388,
+              "side_of_street": "left",
+              "original_index": 2
+            }
+          ],
+          "legs": [
+            {
+              "maneuvers": [
+                {
+                  "type": 3,
+                  "instruction": "Drive north on Capitol Avenue Southeast.",
+                  "verbal_succinct_transition_instruction": "Drive north. Then, in 300 meters, Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Drive north on Capitol Avenue Southeast. Then, in 300 meters, Your destination will be on the left.",
+                  "verbal_post_transition_instruction": "Continue for 300 meters.",
+                  "street_names": [
+                    "Capitol Avenue Southeast"
+                  ],
+                  "bearing_after": 20,
+                  "time": 24.481,
+                  "length": 0.278,
+                  "cost": 44.491,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 13,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 6,
+                  "instruction": "Your destination is on the left.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Your destination is on the left.",
+                  "bearing_before": 41,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 13,
+                  "end_shape_index": 13,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 33.748855,
+                "min_lon": -84.387509,
+                "max_lat": 33.750956,
+                "max_lon": -84.385942,
+                "time": 24.481,
+                "length": 0.278,
+                "cost": 44.491
+              },
+              "shape": "mvzj_Ahjr}_DoJ{CmMiEyD}AkF_CsJyEkQsKIIePsMuH{HcEgEgL_LoM_Ne@g@"
+            },
+            {
+              "maneuvers": [
+                {
+                  "type": 3,
+                  "instruction": "Drive northeast on Piedmont Avenue Southeast.",
+                  "verbal_succinct_transition_instruction": "Drive northeast. Then Turn right onto Decatur Street Southeast.",
+                  "verbal_pre_transition_instruction": "Drive northeast on Piedmont Avenue Southeast. Then Turn right onto Decatur Street Southeast.",
+                  "verbal_post_transition_instruction": "Continue for 80 meters.",
+                  "street_names": [
+                    "Piedmont Avenue Southeast"
+                  ],
+                  "bearing_after": 42,
+                  "time": 5.684,
+                  "length": 0.077,
+                  "cost": 6.394,
+                  "begin_shape_index": 0,
+                  "end_shape_index": 4,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Decatur Street Southeast.",
+                  "verbal_transition_alert_instruction": "Turn right onto Decatur Street Southeast.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then Turn right onto Jesse Hill Junior Drive Southeast.",
+                  "verbal_pre_transition_instruction": "Turn right onto Decatur Street Southeast. Then Turn right onto Jesse Hill Junior Drive Southeast.",
+                  "verbal_post_transition_instruction": "Continue for 100 meters.",
+                  "street_names": [
+                    "Decatur Street Southeast"
+                  ],
+                  "bearing_before": 42,
+                  "bearing_after": 144,
+                  "time": 16.037,
+                  "length": 0.143,
+                  "cost": 25.619,
+                  "begin_shape_index": 4,
+                  "end_shape_index": 12,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Jesse Hill Junior Drive Southeast.",
+                  "verbal_transition_alert_instruction": "Turn right onto Jesse Hill Junior Drive Southeast.",
+                  "verbal_succinct_transition_instruction": "Turn right.",
+                  "verbal_pre_transition_instruction": "Turn right onto Jesse Hill Junior Drive Southeast.",
+                  "verbal_post_transition_instruction": "Continue for 500 meters.",
+                  "street_names": [
+                    "Jesse Hill Junior Drive Southeast"
+                  ],
+                  "bearing_before": 130,
+                  "bearing_after": 224,
+                  "time": 56.196,
+                  "length": 0.455,
+                  "cost": 181.968,
+                  "begin_shape_index": 12,
+                  "end_shape_index": 34,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 10,
+                  "instruction": "Turn right onto Capitol Avenue Southeast.",
+                  "verbal_transition_alert_instruction": "Turn right onto Capitol Avenue Southeast.",
+                  "verbal_succinct_transition_instruction": "Turn right. Then Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Turn right onto Capitol Avenue Southeast. Then Your destination will be on the left.",
+                  "verbal_post_transition_instruction": "Continue for 100 meters.",
+                  "street_names": [
+                    "Capitol Avenue Southeast"
+                  ],
+                  "bearing_before": 288,
+                  "bearing_after": 5,
+                  "time": 10.214,
+                  "length": 0.096,
+                  "cost": 21.854,
+                  "begin_shape_index": 34,
+                  "end_shape_index": 42,
+                  "verbal_multi_cue": true,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                },
+                {
+                  "type": 6,
+                  "instruction": "Your destination is on the left.",
+                  "verbal_transition_alert_instruction": "Your destination will be on the left.",
+                  "verbal_pre_transition_instruction": "Your destination is on the left.",
+                  "bearing_before": 20,
+                  "time": 0.0,
+                  "length": 0.0,
+                  "cost": 0.0,
+                  "begin_shape_index": 42,
+                  "end_shape_index": 42,
+                  "travel_mode": "drive",
+                  "travel_type": "truck"
+                }
+              ],
+              "summary": {
+                "has_time_restrictions": false,
+                "has_toll": false,
+                "has_highway": false,
+                "has_ferry": false,
+                "min_lat": 33.747938,
+                "min_lon": -84.387681,
+                "max_lat": 33.751469,
+                "max_lon": -84.384231,
+                "time": 88.131,
+                "length": 0.771,
+                "cost": 235.837
+              },
+              "shape": "yy~j_Alho}_DmD_EyUaXUQaBkBpCuAn@c@hLiQbB{FdJeNrM_SZ_@tByDhBfCv`@ta@pMfN|EfFn@t@~\\f_@dAdAdBhB|RjSzE~E~ExErOjO`I~HfChDhBxC`ApDf@vCXjDBpCE`Da@nIaBfGcFm@cDBwGL_Is@qE_AsDaAaA[uFiB"
+            }
+          ],
+          "summary": {
+            "has_time_restrictions": false,
+            "has_toll": false,
+            "has_highway": false,
+            "has_ferry": false,
+            "min_lat": 33.747938,
+            "min_lon": -84.387681,
+            "max_lat": 33.751469,
+            "max_lon": -84.384231,
+            "time": 112.613,
+            "length": 1.05,
+            "cost": 280.329
+          },
+          "status_message": "Found route between points",
+          "status": 0,
+          "units": "kilometers",
+          "language": "en-US"
+        },
+        "coverage_region": {
+          "id": "Atlanta",
+          "bbox": [
+            33.739,
+            -84.398,
+            33.767,
+            -84.366
+          ],
+          "data_date": "2026-11-01T15:30:32Z",
+          "source": "https://overpass-api.de/api/interpreter"
+        }
+      }
+    }
+  ],
+  "cross_region_rejection": {
+    "http_status": 422,
+    "body": {
+      "error": "ROAD_OUTSIDE_COVERAGE: all stops must fit one bounded city sample; intercity routing is unavailable"
+    }
+  }
+}

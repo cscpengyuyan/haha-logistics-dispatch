@@ -202,6 +202,19 @@ def encode(data):
 def create_order(db, body, user):
     if user["role"] not in {"admin", "dispatch", "sales"}:
         raise ApiError(403, "此岗位不能建单")
+    # Stable IDs are reserved for the explicitly isolated synthetic acceptance pack.
+    body = dict(body)
+    simulation_id = body.pop("simulation_id", None)
+    if simulation_id is not None:
+        mode = db.execute("SELECT value FROM metadata WHERE key='mode'").fetchone()
+        if not mode or mode[0] != "demo" or not re.fullmatch(r"SIM200-(?:00[1-9]|0[1-9][0-9]|1[0-9]{2}|200)", str(simulation_id)):
+            raise ApiError(403, "固定演练 ID 仅允许在独立演练库中使用")
+        previous = db.execute("SELECT * FROM orders WHERE id=?", (simulation_id,)).fetchone()
+        if previous:
+            order = unpack(previous)
+            if order.get("simulation_input") != body:
+                raise ApiError(409, "相同演练 ID 的输入已变化，不能覆盖原订单")
+            return present(order, user)
     timestamp = now()
     data = {"route": "", "level": "", "timezone": "", "addon_l4": False,
             "addon_l5": False, "pickup": False, "lat": None, "lng": None,
@@ -215,6 +228,9 @@ def create_order(db, body, user):
     data["original_window_end"] = data.get("window_end", "")
     data["original_timezone"] = data["timezone"]
     oid = "HH-" + datetime.now(timezone.utc).strftime("%y%m%d") + "-" + secrets.token_hex(4).upper()
+    if simulation_id:
+        oid = simulation_id
+        data["simulation_input"] = body
     db.execute("INSERT INTO orders VALUES(?,1,'new',?)", (oid, encode(data)))
     event(db, oid, user, "create", "创建订单 · " + data["endpoint"])
     return present({**data, "id": oid, "status": "new", "version": 1}, user)
@@ -380,6 +396,8 @@ def apply_action(db, oid, body, user):
     order = get_order(db, oid, user)
     check_version(order, body)
     action = required(body, "action", 40)
+    if order.get('recovery_id') and action!='note':
+        raise ApiError(409, '本票处于故障冻结，须按救援新版本逐台交接；不能恢复旧签发')
     if action in {"edit", "upload"}:
         raise ApiError(400, "请使用对应的编辑或上传接口")
     permission(order, user, action)

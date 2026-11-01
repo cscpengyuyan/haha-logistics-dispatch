@@ -1,0 +1,20 @@
+Date: 2026-11-02
+Command: python -B -m unittest discover -s tests -p test_v13_batch_release.py -v
+Result: Ran 6 tests in 9.894s; OK
+
+Real F04 service calls, SQLite and local HTTP (synthetic evidence):
+1. First order UPDATE + route booking + gate log observed via SQLite trace;
+   second item's missing papers reference aborts and restores ALL table rows.
+2. Second individually-feasible route conflicts with the first route's actual
+   resource booking; all first-issue effects rolled back.
+3. Two concurrent HTTP retries, same actor/key/payload: both return identical
+   original issue receipt; exactly one order version increment, one gate issue
+   and one booking per ticket. Changed payload is 409; other actor cannot replay.
+4. Role, malformed/empty/duplicate/oversized/unknown-field/action/version guards.
+5. Success inside outer transaction remains rollbackable by the caller.
+6. Optional plan linkage requires current adopted version, exact order set and
+   actually adopted route IDs; real adoption then linked F04 succeeds.
+
+No simulated core.apply_action, gate or routing replacements in these tests.
+Explicit twelve references are required per item; no automatic proof filling.
+Scope: two-ticket dispatch tests, not 200-ticket performance or all second-leg combinations.

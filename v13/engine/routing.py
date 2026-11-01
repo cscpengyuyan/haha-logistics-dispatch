@@ -45,7 +45,9 @@ def resource(db, kind, rid):
 
 def origin_resource(db, name):
     row = db.execute("SELECT id FROM registry WHERE type='warehouse' AND json_extract(data,'$.name')=?", (name,)).fetchone()
-    return resource(db, "warehouse", row[0]) if row else {}
+    if row:return resource(db, "warehouse", row[0])
+    row = db.execute("SELECT id FROM registry WHERE type='recovery_origin' AND json_extract(data,'$.name')=?", (name,)).fetchone()
+    return resource(db, "recovery_origin", row[0]) if row else {}
 
 
 def facts(body, ids):
@@ -57,7 +59,7 @@ def facts(body, ids):
             raise ApiError(400, "逐站核验字段格式无效")
         return {key: string(str(source[key]), key, 300) for key in keys if key in source and source[key] is not None}
     return (obj(checks, ("shift_start","shift_end","warehouse_start","warehouse_end","return_min","handling_ref","scope_ref","driver")),
-            {oid:obj(stops.get(oid,{}), ("travel","admission","service","unload","height","length_cm","width_cm","kg","road_ref","dock_ref","package_ref","required_people","required_tools","requires_lift","merge_after","merge_ref","from_id","station_id","site_end","finish_by","window_start","window_end","timezone")) for oid in ids})
+            {oid:obj(stops.get(oid,{}), ("travel","admission","service","delivery_service_minutes","unload","height","length_cm","width_cm","kg","lift_extra_kg","road_ref","dock_ref","package_ref","required_people","required_tools","requires_lift","merge_after","merge_ref","from_id","station_id","site_end","finish_by","window_start","window_end","timezone")) for oid in ids})
 
 
 def road_signature(body, ids, resources):
@@ -68,8 +70,13 @@ def road_signature(body, ids, resources):
             stop.pop(key,None)
     knobs = {k:str(body.get(k) or "") for k in ("warehouse","date","start_time","timezone","crew_id","resource_id","executor_id")}
     knobs["service_minutes"] = float(body.get("service_minutes") or 45)
+    knobs['return_policy'] = body.get('return_policy', 'open')
+    if knobs['return_policy'] == 'origin':
+        checks.pop('return_min', None)  # Server-computed return replaces this input estimate.
     versions = [body.get("order_versions",{}).get(oid) for oid in ids]
-    payload = json.dumps([ids,versions,knobs,checks,stops,resources],sort_keys=True,ensure_ascii=False)
+    import load_profile
+    collections=load_profile.parse(body.get('collections'),ids)
+    payload = json.dumps([ids,versions,knobs,checks,stops,resources,collections],sort_keys=True,ensure_ascii=False)
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
@@ -90,6 +97,12 @@ def attach_road(db, route, road_id):
     for oid,leg in zip(route["order_ids"],road["legs"]):
         route["stops"][oid].update(from_id=previous,travel=str(math.ceil(leg["duration"]/60)),road_ref=road_id)
         previous = oid
+    if road.get('return_policy') == 'origin':
+        leg = road.get('return_leg')
+        if not isinstance(leg, dict) or bounded(leg.get('duration'), 0, 86400) is None:
+            raise ApiError(409, '回仓道路依据不完整，请重算')
+        route['checks']['return_min'] = str(math.ceil(leg['duration']/60))
+        route['end_location'] = route['warehouse']
     route["road"] = road
 
 
@@ -134,6 +147,8 @@ def check_route(db, route, orders, skip_orders=()):
     origin = origin_resource(db, route["warehouse"])
     vehicle = resource(db, "vehicle", route["resource_id"])
     crew = resource(db, "crew", route["crew_id"])
+    import recovery
+    if recovery.vehicle_hold(db,route['resource_id']):issues.append('车辆处于故障暂停，须主管核实检修后复运')
     versions = {r["id"]:r["version"] for r in (origin, vehicle, crew) if r}
     if not point(origin):
         issues.append("补录已核出发仓及装卸口坐标")
@@ -255,7 +270,12 @@ def check_route(db, route, orders, skip_orders=()):
             AND (vehicle=? OR crew=? OR driver=?) AND NOT (route_id=? AND revision=?) LIMIT 1""",
             (end.isoformat(),start.isoformat(),vehicle["id"],crew["id"],driver,route.get("id",""),route.get("version",0))).fetchone()
         if clash:issues.append("车辆、司机或班组时段已由另一车次占用")
-    return dict(issues=list(dict.fromkeys(issues)),stop_count=station_no,timeline=timeline,resource_versions=versions,start_utc=start.isoformat() if start else None,end_utc=end.isoformat() if end else None)
+    mixed={}
+    if route.get('collections'):
+        import load_profile
+        mixed=load_profile.check_mixed(db,{**route,'check_result':{'timeline':timeline}},orders)
+        issues.extend(x['message'] for x in mixed['issues'])
+    return dict(issues=list(dict.fromkeys(issues)),stop_count=station_no,timeline=timeline,resource_versions=versions,start_utc=start.isoformat() if start else None,end_utc=end.isoformat() if end else None,mixed_load=mixed)
 
 
 def bookings(db):
@@ -271,6 +291,8 @@ def cancel_booking(db,oid):
     bookings(db)
     row=db.execute("SELECT json_extract(data,'$.release_route.id'), json_extract(data,'$.release_route.route_version') FROM orders WHERE id=?",(oid,)).fetchone()
     if row:db.execute("UPDATE route_bookings SET cancelled=? WHERE oid=? AND route_id=? AND revision=? AND cancelled=''",(now(),oid,row[0],row[1]))
+    if row and db.execute("SELECT 1 FROM sqlite_master WHERE name='collection_bookings'").fetchone():
+        db.execute('UPDATE collection_bookings SET active=0 WHERE stop_id=? AND route_id=? AND revision=?',(oid,row[0],row[1]))
 
 
 def signed_orders(db, rid, version):
@@ -311,6 +333,9 @@ def release(db, order, body, origin, user=None):
     if result["issues"]:raise ApiError(409,"不能签发："+"；".join(result["issues"]))
     if result["resource_versions"]!=route["check_result"]["resource_versions"] or order.get("driver")!=route["checks"].get("driver"):
         raise ApiError(409,"运力版本或司机已变，请重新核验并保存草案")
+    if route.get('collections'):
+        import load_profile
+        load_profile.reserve(db,{**route,'check_result':result})
     leg=2 if order["status"]=="at_station" else 1
     db.execute("""INSERT INTO route_bookings(oid,leg,route_id,revision,vehicle,crew,driver,start_utc,end_utc)
         VALUES(?,?,?,?,?,?,?,?,?)""",(order["id"],leg,rid,version,route["resource_id"],route["crew_id"],order["driver"],result["start_utc"],result["end_utc"]))
@@ -322,12 +347,27 @@ def validate_departure(db, order):
     if order.get("procurement_mode") in {"platform","ltl"} and order["status"]!="at_station" and order.get("platform_instruction") and not order.get("release_route"):
         return
     release=order.get("release_route") or {}
+    import recovery
+    if recovery.vehicle_hold(db,release.get('resource_id')):
+        raise ApiError(409,'车辆处于故障暂停，禁止按原车次验放')
     if not release.get("resource_versions"):
         raise ApiError(409,"历史签发待核，请撤回并按现有实物及车组重新签发")
     for rid,version in release["resource_versions"].items():
         row=db.execute("SELECT version FROM registry WHERE id=?",(rid,)).fetchone()
         if not row or row[0]!=version:
             raise ApiError(409,"签发后运力／仓点已变，请撤回、复核并重新签发")
+    row=db.execute("SELECT data,version FROM registry WHERE type='route' AND id=?",(release.get('id'),)).fetchone()
+    if row:
+        route={**json.loads(row['data']),'id':release['id'],'version':row['version']}
+        if route.get('collections'):
+            import load_profile
+            from core import get_order
+            if row['version']!=release.get('route_version'):
+                raise ApiError(409,'混合回收路线签发后已变化，请重新签发')
+            orders=[get_order(db,oid,{'role':'dispatch','username':'planning'}) for oid in route['order_ids']]
+            result=load_profile.check_mixed(db,route,orders)
+            if result['issues']:
+                raise ApiError(409,'签发后回收事实已变化：'+'；'.join(x['message'] for x in result['issues']))
 def example_plan(db, order, user, executor=None, driver="driver", crew_coverage="75201,76010"):
     """Synthetic DFW acceptance fixture. No public HTTP endpoint exposes this helper."""
     import operations

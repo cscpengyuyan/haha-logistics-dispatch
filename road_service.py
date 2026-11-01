@@ -1,5 +1,7 @@
 """Operator-managed truck matrix, constrained stop sequencing and route geometry."""
 import json
+import hashlib
+import copy
 import math
 import os
 import threading
@@ -15,6 +17,8 @@ import routing
 from core import ApiError, encode, get_order, now
 
 POOL = threading.BoundedSemaphore(4)
+MATRIX_CACHE = {}
+CACHE_GUARD = threading.Lock()
 MAX_BYTES = 3 * 1024 * 1024
 TRUCK = {"length":"truck_length_m", "width":"truck_width_m", "height":"truck_height_m",
          "weight":"gross_t", "axle_load":"axle_load_t"}
@@ -23,7 +27,7 @@ TRUCK = {"length":"truck_length_m", "width":"truck_width_m", "height":"truck_hei
 @lru_cache(maxsize=1)
 def hawaiian_islands():
     # Shared offline state outlines, used only to distinguish physically separate islands.
-    raw = (Path(__file__).parent / "v12/vendor/us-states.js").read_text(encoding="utf8")
+    raw = (Path(__file__).parent / os.environ.get('HH_APP_VERSION', 'v13') / "vendor/us-states.js").read_text(encoding="utf8")
     states = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
     geometry = next(f["geometry"] for f in states["features"] if f["properties"]["abbr"] == "HI")
     return [polygon[0] for polygon in geometry["coordinates"]]
@@ -125,6 +129,10 @@ def inputs(db, body, user):
     if not isinstance(ids, list) or not 1 <= len(ids) <= 24 or not all(isinstance(i,str) for i in ids) or len(set(ids)) != len(ids):
         raise ApiError(400, "请勾选 1 至 24 个不同订单")
     orders = [get_order(db, oid, user) for oid in ids]
+    recovering = set()
+    if body.get('recovery_id'):
+        import recovery
+        recovering = recovery.validate_road_input(db, body, user)
     if body.get("order_versions") != {o["id"]:o["version"] for o in orders}:
         raise ApiError(409, "订单已变化，请刷新后重算")
     depot = routing.origin_resource(db, body.get("warehouse"))
@@ -153,6 +161,12 @@ def inputs(db, body, user):
     capacity.append(math.floor(positive(vehicle.get("floor_length_cm"),"车厢净长 cm",3000)))
     vroom_vehicle = {"id":1,"profile":"truck","start_index":0,"capacity":capacity,
                      "skills":list(skill_ids.values()),"time_window":[start,end]}
+    policy = body.get('return_policy', 'open')
+    if policy not in {'open', 'origin'}:
+        raise ApiError(422, '回程策略须为 open 或 origin；指定车场须另建经核实运段')
+    if policy == 'origin':
+        vroom_vehicle['end_index'] = 0
+        vroom_vehicle['time_window'][1] = shift[1]
     points, jobs = [stop_point(depot)], []
     resources = {item["id"]:item["version"] for item in (depot,vehicle,crew)}
     for i,o in enumerate(orders,1):
@@ -162,7 +176,7 @@ def inputs(db, body, user):
         origin = o.get("station_name") if via and not to_station else o.get("warehouse")
         if o.get("pickup") or (o.get("procurement_mode") in ("ltl","platform") and o["status"] != "at_station"):
             raise ApiError(422, f"{o['id']} 只记录约定交接点，无自有车组站序")
-        if origin != depot["name"] or o["status"] not in ("ready","at_station"):
+        if o['id'] not in recovering and (origin != depot["name"] or o["status"] not in ("ready","at_station")):
             raise ApiError(409, f"{o['id']} 的实际出发点或可调度状态已变")
         if to_station:
             station = (o.get("station_mandate") or {}).get("station_id") or (o.get("second_leg") or {}).get("station_id")
@@ -219,6 +233,54 @@ def matrix(data, count):
     return [[math.ceil(positive(cell.get("time"),"货车道路连通性",7*86400,0)) for cell in row] for row in rows]
 
 
+def cached_matrix(options, points, resources, departure):
+    """Direction, entrance versions, truck and data revision are all part of the key.
+
+    Current adapter deliberately requests static matrices. Departure is a cache scope,
+    not a claim that this deployment has live or historic traffic observations.
+    """
+    context = dict(options=options, points=points, resources=resources,
+                   departure=departure, mode='static',
+                   graph=os.environ.get('HH_ROAD_DATA_DATE', ''),
+                   endpoint=os.environ.get('HH_VALHALLA_URL', ''))
+    key = hashlib.sha256(encode(context).encode()).hexdigest()
+    with CACHE_GUARD:
+        cached = MATRIX_CACHE.get(key)
+        if cached and time.monotonic() - cached[0] < 900:
+            return copy.deepcopy(cached[1]), True
+    raw = post('HH_VALHALLA_URL', '/sources_to_targets',
+               {**options, 'sources': points, 'targets': points})
+    matrix(raw, len(points))  # Never cache an unreachable/null or malformed matrix.
+    with CACHE_GUARD:
+        if len(MATRIX_CACHE) >= 128:
+            MATRIX_CACHE.pop(next(iter(MATRIX_CACHE)))
+        MATRIX_CACHE[key] = (time.monotonic(), copy.deepcopy(raw))
+    return raw, False
+
+
+def validate_sequence(order, jobs, durations, vehicle):
+    """Fixed stop order has the same hard windows and return shift as solving mode."""
+    by_id = {job['id']: job for job in jobs}
+    clock = vehicle['time_window'][0]
+    previous = 0
+    timeline = []
+    for index in order:
+        job = by_id[index]
+        arrival = clock + durations[previous][index]
+        windows = [w for w in job['time_windows'] if max(arrival, w[0]) <= w[1]]
+        if not windows:
+            raise ApiError(422, f'站序 {index} 时间窗冲突，不能按该站序签发')
+        begin = max(arrival, min(w[0] for w in windows))
+        clock = begin + job['service']
+        timeline.append(dict(job_id=index, arrival_utc=arrival, start_utc=begin, departure_utc=clock))
+        previous = index
+    if 'end_index' in vehicle:
+        clock += durations[previous][vehicle['end_index']]
+    if clock > vehicle['time_window'][1]:
+        raise ApiError(422, '包含末站作业及回程后超出车辆班次')
+    return timeline, clock
+
+
 def compute(db, body, user):
     ids, points, jobs, vehicle, truck, resources = inputs(db, body, user)
     continuous_us_road(points)
@@ -230,7 +292,7 @@ def compute(db, body, user):
         raise ApiError(429, "规划服务正忙，草案可保留后重试")
     try:
         options = {"costing":"truck","costing_options":{"truck":truck},"units":"kilometers"}
-        raw = post("HH_VALHALLA_URL","/sources_to_targets",{**options,"sources":points,"targets":points})
+        raw, cache_hit = cached_matrix(options, points, resources, vehicle['time_window'][0])
         durations = matrix(raw,len(points))
         solution = post("HH_VROOM_URL","/",{"jobs":jobs,"vehicles":[vehicle],
                         "matrices":{"truck":{"durations":durations}}})
@@ -248,13 +310,15 @@ def compute(db, body, user):
             if left:
                 raise ApiError(422,"所选订单存在车容、技能或时间窗冲突，请先拆出未分配订单")
             order = list(range(1,len(points)))
-        itinerary = [points[i] for i in [0,*order]]
+        timeline, finish = validate_sequence(order, jobs, durations, vehicle)
+        returning = body.get('return_policy') == 'origin'
+        itinerary = [points[i] for i in [0,*order,*([0] if returning else [])]]
         data = post("HH_VALHALLA_URL","/route",{**options,"locations":itinerary,
                                               "format":"osrm","shape_format":"geojson","directions_type":"none"})
         if data.get("code") != "Ok" or not data.get("routes"):
             raise ApiError(502,"货车路网返回的逐段路线不完整")
         route = data["routes"][0]
-        if len(route["legs"]) != len(order):
+        if len(route["legs"]) != len(order) + int(returning):
             raise ApiError(502,"货车路网返回的逐段路线不完整")
         shape = route["geometry"]
         pairs = shape["coordinates"] if shape.get("type") == "LineString" else []
@@ -263,6 +327,11 @@ def compute(db, body, user):
         geometry = [[lat,lon] for lon,lat,*_ in pairs]
         legs = [{"distance":positive(leg["distance"],"逐段道路里程",50000000,0),
                  "duration":positive(leg["duration"],"逐段行驶时长",7*86400,0)} for leg in route["legs"]]
+        # Recheck final route durations: geometry may use different departure conditions.
+        final_matrix = copy.deepcopy(durations)
+        for a, b, leg in zip([0,*order], [*order,*([0] if returning else [])], legs):
+            final_matrix[a][b] = math.ceil(leg['duration'])
+        timeline, finish = validate_sequence(order, jobs, final_matrix, vehicle)
     except (TypeError,AttributeError,KeyError,IndexError,ValueError,OverflowError):
         raise ApiError(502,"道路或排程服务格式不兼容，请核查部署版本") from None
     finally:
@@ -270,11 +339,47 @@ def compute(db, body, user):
     ordered = [ids[i-1] for i in order]
     result = {"id":uuid.uuid4().hex, "source":"Valhalla truck / VROOM", "timestamp":now(),
               "order_ids":ordered, "unassigned":unassigned, "legs":legs, "geometry":geometry,
-              "truck":truck, "resources":resources, "graph_date":os.environ.get("HH_ROAD_DATA_DATE",""),
-              "coverage":os.environ.get("HH_ROAD_COVERAGE","")}
+              "truck":truck, "resources":resources,
+              "graph_date":data.get('coverage_region',{}).get('data_date',os.environ.get("HH_ROAD_DATA_DATE","")),
+              "coverage_region":data.get('coverage_region'),
+              "coverage":data.get('coverage_region',{}).get('id',os.environ.get("HH_ROAD_COVERAGE",""))}
+    result.update(return_policy=body.get('return_policy','open'), return_leg=legs[-1] if returning else None,
+                  timeline=timeline, finish_utc=finish, traffic_basis='static', matrix_cache_hit=cache_hit,
+                  total_distance_m=sum(x['distance'] for x in legs),
+                  total_driving_seconds=sum(x['duration'] for x in legs))
     # Only a server-generated plan can supply road evidence to a saved dispatch.
     signature = routing.road_signature(body,ordered,resources)
     db.execute("BEGIN IMMEDIATE")
     db.execute("DELETE FROM road_plans WHERE created<?",(int(time.time())-86400,))
     db.execute("INSERT INTO road_plans VALUES(?,?,?,?)",(result["id"],int(time.time()),signature,encode(result)))
     return {"road":result}
+
+
+def candidates(db, body, user):
+    """Generate bounded, genuine VROOM candidates for multiple vehicle/date inputs.
+
+    These are alternatives. The plan master must select globally compatible routes.
+    Every input is validated against actual orders, inventory and physical resources.
+    """
+    if user['role'] not in {'admin','dispatch'}:
+        raise ApiError(403, '仅调度可生成道路候选')
+    requests = body.get('route_requests')
+    if not isinstance(requests, list) or not 1 <= len(requests) <= 48:
+        raise ApiError(422, '每次应提交 1 至 48 组车次候选')
+    results, errors = [], []
+    start = time.monotonic()
+    budget = positive(body.get('budget_seconds', 120), '计算预算', 600, 1)
+    for index, request in enumerate(requests):
+        if time.monotonic() - start >= budget:
+            errors.append({'index':index, 'code':'BUDGET_EXHAUSTED', 'message':'剩余候选尚未计算'})
+            break
+        try:
+            results.append({'index':index, **compute(db, request, user)})
+            db.commit()
+        except ApiError as exc:
+            db.rollback()
+            errors.append({'index':index, 'code':'ROAD_UNAVAILABLE' if exc.status==503 else 'ROUTE_INVALID',
+                           'status':exc.status, 'message':str(exc)})
+    return {'candidates':results, 'errors':errors, 'elapsed_seconds':time.monotonic()-start,
+            'scope':'vehicle_date_candidates', 'global_selection_required':True,
+            'solve_status':'budget_exhausted' if len(results)+len(errors)<len(requests) else 'completed'}

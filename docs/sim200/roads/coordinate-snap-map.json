@@ -1,0 +1,3411 @@
+{
+  "DFW": [
+    {
+      "id": "SIM200-001",
+      "input": {
+        "id": "SIM200-001",
+        "lat": 32.778,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.777772,
+        "lon": -96.805974
+      },
+      "offset_m": 25.4,
+      "osm_way_id": 1415740985,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-002",
+      "input": {
+        "id": "SIM200-002",
+        "lat": 32.78,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.779948,
+        "lon": -96.804251
+      },
+      "offset_m": 24.2,
+      "osm_way_id": 599989919,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-003",
+      "input": {
+        "id": "SIM200-003",
+        "lat": 32.782,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.802218
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 617651571,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-004",
+      "input": {
+        "id": "SIM200-004",
+        "lat": 32.784,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.784015,
+        "lon": -96.800018
+      },
+      "offset_m": 2.5,
+      "osm_way_id": 1034410316,
+      "street_names": [
+        "Patterson Street"
+      ]
+    },
+    {
+      "id": "SIM200-005",
+      "input": {
+        "id": "SIM200-005",
+        "lat": 32.786,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.78594,
+        "lon": -96.798073
+      },
+      "offset_m": 9.5,
+      "osm_way_id": 90307392,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-006",
+      "input": {
+        "id": "SIM200-006",
+        "lat": 32.778,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.778026,
+        "lon": -96.796008
+      },
+      "offset_m": 3.0,
+      "osm_way_id": 444157295,
+      "street_names": [
+        "Young Street"
+      ]
+    },
+    {
+      "id": "SIM200-007",
+      "input": {
+        "id": "SIM200-007",
+        "lat": 32.78,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.780193,
+        "lon": -96.794056
+      },
+      "offset_m": 22.1,
+      "osm_way_id": 736871389,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-008",
+      "input": {
+        "id": "SIM200-008",
+        "lat": 32.782,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.782018,
+        "lon": -96.806021
+      },
+      "offset_m": 2.9,
+      "osm_way_id": 717129588,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-009",
+      "input": {
+        "id": "SIM200-009",
+        "lat": 32.784,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.783998,
+        "lon": -96.803974
+      },
+      "offset_m": 2.3,
+      "osm_way_id": 9938030,
+      "street_names": [
+        "North Griffin Street"
+      ]
+    },
+    {
+      "id": "SIM200-010",
+      "input": {
+        "id": "SIM200-010",
+        "lat": 32.786,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.786171,
+        "lon": -96.801793
+      },
+      "offset_m": 27.1,
+      "osm_way_id": 90307414,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-011",
+      "input": {
+        "id": "SIM200-011",
+        "lat": 32.778,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.778241,
+        "lon": -96.800074
+      },
+      "offset_m": 27.8,
+      "osm_way_id": 825853690,
+      "street_names": [
+        "Wood Street"
+      ]
+    },
+    {
+      "id": "SIM200-012",
+      "input": {
+        "id": "SIM200-012",
+        "lat": 32.78,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.780105,
+        "lon": -96.798029
+      },
+      "offset_m": 12.0,
+      "osm_way_id": 1029555380,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-013",
+      "input": {
+        "id": "SIM200-013",
+        "lat": 32.782,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.782023,
+        "lon": -96.795889
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 599564605,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-014",
+      "input": {
+        "id": "SIM200-014",
+        "lat": 32.784,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.783954,
+        "lon": -96.794109
+      },
+      "offset_m": 11.3,
+      "osm_way_id": 1037088698,
+      "street_names": [
+        "North Olive Street"
+      ]
+    },
+    {
+      "id": "SIM200-015",
+      "input": {
+        "id": "SIM200-015",
+        "lat": 32.786,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.786026,
+        "lon": -96.806033
+      },
+      "offset_m": 4.3,
+      "osm_way_id": 128671748,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-016",
+      "input": {
+        "id": "SIM200-016",
+        "lat": 32.778,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.778058,
+        "lon": -96.804017
+      },
+      "offset_m": 6.6,
+      "osm_way_id": 317238836,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-017",
+      "input": {
+        "id": "SIM200-017",
+        "lat": 32.78,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.780059,
+        "lon": -96.802017
+      },
+      "offset_m": 6.7,
+      "osm_way_id": 574040386,
+      "street_names": [
+        "Main Street"
+      ]
+    },
+    {
+      "id": "SIM200-018",
+      "input": {
+        "id": "SIM200-018",
+        "lat": 32.782,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.782019,
+        "lon": -96.799958
+      },
+      "offset_m": 4.4,
+      "osm_way_id": 765151195,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-019",
+      "input": {
+        "id": "SIM200-019",
+        "lat": 32.784,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.784099,
+        "lon": -96.797879
+      },
+      "offset_m": 15.8,
+      "osm_way_id": 907230667,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-020",
+      "input": {
+        "id": "SIM200-020",
+        "lat": 32.786,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.786068,
+        "lon": -96.79608
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 451142798,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-021",
+      "input": {
+        "id": "SIM200-021",
+        "lat": 32.778,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.778071,
+        "lon": -96.79437
+      },
+      "offset_m": 35.5,
+      "osm_way_id": 1473360159,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-022",
+      "input": {
+        "id": "SIM200-022",
+        "lat": 32.78,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.780014,
+        "lon": -96.806004
+      },
+      "offset_m": 1.6,
+      "osm_way_id": 143940201,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-023",
+      "input": {
+        "id": "SIM200-023",
+        "lat": 32.782,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.781965,
+        "lon": -96.804008
+      },
+      "offset_m": 3.9,
+      "osm_way_id": 599487831,
+      "street_names": [
+        "San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-024",
+      "input": {
+        "id": "SIM200-024",
+        "lat": 32.784,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.784018,
+        "lon": -96.80202
+      },
+      "offset_m": 2.8,
+      "osm_way_id": 451142777,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-025",
+      "input": {
+        "id": "SIM200-025",
+        "lat": 32.786,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.785983,
+        "lon": -96.800019
+      },
+      "offset_m": 2.6,
+      "osm_way_id": 599564607,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-026",
+      "input": {
+        "id": "SIM200-026",
+        "lat": 32.778,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.777939,
+        "lon": -96.797979
+      },
+      "offset_m": 7.0,
+      "osm_way_id": 401521719,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-027",
+      "input": {
+        "id": "SIM200-027",
+        "lat": 32.78,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.780005,
+        "lon": -96.795971
+      },
+      "offset_m": 2.7,
+      "osm_way_id": 9972994,
+      "street_names": [
+        "Prather Street"
+      ]
+    },
+    {
+      "id": "SIM200-028",
+      "input": {
+        "id": "SIM200-028",
+        "lat": 32.782,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.794217
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 10007095,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-029",
+      "input": {
+        "id": "SIM200-029",
+        "lat": 32.784,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.784,
+        "lon": -96.806001
+      },
+      "offset_m": 0.1,
+      "osm_way_id": 1423526147,
+      "street_names": [
+        "Munger Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-030",
+      "input": {
+        "id": "SIM200-030",
+        "lat": 32.786,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.785808,
+        "lon": -96.804258
+      },
+      "offset_m": 32.1,
+      "osm_way_id": 90307338,
+      "street_names": [
+        "North Field Street"
+      ]
+    },
+    {
+      "id": "SIM200-031",
+      "input": {
+        "id": "SIM200-031",
+        "lat": 32.778,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.777982,
+        "lon": -96.801994
+      },
+      "offset_m": 2.0,
+      "osm_way_id": 451142820,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-032",
+      "input": {
+        "id": "SIM200-032",
+        "lat": 32.78,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.779709,
+        "lon": -96.799911
+      },
+      "offset_m": 33.4,
+      "osm_way_id": 90990726,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-033",
+      "input": {
+        "id": "SIM200-033",
+        "lat": 32.782,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.781716,
+        "lon": -96.797915
+      },
+      "offset_m": 32.5,
+      "osm_way_id": 599487856,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-034",
+      "input": {
+        "id": "SIM200-034",
+        "lat": 32.784,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.784048,
+        "lon": -96.796062
+      },
+      "offset_m": 7.9,
+      "osm_way_id": 1317040247,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-035",
+      "input": {
+        "id": "SIM200-035",
+        "lat": 32.786,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.785899,
+        "lon": -96.794061
+      },
+      "offset_m": 12.5,
+      "osm_way_id": 1090017069,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-036",
+      "input": {
+        "id": "SIM200-036",
+        "lat": 32.778,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.777772,
+        "lon": -96.805974
+      },
+      "offset_m": 25.4,
+      "osm_way_id": 1415740985,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-037",
+      "input": {
+        "id": "SIM200-037",
+        "lat": 32.78,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.779948,
+        "lon": -96.804251
+      },
+      "offset_m": 24.2,
+      "osm_way_id": 599989919,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-038",
+      "input": {
+        "id": "SIM200-038",
+        "lat": 32.782,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.802218
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 617651571,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-039",
+      "input": {
+        "id": "SIM200-039",
+        "lat": 32.784,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.784015,
+        "lon": -96.800018
+      },
+      "offset_m": 2.5,
+      "osm_way_id": 1034410316,
+      "street_names": [
+        "Patterson Street"
+      ]
+    },
+    {
+      "id": "SIM200-040",
+      "input": {
+        "id": "SIM200-040",
+        "lat": 32.786,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.78594,
+        "lon": -96.798073
+      },
+      "offset_m": 9.5,
+      "osm_way_id": 90307392,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-041",
+      "input": {
+        "id": "SIM200-041",
+        "lat": 32.778,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.778026,
+        "lon": -96.796008
+      },
+      "offset_m": 3.0,
+      "osm_way_id": 444157295,
+      "street_names": [
+        "Young Street"
+      ]
+    },
+    {
+      "id": "SIM200-042",
+      "input": {
+        "id": "SIM200-042",
+        "lat": 32.78,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.780193,
+        "lon": -96.794056
+      },
+      "offset_m": 22.1,
+      "osm_way_id": 736871389,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-043",
+      "input": {
+        "id": "SIM200-043",
+        "lat": 32.782,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.782018,
+        "lon": -96.806021
+      },
+      "offset_m": 2.9,
+      "osm_way_id": 717129588,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-044",
+      "input": {
+        "id": "SIM200-044",
+        "lat": 32.784,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.783998,
+        "lon": -96.803974
+      },
+      "offset_m": 2.3,
+      "osm_way_id": 9938030,
+      "street_names": [
+        "North Griffin Street"
+      ]
+    },
+    {
+      "id": "SIM200-045",
+      "input": {
+        "id": "SIM200-045",
+        "lat": 32.786,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.786171,
+        "lon": -96.801793
+      },
+      "offset_m": 27.1,
+      "osm_way_id": 90307414,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-046",
+      "input": {
+        "id": "SIM200-046",
+        "lat": 32.778,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.778241,
+        "lon": -96.800074
+      },
+      "offset_m": 27.8,
+      "osm_way_id": 825853690,
+      "street_names": [
+        "Wood Street"
+      ]
+    },
+    {
+      "id": "SIM200-047",
+      "input": {
+        "id": "SIM200-047",
+        "lat": 32.78,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.780105,
+        "lon": -96.798029
+      },
+      "offset_m": 12.0,
+      "osm_way_id": 1029555380,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-048",
+      "input": {
+        "id": "SIM200-048",
+        "lat": 32.782,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.782023,
+        "lon": -96.795889
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 599564605,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-049",
+      "input": {
+        "id": "SIM200-049",
+        "lat": 32.784,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.783954,
+        "lon": -96.794109
+      },
+      "offset_m": 11.3,
+      "osm_way_id": 1037088698,
+      "street_names": [
+        "North Olive Street"
+      ]
+    },
+    {
+      "id": "SIM200-050",
+      "input": {
+        "id": "SIM200-050",
+        "lat": 32.786,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.786026,
+        "lon": -96.806033
+      },
+      "offset_m": 4.3,
+      "osm_way_id": 128671748,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-051",
+      "input": {
+        "id": "SIM200-051",
+        "lat": 32.778,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.778058,
+        "lon": -96.804017
+      },
+      "offset_m": 6.6,
+      "osm_way_id": 317238836,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-052",
+      "input": {
+        "id": "SIM200-052",
+        "lat": 32.78,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.780059,
+        "lon": -96.802017
+      },
+      "offset_m": 6.7,
+      "osm_way_id": 574040386,
+      "street_names": [
+        "Main Street"
+      ]
+    },
+    {
+      "id": "SIM200-053",
+      "input": {
+        "id": "SIM200-053",
+        "lat": 32.782,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.782019,
+        "lon": -96.799958
+      },
+      "offset_m": 4.4,
+      "osm_way_id": 765151195,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-054",
+      "input": {
+        "id": "SIM200-054",
+        "lat": 32.784,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.784099,
+        "lon": -96.797879
+      },
+      "offset_m": 15.8,
+      "osm_way_id": 907230667,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-055",
+      "input": {
+        "id": "SIM200-055",
+        "lat": 32.786,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.786068,
+        "lon": -96.79608
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 451142798,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-056",
+      "input": {
+        "id": "SIM200-056",
+        "lat": 32.778,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.778071,
+        "lon": -96.79437
+      },
+      "offset_m": 35.5,
+      "osm_way_id": 1473360159,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-057",
+      "input": {
+        "id": "SIM200-057",
+        "lat": 32.78,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.780014,
+        "lon": -96.806004
+      },
+      "offset_m": 1.6,
+      "osm_way_id": 143940201,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-058",
+      "input": {
+        "id": "SIM200-058",
+        "lat": 32.782,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.781965,
+        "lon": -96.804008
+      },
+      "offset_m": 3.9,
+      "osm_way_id": 599487831,
+      "street_names": [
+        "San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-059",
+      "input": {
+        "id": "SIM200-059",
+        "lat": 32.784,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.784018,
+        "lon": -96.80202
+      },
+      "offset_m": 2.8,
+      "osm_way_id": 451142777,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-060",
+      "input": {
+        "id": "SIM200-060",
+        "lat": 32.786,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.785983,
+        "lon": -96.800019
+      },
+      "offset_m": 2.6,
+      "osm_way_id": 599564607,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-061",
+      "input": {
+        "id": "SIM200-061",
+        "lat": 32.778,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.777939,
+        "lon": -96.797979
+      },
+      "offset_m": 7.0,
+      "osm_way_id": 401521719,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-062",
+      "input": {
+        "id": "SIM200-062",
+        "lat": 32.78,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.780005,
+        "lon": -96.795971
+      },
+      "offset_m": 2.7,
+      "osm_way_id": 9972994,
+      "street_names": [
+        "Prather Street"
+      ]
+    },
+    {
+      "id": "SIM200-063",
+      "input": {
+        "id": "SIM200-063",
+        "lat": 32.782,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.794217
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 10007095,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-064",
+      "input": {
+        "id": "SIM200-064",
+        "lat": 32.784,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.784,
+        "lon": -96.806001
+      },
+      "offset_m": 0.1,
+      "osm_way_id": 1423526147,
+      "street_names": [
+        "Munger Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-065",
+      "input": {
+        "id": "SIM200-065",
+        "lat": 32.786,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.785808,
+        "lon": -96.804258
+      },
+      "offset_m": 32.1,
+      "osm_way_id": 90307338,
+      "street_names": [
+        "North Field Street"
+      ]
+    },
+    {
+      "id": "SIM200-066",
+      "input": {
+        "id": "SIM200-066",
+        "lat": 32.778,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.777982,
+        "lon": -96.801994
+      },
+      "offset_m": 2.0,
+      "osm_way_id": 451142820,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-067",
+      "input": {
+        "id": "SIM200-067",
+        "lat": 32.78,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.779709,
+        "lon": -96.799911
+      },
+      "offset_m": 33.4,
+      "osm_way_id": 90990726,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-068",
+      "input": {
+        "id": "SIM200-068",
+        "lat": 32.782,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.781716,
+        "lon": -96.797915
+      },
+      "offset_m": 32.5,
+      "osm_way_id": 599487856,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-069",
+      "input": {
+        "id": "SIM200-069",
+        "lat": 32.784,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.784048,
+        "lon": -96.796062
+      },
+      "offset_m": 7.9,
+      "osm_way_id": 1317040247,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-070",
+      "input": {
+        "id": "SIM200-070",
+        "lat": 32.786,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.785899,
+        "lon": -96.794061
+      },
+      "offset_m": 12.5,
+      "osm_way_id": 1090017069,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-071",
+      "input": {
+        "id": "SIM200-071",
+        "lat": 32.778,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.777772,
+        "lon": -96.805974
+      },
+      "offset_m": 25.4,
+      "osm_way_id": 1415740985,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-072",
+      "input": {
+        "id": "SIM200-072",
+        "lat": 32.78,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.779948,
+        "lon": -96.804251
+      },
+      "offset_m": 24.2,
+      "osm_way_id": 599989919,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-073",
+      "input": {
+        "id": "SIM200-073",
+        "lat": 32.782,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.802218
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 617651571,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-074",
+      "input": {
+        "id": "SIM200-074",
+        "lat": 32.784,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.784015,
+        "lon": -96.800018
+      },
+      "offset_m": 2.5,
+      "osm_way_id": 1034410316,
+      "street_names": [
+        "Patterson Street"
+      ]
+    },
+    {
+      "id": "SIM200-075",
+      "input": {
+        "id": "SIM200-075",
+        "lat": 32.786,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.78594,
+        "lon": -96.798073
+      },
+      "offset_m": 9.5,
+      "osm_way_id": 90307392,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-076",
+      "input": {
+        "id": "SIM200-076",
+        "lat": 32.778,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.778026,
+        "lon": -96.796008
+      },
+      "offset_m": 3.0,
+      "osm_way_id": 444157295,
+      "street_names": [
+        "Young Street"
+      ]
+    },
+    {
+      "id": "SIM200-077",
+      "input": {
+        "id": "SIM200-077",
+        "lat": 32.78,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.780193,
+        "lon": -96.794056
+      },
+      "offset_m": 22.1,
+      "osm_way_id": 736871389,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-078",
+      "input": {
+        "id": "SIM200-078",
+        "lat": 32.782,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.782018,
+        "lon": -96.806021
+      },
+      "offset_m": 2.9,
+      "osm_way_id": 717129588,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-079",
+      "input": {
+        "id": "SIM200-079",
+        "lat": 32.784,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.783998,
+        "lon": -96.803974
+      },
+      "offset_m": 2.3,
+      "osm_way_id": 9938030,
+      "street_names": [
+        "North Griffin Street"
+      ]
+    },
+    {
+      "id": "SIM200-080",
+      "input": {
+        "id": "SIM200-080",
+        "lat": 32.786,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.786171,
+        "lon": -96.801793
+      },
+      "offset_m": 27.1,
+      "osm_way_id": 90307414,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-081",
+      "input": {
+        "id": "SIM200-081",
+        "lat": 32.778,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.778241,
+        "lon": -96.800074
+      },
+      "offset_m": 27.8,
+      "osm_way_id": 825853690,
+      "street_names": [
+        "Wood Street"
+      ]
+    },
+    {
+      "id": "SIM200-082",
+      "input": {
+        "id": "SIM200-082",
+        "lat": 32.78,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.780105,
+        "lon": -96.798029
+      },
+      "offset_m": 12.0,
+      "osm_way_id": 1029555380,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-083",
+      "input": {
+        "id": "SIM200-083",
+        "lat": 32.782,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.782023,
+        "lon": -96.795889
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 599564605,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-084",
+      "input": {
+        "id": "SIM200-084",
+        "lat": 32.784,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.783954,
+        "lon": -96.794109
+      },
+      "offset_m": 11.3,
+      "osm_way_id": 1037088698,
+      "street_names": [
+        "North Olive Street"
+      ]
+    },
+    {
+      "id": "SIM200-085",
+      "input": {
+        "id": "SIM200-085",
+        "lat": 32.786,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.786026,
+        "lon": -96.806033
+      },
+      "offset_m": 4.3,
+      "osm_way_id": 128671748,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-086",
+      "input": {
+        "id": "SIM200-086",
+        "lat": 32.778,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.778058,
+        "lon": -96.804017
+      },
+      "offset_m": 6.6,
+      "osm_way_id": 317238836,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-087",
+      "input": {
+        "id": "SIM200-087",
+        "lat": 32.78,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.780059,
+        "lon": -96.802017
+      },
+      "offset_m": 6.7,
+      "osm_way_id": 574040386,
+      "street_names": [
+        "Main Street"
+      ]
+    },
+    {
+      "id": "SIM200-088",
+      "input": {
+        "id": "SIM200-088",
+        "lat": 32.782,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.782019,
+        "lon": -96.799958
+      },
+      "offset_m": 4.4,
+      "osm_way_id": 765151195,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-089",
+      "input": {
+        "id": "SIM200-089",
+        "lat": 32.784,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.784099,
+        "lon": -96.797879
+      },
+      "offset_m": 15.8,
+      "osm_way_id": 907230667,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-090",
+      "input": {
+        "id": "SIM200-090",
+        "lat": 32.786,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.786068,
+        "lon": -96.79608
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 451142798,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-091",
+      "input": {
+        "id": "SIM200-091",
+        "lat": 32.778,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.778071,
+        "lon": -96.79437
+      },
+      "offset_m": 35.5,
+      "osm_way_id": 1473360159,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-092",
+      "input": {
+        "id": "SIM200-092",
+        "lat": 32.78,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.780014,
+        "lon": -96.806004
+      },
+      "offset_m": 1.6,
+      "osm_way_id": 143940201,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-093",
+      "input": {
+        "id": "SIM200-093",
+        "lat": 32.782,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.781965,
+        "lon": -96.804008
+      },
+      "offset_m": 3.9,
+      "osm_way_id": 599487831,
+      "street_names": [
+        "San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-094",
+      "input": {
+        "id": "SIM200-094",
+        "lat": 32.784,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.784018,
+        "lon": -96.80202
+      },
+      "offset_m": 2.8,
+      "osm_way_id": 451142777,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-095",
+      "input": {
+        "id": "SIM200-095",
+        "lat": 32.786,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.785983,
+        "lon": -96.800019
+      },
+      "offset_m": 2.6,
+      "osm_way_id": 599564607,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-096",
+      "input": {
+        "id": "SIM200-096",
+        "lat": 32.778,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.777939,
+        "lon": -96.797979
+      },
+      "offset_m": 7.0,
+      "osm_way_id": 401521719,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-097",
+      "input": {
+        "id": "SIM200-097",
+        "lat": 32.78,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.780005,
+        "lon": -96.795971
+      },
+      "offset_m": 2.7,
+      "osm_way_id": 9972994,
+      "street_names": [
+        "Prather Street"
+      ]
+    },
+    {
+      "id": "SIM200-098",
+      "input": {
+        "id": "SIM200-098",
+        "lat": 32.782,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.794217
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 10007095,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-099",
+      "input": {
+        "id": "SIM200-099",
+        "lat": 32.784,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.784,
+        "lon": -96.806001
+      },
+      "offset_m": 0.1,
+      "osm_way_id": 1423526147,
+      "street_names": [
+        "Munger Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-100",
+      "input": {
+        "id": "SIM200-100",
+        "lat": 32.786,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.785808,
+        "lon": -96.804258
+      },
+      "offset_m": 32.1,
+      "osm_way_id": 90307338,
+      "street_names": [
+        "North Field Street"
+      ]
+    },
+    {
+      "id": "SIM200-101",
+      "input": {
+        "id": "SIM200-101",
+        "lat": 32.778,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.777982,
+        "lon": -96.801994
+      },
+      "offset_m": 2.0,
+      "osm_way_id": 451142820,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-102",
+      "input": {
+        "id": "SIM200-102",
+        "lat": 32.78,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.779709,
+        "lon": -96.799911
+      },
+      "offset_m": 33.4,
+      "osm_way_id": 90990726,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-103",
+      "input": {
+        "id": "SIM200-103",
+        "lat": 32.782,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.781716,
+        "lon": -96.797915
+      },
+      "offset_m": 32.5,
+      "osm_way_id": 599487856,
+      "street_names": [
+        "Elm Street"
+      ]
+    },
+    {
+      "id": "SIM200-104",
+      "input": {
+        "id": "SIM200-104",
+        "lat": 32.784,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.784048,
+        "lon": -96.796062
+      },
+      "offset_m": 7.9,
+      "osm_way_id": 1317040247,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-105",
+      "input": {
+        "id": "SIM200-105",
+        "lat": 32.786,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.785899,
+        "lon": -96.794061
+      },
+      "offset_m": 12.5,
+      "osm_way_id": 1090017069,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-106",
+      "input": {
+        "id": "SIM200-106",
+        "lat": 32.778,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.777772,
+        "lon": -96.805974
+      },
+      "offset_m": 25.4,
+      "osm_way_id": 1415740985,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-107",
+      "input": {
+        "id": "SIM200-107",
+        "lat": 32.78,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.779948,
+        "lon": -96.804251
+      },
+      "offset_m": 24.2,
+      "osm_way_id": 599989919,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-108",
+      "input": {
+        "id": "SIM200-108",
+        "lat": 32.782,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.781954,
+        "lon": -96.802218
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 617651571,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-109",
+      "input": {
+        "id": "SIM200-109",
+        "lat": 32.784,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.784015,
+        "lon": -96.800018
+      },
+      "offset_m": 2.5,
+      "osm_way_id": 1034410316,
+      "street_names": [
+        "Patterson Street"
+      ]
+    },
+    {
+      "id": "SIM200-110",
+      "input": {
+        "id": "SIM200-110",
+        "lat": 32.786,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.78594,
+        "lon": -96.798073
+      },
+      "offset_m": 9.5,
+      "osm_way_id": 90307392,
+      "street_names": [
+        "North Harwood Street"
+      ]
+    },
+    {
+      "id": "SIM200-111",
+      "input": {
+        "id": "SIM200-111",
+        "lat": 32.778,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.778026,
+        "lon": -96.796008
+      },
+      "offset_m": 3.0,
+      "osm_way_id": 444157295,
+      "street_names": [
+        "Young Street"
+      ]
+    },
+    {
+      "id": "SIM200-112",
+      "input": {
+        "id": "SIM200-112",
+        "lat": 32.78,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.780193,
+        "lon": -96.794056
+      },
+      "offset_m": 22.1,
+      "osm_way_id": 736871389,
+      "street_names": [
+        "Jackson Street"
+      ]
+    },
+    {
+      "id": "SIM200-113",
+      "input": {
+        "id": "SIM200-113",
+        "lat": 32.782,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.782018,
+        "lon": -96.806021
+      },
+      "offset_m": 2.9,
+      "osm_way_id": 717129588,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-114",
+      "input": {
+        "id": "SIM200-114",
+        "lat": 32.784,
+        "lon": -96.804
+      },
+      "snapped": {
+        "lat": 32.783998,
+        "lon": -96.803974
+      },
+      "offset_m": 2.3,
+      "osm_way_id": 9938030,
+      "street_names": [
+        "North Griffin Street"
+      ]
+    },
+    {
+      "id": "SIM200-115",
+      "input": {
+        "id": "SIM200-115",
+        "lat": 32.786,
+        "lon": -96.80199999999999
+      },
+      "snapped": {
+        "lat": 32.786171,
+        "lon": -96.801793
+      },
+      "offset_m": 27.1,
+      "osm_way_id": 90307414,
+      "street_names": [
+        "North Akard Street"
+      ]
+    },
+    {
+      "id": "SIM200-116",
+      "input": {
+        "id": "SIM200-116",
+        "lat": 32.778,
+        "lon": -96.8
+      },
+      "snapped": {
+        "lat": 32.778241,
+        "lon": -96.800074
+      },
+      "offset_m": 27.8,
+      "osm_way_id": 825853690,
+      "street_names": [
+        "Wood Street"
+      ]
+    },
+    {
+      "id": "SIM200-117",
+      "input": {
+        "id": "SIM200-117",
+        "lat": 32.78,
+        "lon": -96.798
+      },
+      "snapped": {
+        "lat": 32.780105,
+        "lon": -96.798029
+      },
+      "offset_m": 12.0,
+      "osm_way_id": 1029555380,
+      "street_names": [
+        "Commerce Street"
+      ]
+    },
+    {
+      "id": "SIM200-118",
+      "input": {
+        "id": "SIM200-118",
+        "lat": 32.782,
+        "lon": -96.79599999999999
+      },
+      "snapped": {
+        "lat": 32.782023,
+        "lon": -96.795889
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 599564605,
+      "street_names": [
+        "North Saint Paul Street"
+      ]
+    },
+    {
+      "id": "SIM200-119",
+      "input": {
+        "id": "SIM200-119",
+        "lat": 32.784,
+        "lon": -96.794
+      },
+      "snapped": {
+        "lat": 32.783954,
+        "lon": -96.794109
+      },
+      "offset_m": 11.3,
+      "osm_way_id": 1037088698,
+      "street_names": [
+        "North Olive Street"
+      ]
+    },
+    {
+      "id": "SIM200-120",
+      "input": {
+        "id": "SIM200-120",
+        "lat": 32.786,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.786026,
+        "lon": -96.806033
+      },
+      "offset_m": 4.3,
+      "osm_way_id": 128671748,
+      "street_names": []
+    },
+    {
+      "id": "SIM Dallas",
+      "input": {
+        "id": "SIM Dallas",
+        "lat": 32.778,
+        "lon": -96.806
+      },
+      "snapped": {
+        "lat": 32.777772,
+        "lon": -96.805974
+      },
+      "offset_m": 25.4,
+      "osm_way_id": 1415740985,
+      "street_names": []
+    },
+    {
+      "id": "SIM Dallas 接站",
+      "input": {
+        "id": "SIM Dallas 接站",
+        "lat": 32.781,
+        "lon": -96.803
+      },
+      "snapped": {
+        "lat": 32.780963,
+        "lon": -96.803171
+      },
+      "offset_m": 16.5,
+      "osm_way_id": 1032000265,
+      "street_names": [
+        "North Griffin Street"
+      ]
+    }
+  ],
+  "Houston": [
+    {
+      "id": "SIM200-121",
+      "input": {
+        "id": "SIM200-121",
+        "lat": 29.7604,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.760422,
+        "lon": -95.369838
+      },
+      "offset_m": 4.4,
+      "osm_way_id": 430341093,
+      "street_names": [
+        "Bagby Street"
+      ]
+    },
+    {
+      "id": "SIM200-122",
+      "input": {
+        "id": "SIM200-122",
+        "lat": 29.7624,
+        "lon": -95.3678
+      },
+      "snapped": {
+        "lat": 29.762523,
+        "lon": -95.368006
+      },
+      "offset_m": 24.2,
+      "osm_way_id": 44632300,
+      "street_names": [
+        "Bagby Street"
+      ]
+    },
+    {
+      "id": "SIM200-123",
+      "input": {
+        "id": "SIM200-123",
+        "lat": 29.764400000000002,
+        "lon": -95.3658
+      },
+      "snapped": {
+        "lat": 29.764255,
+        "lon": -95.365916
+      },
+      "offset_m": 19.6,
+      "osm_way_id": 54044836,
+      "street_names": [
+        "Preston Street"
+      ]
+    },
+    {
+      "id": "SIM200-124",
+      "input": {
+        "id": "SIM200-124",
+        "lat": 29.7664,
+        "lon": -95.3638
+      },
+      "snapped": {
+        "lat": 29.766538,
+        "lon": -95.36376
+      },
+      "offset_m": 15.9,
+      "osm_way_id": 727983969,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-125",
+      "input": {
+        "id": "SIM200-125",
+        "lat": 29.7684,
+        "lon": -95.3618
+      },
+      "snapped": {
+        "lat": 29.768415,
+        "lon": -95.361787
+      },
+      "offset_m": 2.1,
+      "osm_way_id": 28761400,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-126",
+      "input": {
+        "id": "SIM200-126",
+        "lat": 29.7604,
+        "lon": -95.35979999999999
+      },
+      "snapped": {
+        "lat": 29.760336,
+        "lon": -95.359692
+      },
+      "offset_m": 12.5,
+      "osm_way_id": 124875335,
+      "street_names": [
+        "San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-127",
+      "input": {
+        "id": "SIM200-127",
+        "lat": 29.7624,
+        "lon": -95.3578
+      },
+      "snapped": {
+        "lat": 29.762503,
+        "lon": -95.35798
+      },
+      "offset_m": 20.8,
+      "osm_way_id": 297810840,
+      "street_names": [
+        "San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-128",
+      "input": {
+        "id": "SIM200-128",
+        "lat": 29.764400000000002,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.764496,
+        "lon": -95.369913
+      },
+      "offset_m": 15.3,
+      "osm_way_id": 1311369645,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-129",
+      "input": {
+        "id": "SIM200-129",
+        "lat": 29.7664,
+        "lon": -95.3678
+      },
+      "snapped": {
+        "lat": 29.76645,
+        "lon": -95.367787
+      },
+      "offset_m": 5.7,
+      "osm_way_id": 15370764,
+      "street_names": [
+        "Washington Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-130",
+      "input": {
+        "id": "SIM200-130",
+        "lat": 29.7684,
+        "lon": -95.3658
+      },
+      "snapped": {
+        "lat": 29.76837,
+        "lon": -95.365711
+      },
+      "offset_m": 9.1,
+      "osm_way_id": 123183235,
+      "street_names": [
+        "I 45",
+        "Gulf Freeway"
+      ]
+    },
+    {
+      "id": "SIM200-131",
+      "input": {
+        "id": "SIM200-131",
+        "lat": 29.7604,
+        "lon": -95.3638
+      },
+      "snapped": {
+        "lat": 29.760282,
+        "lon": -95.363602
+      },
+      "offset_m": 23.1,
+      "osm_way_id": 423420052,
+      "street_names": [
+        "Travis Street"
+      ]
+    },
+    {
+      "id": "SIM200-132",
+      "input": {
+        "id": "SIM200-132",
+        "lat": 29.7624,
+        "lon": -95.3618
+      },
+      "snapped": {
+        "lat": 29.762451,
+        "lon": -95.361887
+      },
+      "offset_m": 10.2,
+      "osm_way_id": 597528989,
+      "street_names": [
+        "Travis Street"
+      ]
+    },
+    {
+      "id": "SIM200-133",
+      "input": {
+        "id": "SIM200-133",
+        "lat": 29.764400000000002,
+        "lon": -95.35979999999999
+      },
+      "snapped": {
+        "lat": 29.76442,
+        "lon": -95.359783
+      },
+      "offset_m": 2.8,
+      "osm_way_id": 518118427,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-134",
+      "input": {
+        "id": "SIM200-134",
+        "lat": 29.7664,
+        "lon": -95.3578
+      },
+      "snapped": {
+        "lat": 29.766574,
+        "lon": -95.357333
+      },
+      "offset_m": 49.1,
+      "osm_way_id": 774880197,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-135",
+      "input": {
+        "id": "SIM200-135",
+        "lat": 29.7684,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.768508,
+        "lon": -95.369769
+      },
+      "offset_m": 12.3,
+      "osm_way_id": 756551488,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-136",
+      "input": {
+        "id": "SIM200-136",
+        "lat": 29.7604,
+        "lon": -95.3678
+      },
+      "snapped": {
+        "lat": 29.760194,
+        "lon": -95.367462
+      },
+      "offset_m": 39.8,
+      "osm_way_id": 1031640295,
+      "street_names": [
+        "Smith Street"
+      ]
+    },
+    {
+      "id": "SIM200-137",
+      "input": {
+        "id": "SIM200-137",
+        "lat": 29.7624,
+        "lon": -95.3658
+      },
+      "snapped": {
+        "lat": 29.76236,
+        "lon": -95.365734
+      },
+      "offset_m": 7.7,
+      "osm_way_id": 297982417,
+      "street_names": [
+        "Smith Street"
+      ]
+    },
+    {
+      "id": "SIM200-138",
+      "input": {
+        "id": "SIM200-138",
+        "lat": 29.764400000000002,
+        "lon": -95.3638
+      },
+      "snapped": {
+        "lat": 29.76441,
+        "lon": -95.363805
+      },
+      "offset_m": 1.2,
+      "osm_way_id": 54044842,
+      "street_names": [
+        "Smith Street"
+      ]
+    },
+    {
+      "id": "SIM200-139",
+      "input": {
+        "id": "SIM200-139",
+        "lat": 29.7664,
+        "lon": -95.3618
+      },
+      "snapped": {
+        "lat": 29.76636,
+        "lon": -95.362108
+      },
+      "offset_m": 30.0,
+      "osm_way_id": 102925230,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-140",
+      "input": {
+        "id": "SIM200-140",
+        "lat": 29.7684,
+        "lon": -95.35979999999999
+      },
+      "snapped": {
+        "lat": 29.769,
+        "lon": -95.359202
+      },
+      "offset_m": 88.3,
+      "osm_way_id": 810041964,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-141",
+      "input": {
+        "id": "SIM200-141",
+        "lat": 29.7604,
+        "lon": -95.3578
+      },
+      "snapped": {
+        "lat": 29.760452,
+        "lon": -95.357758
+      },
+      "offset_m": 7.0,
+      "osm_way_id": 599227670,
+      "street_names": [
+        "Congress Street"
+      ]
+    },
+    {
+      "id": "SIM200-142",
+      "input": {
+        "id": "SIM200-142",
+        "lat": 29.7624,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.762287,
+        "lon": -95.369954
+      },
+      "offset_m": 19.5,
+      "osm_way_id": 618409736,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-143",
+      "input": {
+        "id": "SIM200-143",
+        "lat": 29.764400000000002,
+        "lon": -95.3678
+      },
+      "snapped": {
+        "lat": 29.764469,
+        "lon": -95.367875
+      },
+      "offset_m": 10.6,
+      "osm_way_id": 1326488008,
+      "street_names": [
+        "I 45",
+        "Gulf Freeway"
+      ]
+    },
+    {
+      "id": "SIM200-144",
+      "input": {
+        "id": "SIM200-144",
+        "lat": 29.7664,
+        "lon": -95.3658
+      },
+      "snapped": {
+        "lat": 29.766424,
+        "lon": -95.365914
+      },
+      "offset_m": 11.3,
+      "osm_way_id": 1306025184,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-145",
+      "input": {
+        "id": "SIM200-145",
+        "lat": 29.7684,
+        "lon": -95.3638
+      },
+      "snapped": {
+        "lat": 29.768429,
+        "lon": -95.363772
+      },
+      "offset_m": 4.2,
+      "osm_way_id": 15339026,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-146",
+      "input": {
+        "id": "SIM200-146",
+        "lat": 29.7604,
+        "lon": -95.3618
+      },
+      "snapped": {
+        "lat": 29.760527,
+        "lon": -95.362014
+      },
+      "offset_m": 25.1,
+      "osm_way_id": 1510922774,
+      "street_names": [
+        "Main Street"
+      ]
+    },
+    {
+      "id": "SIM200-147",
+      "input": {
+        "id": "SIM200-147",
+        "lat": 29.7624,
+        "lon": -95.35979999999999
+      },
+      "snapped": {
+        "lat": 29.762665,
+        "lon": -95.359589
+      },
+      "offset_m": 35.8,
+      "osm_way_id": 92550431,
+      "street_names": [
+        "Franklin Street"
+      ]
+    },
+    {
+      "id": "SIM200-148",
+      "input": {
+        "id": "SIM200-148",
+        "lat": 29.764400000000002,
+        "lon": -95.3578
+      },
+      "snapped": {
+        "lat": 29.76426,
+        "lon": -95.357258
+      },
+      "offset_m": 54.6,
+      "osm_way_id": 1392313504,
+      "street_names": [
+        "North San Jacinto Street"
+      ]
+    },
+    {
+      "id": "SIM200-149",
+      "input": {
+        "id": "SIM200-149",
+        "lat": 29.7664,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.766391,
+        "lon": -95.369839
+      },
+      "offset_m": 3.8,
+      "osm_way_id": 54044008,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-150",
+      "input": {
+        "id": "SIM200-150",
+        "lat": 29.7684,
+        "lon": -95.3678
+      },
+      "snapped": {
+        "lat": 29.768405,
+        "lon": -95.367799
+      },
+      "offset_m": 0.5,
+      "osm_way_id": 1272425822,
+      "street_names": [
+        "Ware Ave"
+      ]
+    },
+    {
+      "id": "SIM Houston",
+      "input": {
+        "id": "SIM Houston",
+        "lat": 29.7604,
+        "lon": -95.3698
+      },
+      "snapped": {
+        "lat": 29.760422,
+        "lon": -95.369838
+      },
+      "offset_m": 4.4,
+      "osm_way_id": 430341093,
+      "street_names": [
+        "Bagby Street"
+      ]
+    },
+    {
+      "id": "SIM Houston 接站",
+      "input": {
+        "id": "SIM Houston 接站",
+        "lat": 29.7634,
+        "lon": -95.3668
+      },
+      "snapped": {
+        "lat": 29.763451,
+        "lon": -95.366786
+      },
+      "offset_m": 5.8,
+      "osm_way_id": 15355922,
+      "street_names": [
+        "Prairie Street"
+      ]
+    }
+  ],
+  "Los_Angeles": [
+    {
+      "id": "SIM200-151",
+      "input": {
+        "id": "SIM200-151",
+        "lat": 34.0522,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.052335,
+        "lon": -118.243564
+      },
+      "offset_m": 19.6,
+      "osm_way_id": 404983743,
+      "street_names": [
+        "West 1st Street"
+      ]
+    },
+    {
+      "id": "SIM200-152",
+      "input": {
+        "id": "SIM200-152",
+        "lat": 34.0542,
+        "lon": -118.24170000000001
+      },
+      "snapped": {
+        "lat": 34.054146,
+        "lon": -118.241759
+      },
+      "offset_m": 8.0,
+      "osm_way_id": 193968543,
+      "street_names": [
+        "West Temple Street"
+      ]
+    },
+    {
+      "id": "SIM200-153",
+      "input": {
+        "id": "SIM200-153",
+        "lat": 34.0562,
+        "lon": -118.2397
+      },
+      "snapped": {
+        "lat": 34.056232,
+        "lon": -118.239718
+      },
+      "offset_m": 3.9,
+      "osm_way_id": 29042890,
+      "street_names": [
+        "North Main Street"
+      ]
+    },
+    {
+      "id": "SIM200-154",
+      "input": {
+        "id": "SIM200-154",
+        "lat": 34.0582,
+        "lon": -118.2377
+      },
+      "snapped": {
+        "lat": 34.058239,
+        "lon": -118.237688
+      },
+      "offset_m": 4.5,
+      "osm_way_id": 256114876,
+      "street_names": [
+        "East Cesar E Chavez Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-155",
+      "input": {
+        "id": "SIM200-155",
+        "lat": 34.0602,
+        "lon": -118.23570000000001
+      },
+      "snapped": {
+        "lat": 34.06019,
+        "lon": -118.235682
+      },
+      "offset_m": 1.9,
+      "osm_way_id": 997771087,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-156",
+      "input": {
+        "id": "SIM200-156",
+        "lat": 34.0522,
+        "lon": -118.2337
+      },
+      "snapped": {
+        "lat": 34.05206,
+        "lon": -118.233725
+      },
+      "offset_m": 15.7,
+      "osm_way_id": 13397679,
+      "street_names": [
+        "Ducommun Street"
+      ]
+    },
+    {
+      "id": "SIM200-157",
+      "input": {
+        "id": "SIM200-157",
+        "lat": 34.0542,
+        "lon": -118.2317
+      },
+      "snapped": {
+        "lat": 34.054278,
+        "lon": -118.231793
+      },
+      "offset_m": 12.2,
+      "osm_way_id": 844231762,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-158",
+      "input": {
+        "id": "SIM200-158",
+        "lat": 34.0562,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.056013,
+        "lon": -118.243939
+      },
+      "offset_m": 30.3,
+      "osm_way_id": 382212891,
+      "street_names": [
+        "West Temple Street"
+      ]
+    },
+    {
+      "id": "SIM200-159",
+      "input": {
+        "id": "SIM200-159",
+        "lat": 34.0582,
+        "lon": -118.24170000000001
+      },
+      "snapped": {
+        "lat": 34.058261,
+        "lon": -118.241795
+      },
+      "offset_m": 11.1,
+      "osm_way_id": 161930186,
+      "street_names": [
+        "North Hill Street"
+      ]
+    },
+    {
+      "id": "SIM200-160",
+      "input": {
+        "id": "SIM200-160",
+        "lat": 34.0602,
+        "lon": -118.2397
+      },
+      "snapped": {
+        "lat": 34.06028,
+        "lon": -118.239952
+      },
+      "offset_m": 24.9,
+      "osm_way_id": 895394585,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-161",
+      "input": {
+        "id": "SIM200-161",
+        "lat": 34.0522,
+        "lon": -118.2377
+      },
+      "snapped": {
+        "lat": 34.052202,
+        "lon": -118.237749
+      },
+      "offset_m": 4.5,
+      "osm_way_id": 681828950,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-162",
+      "input": {
+        "id": "SIM200-162",
+        "lat": 34.0542,
+        "lon": -118.23570000000001
+      },
+      "snapped": {
+        "lat": 34.054028,
+        "lon": -118.23571
+      },
+      "offset_m": 19.1,
+      "osm_way_id": 24706908,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-163",
+      "input": {
+        "id": "SIM200-163",
+        "lat": 34.0562,
+        "lon": -118.2337
+      },
+      "snapped": {
+        "lat": 34.05617,
+        "lon": -118.233501
+      },
+      "offset_m": 18.5,
+      "osm_way_id": 676862371,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-164",
+      "input": {
+        "id": "SIM200-164",
+        "lat": 34.0582,
+        "lon": -118.2317
+      },
+      "snapped": {
+        "lat": 34.058021,
+        "lon": -118.23168
+      },
+      "offset_m": 19.9,
+      "osm_way_id": 723319417,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-165",
+      "input": {
+        "id": "SIM200-165",
+        "lat": 34.0602,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.060191,
+        "lon": -118.243708
+      },
+      "offset_m": 1.2,
+      "osm_way_id": 839301174,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-166",
+      "input": {
+        "id": "SIM200-166",
+        "lat": 34.0522,
+        "lon": -118.24170000000001
+      },
+      "snapped": {
+        "lat": 34.052238,
+        "lon": -118.241773
+      },
+      "offset_m": 8.0,
+      "osm_way_id": 381471428,
+      "street_names": [
+        "North Los Angeles Street"
+      ]
+    },
+    {
+      "id": "SIM200-167",
+      "input": {
+        "id": "SIM200-167",
+        "lat": 34.0542,
+        "lon": -118.2397
+      },
+      "snapped": {
+        "lat": 34.054362,
+        "lon": -118.239953
+      },
+      "offset_m": 29.6,
+      "osm_way_id": 381472818,
+      "street_names": [
+        "North Los Angeles Street"
+      ]
+    },
+    {
+      "id": "SIM200-168",
+      "input": {
+        "id": "SIM200-168",
+        "lat": 34.0562,
+        "lon": -118.2377
+      },
+      "snapped": {
+        "lat": 34.056198,
+        "lon": -118.237701
+      },
+      "offset_m": 0.2,
+      "osm_way_id": 405180168,
+      "street_names": [
+        "North Los Angeles Street"
+      ]
+    },
+    {
+      "id": "SIM200-169",
+      "input": {
+        "id": "SIM200-169",
+        "lat": 34.0582,
+        "lon": -118.23570000000001
+      },
+      "snapped": {
+        "lat": 34.057747,
+        "lon": -118.235887
+      },
+      "offset_m": 53.2,
+      "osm_way_id": 29042913,
+      "street_names": [
+        "East Cesar E Chavez Avenue"
+      ]
+    },
+    {
+      "id": "SIM200-170",
+      "input": {
+        "id": "SIM200-170",
+        "lat": 34.0602,
+        "lon": -118.2337
+      },
+      "snapped": {
+        "lat": 34.060161,
+        "lon": -118.23375
+      },
+      "offset_m": 6.3,
+      "osm_way_id": 1036765062,
+      "street_names": [
+        "North Vignes Street"
+      ]
+    },
+    {
+      "id": "SIM200-171",
+      "input": {
+        "id": "SIM200-171",
+        "lat": 34.0522,
+        "lon": -118.2317
+      },
+      "snapped": {
+        "lat": 34.052151,
+        "lon": -118.23136
+      },
+      "offset_m": 31.8,
+      "osm_way_id": 603942824,
+      "street_names": [
+        "Center Street"
+      ]
+    },
+    {
+      "id": "SIM200-172",
+      "input": {
+        "id": "SIM200-172",
+        "lat": 34.0542,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.054043,
+        "lon": -118.243451
+      },
+      "offset_m": 28.7,
+      "osm_way_id": 1127429323,
+      "street_names": [
+        "North Spring Street"
+      ]
+    },
+    {
+      "id": "SIM200-173",
+      "input": {
+        "id": "SIM200-173",
+        "lat": 34.0562,
+        "lon": -118.24170000000001
+      },
+      "snapped": {
+        "lat": 34.056212,
+        "lon": -118.241688
+      },
+      "offset_m": 1.7,
+      "osm_way_id": 161821792,
+      "street_names": [
+        "West Aliso Street"
+      ]
+    },
+    {
+      "id": "SIM200-174",
+      "input": {
+        "id": "SIM200-174",
+        "lat": 34.0582,
+        "lon": -118.2397
+      },
+      "snapped": {
+        "lat": 34.058153,
+        "lon": -118.239602
+      },
+      "offset_m": 10.3,
+      "osm_way_id": 161930126,
+      "street_names": [
+        "North Spring Street"
+      ]
+    },
+    {
+      "id": "SIM200-175",
+      "input": {
+        "id": "SIM200-175",
+        "lat": 34.0602,
+        "lon": -118.2377
+      },
+      "snapped": {
+        "lat": 34.060213,
+        "lon": -118.237739
+      },
+      "offset_m": 3.9,
+      "osm_way_id": 399303654,
+      "street_names": [
+        "North Spring Street"
+      ]
+    },
+    {
+      "id": "SIM200-176",
+      "input": {
+        "id": "SIM200-176",
+        "lat": 34.0522,
+        "lon": -118.23570000000001
+      },
+      "snapped": {
+        "lat": 34.052212,
+        "lon": -118.235798
+      },
+      "offset_m": 9.1,
+      "osm_way_id": 681828942,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-177",
+      "input": {
+        "id": "SIM200-177",
+        "lat": 34.0542,
+        "lon": -118.2337
+      },
+      "snapped": {
+        "lat": 34.054298,
+        "lon": -118.233854
+      },
+      "offset_m": 17.9,
+      "osm_way_id": 904558312,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-178",
+      "input": {
+        "id": "SIM200-178",
+        "lat": 34.0562,
+        "lon": -118.2317
+      },
+      "snapped": {
+        "lat": 34.056121,
+        "lon": -118.231676
+      },
+      "offset_m": 9.0,
+      "osm_way_id": 904558295,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-179",
+      "input": {
+        "id": "SIM200-179",
+        "lat": 34.0582,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.058067,
+        "lon": -118.24381
+      },
+      "offset_m": 17.9,
+      "osm_way_id": 148385513,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-180",
+      "input": {
+        "id": "SIM200-180",
+        "lat": 34.0602,
+        "lon": -118.24170000000001
+      },
+      "snapped": {
+        "lat": 34.060353,
+        "lon": -118.241319
+      },
+      "offset_m": 38.9,
+      "osm_way_id": 886867754,
+      "street_names": []
+    },
+    {
+      "id": "SIM Los Angeles",
+      "input": {
+        "id": "SIM Los Angeles",
+        "lat": 34.0522,
+        "lon": -118.2437
+      },
+      "snapped": {
+        "lat": 34.052335,
+        "lon": -118.243564
+      },
+      "offset_m": 19.6,
+      "osm_way_id": 404983743,
+      "street_names": [
+        "West 1st Street"
+      ]
+    },
+    {
+      "id": "SIM Los Angeles 接站",
+      "input": {
+        "id": "SIM Los Angeles 接站",
+        "lat": 34.0552,
+        "lon": -118.2407
+      },
+      "snapped": {
+        "lat": 34.055185,
+        "lon": -118.240675
+      },
+      "offset_m": 2.8,
+      "osm_way_id": 405178820,
+      "street_names": [
+        "North Main Street"
+      ]
+    }
+  ],
+  "Atlanta": [
+    {
+      "id": "SIM200-181",
+      "input": {
+        "id": "SIM200-181",
+        "lat": 33.749,
+        "lon": -84.388
+      },
+      "snapped": {
+        "lat": 33.748855,
+        "lon": -84.387509
+      },
+      "offset_m": 48.1,
+      "osm_way_id": 849819590,
+      "street_names": [
+        "Capitol Avenue Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-182",
+      "input": {
+        "id": "SIM200-182",
+        "lat": 33.751000000000005,
+        "lon": -84.38600000000001
+      },
+      "snapped": {
+        "lat": 33.750956,
+        "lon": -84.385942
+      },
+      "offset_m": 7.1,
+      "osm_way_id": 9272764,
+      "street_names": [
+        "Piedmont Avenue Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-183",
+      "input": {
+        "id": "SIM200-183",
+        "lat": 33.753,
+        "lon": -84.384
+      },
+      "snapped": {
+        "lat": 33.752912,
+        "lon": -84.383876
+      },
+      "offset_m": 14.9,
+      "osm_way_id": 630644332,
+      "street_names": [
+        "Piedmont Avenue Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-184",
+      "input": {
+        "id": "SIM200-184",
+        "lat": 33.755,
+        "lon": -84.382
+      },
+      "snapped": {
+        "lat": 33.755007,
+        "lon": -84.382276
+      },
+      "offset_m": 25.5,
+      "osm_way_id": 630048318,
+      "street_names": [
+        "Piedmont Avenue Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-185",
+      "input": {
+        "id": "SIM200-185",
+        "lat": 33.757000000000005,
+        "lon": -84.38000000000001
+      },
+      "snapped": {
+        "lat": 33.756992,
+        "lon": -84.380226
+      },
+      "offset_m": 21.0,
+      "osm_way_id": 989914212,
+      "street_names": [
+        "Jesse Hill Junior Drive"
+      ]
+    },
+    {
+      "id": "SIM200-186",
+      "input": {
+        "id": "SIM200-186",
+        "lat": 33.749,
+        "lon": -84.378
+      },
+      "snapped": {
+        "lat": 33.748756,
+        "lon": -84.378122
+      },
+      "offset_m": 29.3,
+      "osm_way_id": 9277816,
+      "street_names": [
+        "Fort Street Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-187",
+      "input": {
+        "id": "SIM200-187",
+        "lat": 33.751000000000005,
+        "lon": -84.376
+      },
+      "snapped": {
+        "lat": 33.751276,
+        "lon": -84.375891
+      },
+      "offset_m": 32.4,
+      "osm_way_id": 9269664,
+      "street_names": [
+        "Pittman Place Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-188",
+      "input": {
+        "id": "SIM200-188",
+        "lat": 33.753,
+        "lon": -84.388
+      },
+      "snapped": {
+        "lat": 33.752944,
+        "lon": -84.38795
+      },
+      "offset_m": 7.6,
+      "osm_way_id": 54032748,
+      "street_names": [
+        "Shirley Clarke Franklin Boulevard Southwest"
+      ]
+    },
+    {
+      "id": "SIM200-189",
+      "input": {
+        "id": "SIM200-189",
+        "lat": 33.755,
+        "lon": -84.38600000000001
+      },
+      "snapped": {
+        "lat": 33.75496,
+        "lon": -84.386
+      },
+      "offset_m": 4.3,
+      "osm_way_id": 109197327,
+      "street_names": [
+        "Lynch's Alley"
+      ]
+    },
+    {
+      "id": "SIM200-190",
+      "input": {
+        "id": "SIM200-190",
+        "lat": 33.757000000000005,
+        "lon": -84.384
+      },
+      "snapped": {
+        "lat": 33.757114,
+        "lon": -84.383999
+      },
+      "offset_m": 12.7,
+      "osm_way_id": 9267766,
+      "street_names": [
+        "John Wesley Dobbs Avenue Northeast"
+      ]
+    },
+    {
+      "id": "SIM200-191",
+      "input": {
+        "id": "SIM200-191",
+        "lat": 33.749,
+        "lon": -84.382
+      },
+      "snapped": {
+        "lat": 33.748619,
+        "lon": -84.382152
+      },
+      "offset_m": 44.6,
+      "osm_way_id": 9267688,
+      "street_names": [
+        "Corey Center"
+      ]
+    },
+    {
+      "id": "SIM200-192",
+      "input": {
+        "id": "SIM200-192",
+        "lat": 33.751000000000005,
+        "lon": -84.38000000000001
+      },
+      "snapped": {
+        "lat": 33.751264,
+        "lon": -84.380342
+      },
+      "offset_m": 43.2,
+      "osm_way_id": 337901402,
+      "street_names": [
+        "I 75",
+        "I 85",
+        "Downtown Connector",
+        "James Wendell George Parkway"
+      ]
+    },
+    {
+      "id": "SIM200-193",
+      "input": {
+        "id": "SIM200-193",
+        "lat": 33.753,
+        "lon": -84.378
+      },
+      "snapped": {
+        "lat": 33.752999,
+        "lon": -84.377913
+      },
+      "offset_m": 8.0,
+      "osm_way_id": 330081191,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-194",
+      "input": {
+        "id": "SIM200-194",
+        "lat": 33.755,
+        "lon": -84.376
+      },
+      "snapped": {
+        "lat": 33.75501,
+        "lon": -84.375987
+      },
+      "offset_m": 1.6,
+      "osm_way_id": 561693946,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-195",
+      "input": {
+        "id": "SIM200-195",
+        "lat": 33.757000000000005,
+        "lon": -84.388
+      },
+      "snapped": {
+        "lat": 33.757025,
+        "lon": -84.388065
+      },
+      "offset_m": 6.6,
+      "osm_way_id": 133115165,
+      "street_names": [
+        "Peachtree Street Northeast"
+      ]
+    },
+    {
+      "id": "SIM200-196",
+      "input": {
+        "id": "SIM200-196",
+        "lat": 33.749,
+        "lon": -84.38600000000001
+      },
+      "snapped": {
+        "lat": 33.748976,
+        "lon": -84.385966
+      },
+      "offset_m": 4.0,
+      "osm_way_id": 755543586,
+      "street_names": [
+        "Jesse Hill Junior Drive Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-197",
+      "input": {
+        "id": "SIM200-197",
+        "lat": 33.751000000000005,
+        "lon": -84.384
+      },
+      "snapped": {
+        "lat": 33.750938,
+        "lon": -84.383913
+      },
+      "offset_m": 10.4,
+      "osm_way_id": 1466674223,
+      "street_names": [
+        "Jesse Hill Junior Drive Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-198",
+      "input": {
+        "id": "SIM200-198",
+        "lat": 33.753,
+        "lon": -84.382
+      },
+      "snapped": {
+        "lat": 33.752903,
+        "lon": -84.38187
+      },
+      "offset_m": 16.0,
+      "osm_way_id": 630048319,
+      "street_names": [
+        "Jesse Hill Junior Drive Southeast"
+      ]
+    },
+    {
+      "id": "SIM200-199",
+      "input": {
+        "id": "SIM200-199",
+        "lat": 33.755,
+        "lon": -84.38000000000001
+      },
+      "snapped": {
+        "lat": 33.755127,
+        "lon": -84.380001
+      },
+      "offset_m": 14.2,
+      "osm_way_id": 561690507,
+      "street_names": []
+    },
+    {
+      "id": "SIM200-200",
+      "input": {
+        "id": "SIM200-200",
+        "lat": 33.757000000000005,
+        "lon": -84.378
+      },
+      "snapped": {
+        "lat": 33.756999,
+        "lon": -84.377934
+      },
+      "offset_m": 6.0,
+      "osm_way_id": 9249234,
+      "street_names": [
+        "Fort Street Northeast"
+      ]
+    },
+    {
+      "id": "SIM Atlanta",
+      "input": {
+        "id": "SIM Atlanta",
+        "lat": 33.749,
+        "lon": -84.388
+      },
+      "snapped": {
+        "lat": 33.748855,
+        "lon": -84.387509
+      },
+      "offset_m": 48.1,
+      "osm_way_id": 849819590,
+      "street_names": [
+        "Capitol Avenue Southeast"
+      ]
+    },
+    {
+      "id": "SIM Atlanta 接站",
+      "input": {
+        "id": "SIM Atlanta 接站",
+        "lat": 33.752,
+        "lon": -84.385
+      },
+      "snapped": {
+        "lat": 33.751929,
+        "lon": -84.384901
+      },
+      "offset_m": 12.0,
+      "osm_way_id": 630644332,
+      "street_names": [
+        "Piedmont Avenue Southeast"
+      ]
+    }
+  ]
+}

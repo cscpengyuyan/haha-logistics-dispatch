@@ -1,0 +1,23 @@
+Date: 2026-11-01
+Command: python -B -m unittest discover -s tests -p test_v13_release_edges.py -v
+Result: Ran 5 tests in 5.920s; OK
+
+T29: real operations.save_route writes route 1; route 2 fails revalidation.
+Caller catches exception and commits. Registry/log/orders/assets/bookings and
+idempotency rows still match baseline. Corrected retry produces two drafts;
+same-key replay produces no duplicate. Adoption does not claim F04 issuance.
+T43: two actual worker threads execute the real optimizer and SQLite queue.
+Attempt 1 lease expires; attempt 2 claims and publishes. Late success from
+attempt 1 cannot publish; late failure cannot poison attempt 2's completed row.
+The expiry is explicitly injected, not an actual operating-system process kill.
+T11: arrival/start within the explicit completion window, departure beyond it;
+only completion-cutoff error occurs. Shorter service subsequently passes.
+T05: known weight is within capacity; door height and floor length each fail
+in isolation. Corrected dimensions pass. Road time is a synthetic fixture.
+
+DOM regression command: node --test tests/map-mount.test.cjs
+Result: 1 passed, 0 skipped; actual system Edge headless, 12.289 seconds.
+Production scripts + real DOM, persisted nonempty candidate after reload,
+timeline rendering/timezone switch, date repaint at 390px, no pageerror.
+This specifically covers the fixed shared-variable TDZ; visual acceptance and
+online publication checks remain the root agent's separate CUA browser checks.

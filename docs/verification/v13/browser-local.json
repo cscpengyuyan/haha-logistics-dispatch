@@ -1,0 +1,15 @@
+{
+  "environment": "CUA / ChatGPT in-app browser / actual Pyodide worker",
+  "source": "http://127.0.0.1:8913/v13/?dataset=sim200#map",
+  "synthetic_only": true,
+  "ready_orders": 200,
+  "map_and_date_filter": {"date": "2026-11-02", "visible": 17, "selected": 200, "outside_filter": 183, "same_plan_and_version": true},
+  "layer_toggle": {"layer": "交接点", "off_then_on": true, "selected_after": 200},
+  "viewports": [{"width": 1440, "horizontal_overflow": false}, {"width": 1024, "horizontal_overflow": false}, {"width": 390, "horizontal_overflow": false}],
+  "pickup_candidate": {"order": "SIM200-189", "readonly": true, "invented_vehicle": false, "manual_route_orders": 0, "global_batch_retained": 200},
+  "full_batch_browser_run": {"assigned": 154, "total": 200, "status": "budget_exhausted_with_solution", "validation": "conditions_pending", "adopt_disabled": true, "note": "Browser bounded search; not native full-200 real-road proof."},
+  "six_order_button": {"ids": ["SIM200-053", "SIM200-067", "SIM200-081", "SIM200-054", "SIM200-068", "SIM200-082"], "assigned": 6, "validation": "passed", "adopted": true, "plan_version_after_adopt": 2, "formal_dispatch": false},
+  "resolved_defect": "Map plan() local shared count shadowed workspace state; non-empty selection mount now renders.",
+  "viewport_override_reset": true,
+  "public_url_verification": "Separate post-deployment evidence required."
+}

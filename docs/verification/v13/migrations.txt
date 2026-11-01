@@ -1,0 +1,10 @@
+Date: 2026-11-01
+Command: python -B -m unittest discover -s tests -p test_v13_migrations.py -v
+Result: Ran 15 tests in 1.214s; OK
+Scope: real SQLite files and in-memory databases, synthetic historical-format records.
+Tests: FileRecovery (3), MigrationContracts (12).
+The fixtures include raw L4/L5 JSON, existing addon flags, technical commissions,
+POD blobs, append-only events, SN locks, old drafts and issued route references.
+Restart cannot resurrect a legacy addon after a later explicit sales correction.
+See tests/test_v13_migrations.py for each executable assertion.
+Not a claim of migration of a production customer database.

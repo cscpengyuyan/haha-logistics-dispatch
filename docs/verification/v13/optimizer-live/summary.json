@@ -1,0 +1,81 @@
+{
+  "business_data": "SIM synthetic evidence",
+  "roads": "Real Valhalla truck / VROOM",
+  "road_data_date": "2026-10-31",
+  "results": [
+    {
+      "run": "cold",
+      "plan_id": "PLAN-ea83e819b12d4cf2",
+      "seconds": 23.0,
+      "coverage": {
+        "total": 6,
+        "assigned": 6,
+        "order_complete": 6,
+        "stage_assigned": 6,
+        "order_coverage": 1.0,
+        "stage_coverage": 1.0
+      },
+      "cost_minor": 240000,
+      "route_count": 6,
+      "metrics": {
+        "candidate_count": 60,
+        "feasible_count": 24,
+        "seconds": 22.95300000000134
+      },
+      "solver": {
+        "indices": [
+          8,
+          11,
+          14,
+          17,
+          20,
+          23
+        ],
+        "solver": "OR-Tools CP-SAT",
+        "exhausted": false,
+        "proven": true,
+        "seconds": 0.01599999999598367,
+        "nodes": 12
+      }
+    },
+    {
+      "run": "warm",
+      "plan_id": "PLAN-52a53163de494102",
+      "seconds": 21.18699999999808,
+      "coverage": {
+        "total": 6,
+        "assigned": 6,
+        "order_complete": 6,
+        "stage_assigned": 6,
+        "order_coverage": 1.0,
+        "stage_coverage": 1.0
+      },
+      "cost_minor": 240000,
+      "route_count": 6,
+      "metrics": {
+        "candidate_count": 60,
+        "feasible_count": 24,
+        "seconds": 21.125
+      },
+      "solver": {
+        "indices": [
+          8,
+          11,
+          14,
+          17,
+          20,
+          23
+        ],
+        "solver": "OR-Tools CP-SAT",
+        "exhausted": false,
+        "proven": true,
+        "seconds": 0.0,
+        "nodes": 12
+      }
+    }
+  ],
+  "adoption": "passed",
+  "idempotent_retry": "passed",
+  "different_payload_same_key": "rejected 409",
+  "saved_routes": 6
+}

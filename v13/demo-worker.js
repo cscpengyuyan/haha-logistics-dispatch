@@ -1,5 +1,6 @@
 'use strict';
 let py, store, revision=-1;
+const sim200=new URLSearchParams(location.search).get('dataset')==='sim200';
 const reqValue=req => new Promise((ok,no)=>{req.onsuccess=()=>ok(req.result);req.onerror=()=>no(req.error)});
 async function initialize(){
   self.postMessage({progress:'正在加载本设备演练运行库…'});
@@ -7,11 +8,11 @@ async function initialize(){
   py=await loadPyodide({indexURL:new URL('./runtime/',location.href).href});
   self.postMessage({progress:'正在打开本机 SQLite 并校验业务模块…'});
   await py.loadPackage('sqlite3');
-  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py", "review.py", "folder.py", "practice.py", "gate.py","partner.py","team.py","settlement.py","billing.py", "supply.py", "routing.py", "routing_zones.py", "communications.py", "sales.py", "sales_workbook.py", "ticket_training.py", "procurement.py"]){
+  for(const file of ["core.py", "operations.py", "browser_api.py", "demo_seed.py", "lifecycle.py", "review.py", "folder.py", "practice.py", "gate.py","partner.py","team.py","settlement.py","billing.py", "supply.py", "routing.py", "routing_zones.py", "communications.py", "sales.py", "sales_workbook.py", "ticket_training.py", "procurement.py", "planning.py", "planning_solver.py", "simulation.py", "migrations.py", "load_profile.py", "recovery.py", "batch_release.py"]){
     const res=await fetch('./engine/'+file+location.search);if(!res.ok)throw Error('演练引擎未能加载：'+file);
     py.FS.writeFile('/home/pyodide/'+file,await res.text());
   }
-  const open=indexedDB.open('haha-logistics-public-v13-2',1);
+  const open=indexedDB.open(sim200?'haha-logistics-public-v13-sim200-2':'haha-logistics-public-v13-2',1);
   open.onupgradeneeded=()=>open.result.createObjectStore('state');
   store=await reqValue(open);self.postMessage({progress:'正在恢复本设备的岗位与订单记录…'});
   await py.runPythonAsync("import browser_api as platform");
@@ -37,7 +38,15 @@ async function sync(){
     await new Promise((done,fail)=>{tx.oncomplete=done;tx.onerror=tx.onabort=()=>fail(tx.error)});
     py.FS.writeFile('/practice.sqlite3',prev.bytes);
   }
-  else if(py.FS.analyzePath('/practice.sqlite3').exists)py.FS.unlink('/practice.sqlite3');
+  else {
+    if(py.FS.analyzePath('/practice.sqlite3').exists)py.FS.unlink('/practice.sqlite3');
+    if(sim200){
+      self.postMessage({progress:'正在载入 200 票独立演练（由销售与库存业务入口生成）…'});
+      const seed=await fetch('./data/sim200-ready.sqlite3');
+      if(!seed.ok)throw Error('200票演练资源未能载入，请重试');
+      py.FS.writeFile('/practice.sqlite3',new Uint8Array(await seed.arrayBuffer()));
+    }
+  }
   py.runPython('platform.connect_demo()');revision=n;if(!prev)await persist()
 }
 let boot,chain=Promise.resolve();
@@ -47,6 +56,7 @@ async function processRequest(m){
     if(m.request.path==='/api/demo/reset' && m.request.method==='POST'){
       py.runPython('platform.db.close(); platform.db = None');
       py.FS.unlink('/practice.sqlite3');
+      if(sim200){const seed=await fetch('./data/sim200-ready.sqlite3');if(!seed.ok)throw Error('演练资源未能载入');py.FS.writeFile('/practice.sqlite3',new Uint8Array(await seed.arrayBuffer()));}
       py.runPython('platform.connect_demo()');
       await persist();
       self.postMessage({id:m.id,value:{ok:true}});return;

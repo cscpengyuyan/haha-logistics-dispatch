@@ -1,0 +1,74 @@
+{
+  "http://127.0.0.1:8915/api/health": {
+    "ok": true,
+    "app_version": "v13",
+    "engine_version": "v13",
+    "static_entry": "/v13/",
+    "data_mode": "demo",
+    "road_configured": true,
+    "road_coverage": "DFW / Houston / Los Angeles / Atlanta bounded SIM regions",
+    "road_data_date": "per-region manifest; see /status",
+    "cp_sat_available": true
+  },
+  "http://127.0.0.1:18805/status": {
+    "version": "3.8.3",
+    "data_date": "per-region",
+    "coverage": "DFW, Houston, Los_Angeles, Atlanta",
+    "regions": [
+      {
+        "id": "DFW",
+        "name": "Dallas bounded sample",
+        "bbox": [
+          32.68,
+          -97.12,
+          32.98,
+          -96.65
+        ],
+        "data_date": "unknown - pre-existing graph; no fresh date asserted",
+        "source": "pre-existing local DFW graph",
+        "source_sha256": "53204471da3fafececad5202bcb425d43f5bc81fcfaea9eb3dcd0b02d51d83cf"
+      },
+      {
+        "id": "Houston",
+        "name": "Houston",
+        "bbox": [
+          29.7304,
+          -95.3998,
+          29.7984,
+          -95.3278
+        ],
+        "data_date": "2026-07-24T11:04:51Z",
+        "source": "https://overpass.kumi.systems/api/interpreter",
+        "source_sha256": "041bb7a92253470d70ee56c2c21b3f3af1878dc66e0e761713d2c50fe5d0b8af"
+      },
+      {
+        "id": "Los_Angeles",
+        "name": "Los Angeles",
+        "bbox": [
+          34.0422,
+          -118.2537,
+          34.0702,
+          -118.2217
+        ],
+        "data_date": "2026-11-01T15:30:32Z",
+        "source": "https://overpass-api.de/api/interpreter",
+        "source_sha256": "1049693a2fc343f8090dfb1db47d5cfb4eb6e090d87387e1b2f2f2c1a3f190ec"
+      },
+      {
+        "id": "Atlanta",
+        "name": "Atlanta",
+        "bbox": [
+          33.739,
+          -84.398,
+          33.767,
+          -84.366
+        ],
+        "data_date": "2026-11-01T15:30:32Z",
+        "source": "https://overpass-api.de/api/interpreter",
+        "source_sha256": "ac3aacd4e1d43fd76a7c9873fbfe16a1ebc1dacde3ba8a7afbbf6fa2759c7745"
+      }
+    ],
+    "cross_region_routes": false,
+    "traffic": "static OSM; no live traffic"
+  }
+}

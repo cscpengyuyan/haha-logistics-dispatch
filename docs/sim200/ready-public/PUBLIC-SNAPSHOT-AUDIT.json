@@ -1,0 +1,20 @@
+{
+  "database_sha256": "838e1dcef333cac253e8daa8d5d4e5723622f4853cce647988bd91a39c411e9c",
+  "database_bytes": 16039936,
+  "order_count": 200,
+  "all_customers_synthetic": true,
+  "all_training": true,
+  "phones": [
+    "+1 202 555 0100"
+  ],
+  "sms_consent": [
+    "否"
+  ],
+  "non_fixture_password_rows": 0,
+  "sales_sources": [
+    [
+      "SIM200_sales.csv"
+    ]
+  ],
+  "mode": "demo"
+}

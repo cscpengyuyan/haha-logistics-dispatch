@@ -1,0 +1,26 @@
+✔ map/date view filters preserve the explicitly selected batch and version (8.6228ms)
+✔ role and environment workspaces are isolated, while a page refresh restores the batch (2.231ms)
+✔ unknown prices and local wall times do not become zero costs or browser-local instants (22.1515ms)
+✔ precheck preserves exact selected scope and server diagnostics (1.3398ms)
+✔ a delayed solution never replaces a batch modified while computation was running (1.1045ms)
+✔ local optimization polls persisted jobs and consumes only terminal result plans (1.3088ms)
+✔ changed business versions invalidate the previous plan without removing its evidence (0.9609ms)
+✔ manual route edits are sent through the same optimizer and null-cost candidates remain pending (1.1352ms)
+✔ refresh recovery fences old job input after selection changes (1.1216ms)
+✔ completion winning a cancel race is displayed as completed, not cancelled (1.139ms)
+✔ ambiguous enqueue retry reuses its idempotency key (1.2726ms)
+✔ nested unassigned diagnostics show the actual field and recovery action (0.9085ms)
+✔ adoption completion does not overwrite edits made while it was in flight (0.9576ms)
+✔ SIM200 and default demo plans cannot leak into each other (1.2258ms)
+✔ shared chain timeline contains each physical segment once, receipt dependencies and independent L5 task (3.1187ms)
+✔ pickup and supplier commitments are read-only without invented vehicle or return stages (1.6823ms)
+✔ native road geometry is retained and stale order/resource/time evidence is explicit (1.0608ms)
+✔ shared timeline escapes order, resource and technical references in both surfaces (0.8422ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.8153

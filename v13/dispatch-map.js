@@ -128,7 +128,11 @@
   function mount(root, initial) {
     let ctx=initial, map, pins, lines, labels, tile, observer, controller, road=null,demoCache=null,destroyed=false, busy=false, roadBusy=false;
     const cleanups=[];let streetLayer=null,streetBusy=false;
+    const workspace=window.DispatchWorkspace.open(ctx), shared=workspace.state;
+    let sharedPanel=null, unifiedRouteIndex=null, manualDirty=false, unifiedFocused=null, unifiedReadOnly=null;
+    const editShared=reason=>{manualDirty=true;if(shared.order_ids.length)workspace.edit(reason)};
     let records=new Map(), warehouses=[], fleet=[], routes=[], selected=[], focused='', filter='', search='', stateFilter='', warehouse='', vehicle='', routeId='', version=null;
+    let modeFilter='', actionFilter='', originFilter='';
     let name='', notes='', date='', start='08:00', zone='America/Chicago', service=45, message='';
     let costDraft={}, crew='', executor='', routeChecks={}, stopFacts={}, lastCheck=null, drivers=[], grantNote='', pageNo=0, locked='', undoStack=[], splitOut=[];
     const defaults={orders:true,warehouses:true,route:true,supplier:false,crew:false,assigned:true,pending:true,window:true,draft:true,computed:true};
@@ -140,11 +144,11 @@
     const keyPrefix='haha-map-v12:'+ctx.user?.username+':';
     function readPref(key,fallback){try{return JSON.parse(localStorage.getItem(keyPrefix+key))??fallback}catch{return fallback}}
     function writePref(key,value){try{localStorage.setItem(keyPrefix+key,JSON.stringify(value))}catch{}}
-    function checkpoint(){undoStack.push({ids:[...selected],split:[...splitOut],facts:structuredClone(stopFacts),locked});if(undoStack.length>20)undoStack.shift();lastCheck=null}
+    function checkpoint(){editShared('人工排线已修改，请重新计算并复核费用、时间和占用');undoStack.push({ids:[...selected],split:[...splitOut],facts:structuredClone(stopFacts),locked});if(undoStack.length>20)undoStack.shift();lastCheck=null}
     const canEdit=()=>['admin','dispatch'].includes(ctx.user?.role);
     /* 交付日视图：按订单收货窗当地日期收敛整个调度台 */
-    let dayFilter='';
-    const dayKeyOf=o=>(o.window_start||'').slice(0,10);
+    let dayFilter=shared.view.day||'';
+    const dayKeyOf=o=>o.dispatch_view_day||(o.window_start||'').slice(0,10);
     const addDays=(key,n)=>{const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+n);const p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
     const weekdayOf=key=>['周日','周一','周二','周三','周四','周五','周六'][new Date(key+'T12:00:00').getDay()];
     const depot=()=>warehouses.find(x=>x.name===warehouse);
@@ -156,7 +160,7 @@
         if(o.status==='ready'&&viaStation(o)){
           const targetId=o.station_mandate?.station_id||o.second_leg?.station_id;
           const dest=warehouses.find(w=>w.id===targetId);
-          return [orderKey(o),{...o,station_target:targetId,lat:dest?.lat,lng:dest?.lng,customer_city:o.city,city:dest?.name||'首程站点待核',zip:dest?.zip,timezone:dest?.timezone,window_start:'',window_end:''}];
+          return [orderKey(o),{...o,dispatch_view_day:(o.window_start||'').slice(0,10),station_target:targetId,lat:dest?.lat,lng:dest?.lng,customer_city:o.city,city:dest?.name||'首程站点待核',zip:dest?.zip,timezone:dest?.timezone,window_start:'',window_end:''}];
         }
         return [orderKey(o),o];
       }));
@@ -171,6 +175,8 @@
     const available=o=>!needsAddress(o)&&!gate(o,'') && warehouses.some(w=>w.name===dispatchOrigin(o)&&position(w));
     function accepts(o,key){
       if(dayFilter && dayKeyOf(o)!==dayFilter)return false;
+      if(shared.view.from && dayKeyOf(o)<shared.view.from)return false;
+      if(shared.view.to && dayKeyOf(o)>shared.view.to)return false;
       if(key==='missing')return needsAddress(o);
       if(key==='available')return available(o);
       if(key==='week'){
@@ -183,8 +189,8 @@
       return !key || key===o.status;
     }
     const visible=()=>all().filter(o=>{
-      const haystack=[o.id,o.crm_ref,o.sn,o.model,o.level,o.delivery_actions,o.window_start,o.window_end,o.customer,o.address,o.endpoint,o.city,o.state,o.zip,o.warehouse,o.selected_quote?.carrier,o.release_route?.name,o.release_route?.id].join(' ').toLowerCase();
-      return accepts(o,filter) && (!stateFilter || o.state===stateFilter) && (!search || haystack.includes(search.trim().toLowerCase()));
+      const haystack=[o.id,o.crm_ref,o.sn,o.model,o.route,o.addon_l4?'L4':'',o.addon_l5?'L5':'',o.level,o.delivery_actions,o.window_start,o.window_end,o.customer,o.address,o.endpoint,o.city,o.state,o.zip,o.warehouse,o.selected_quote?.carrier,o.release_route?.name,o.release_route?.id].join(' ').toLowerCase();
+      return (!modeFilter||(o.pickup?'pickup':o.route)===modeFilter)&&(!actionFilter||(actionFilter==='L4'?o.addon_l4:actionFilter==='L5'?o.addon_l5:o.level===actionFilter))&&(!originFilter||dispatchOrigin(o)===originFilter)&&accepts(o,filter) && (!stateFilter || o.state===stateFilter) && (!search || haystack.includes(search.trim().toLowerCase()));
     });
     const field=(title,key,body)=>`<label class="dm-field"><span>${title}</span>${body(key)}</label>`;
     const btn=(act,text,attrs='')=>`<button type="button" data-act="${act}" ${attrs}>${text}</button>`;
@@ -216,10 +222,10 @@
     function eligibleDepot(){return position(depot());}
     function notice(s){message=s; if(ctx.toast) ctx.toast(s);}
     root.innerHTML=`<section class="dm" data-mobile="map">
-      <div class="dm-command"><div class="dm-pulse" data-box="metrics"></div><div class="dm-route-head" data-box="trial"></div></div>
+      <div data-box="unified"></div><div class="dm-shared-selection" data-box="batchScope"></div><div class="dm-command"><div class="dm-pulse" data-box="metrics"></div><div class="dm-route-head" data-box="trial"></div></div>
       <div class="dm-top"><label class="dm-search"><span aria-hidden="true">⌕</span><input data-field="search" placeholder="搜索单号、SN、ZIP、仓、供应商或路线" aria-label="搜索地图订单"></label>
         <select data-field="filter" aria-label="按任务状态筛选"><option value="">全部任务状态</option><option value="available">可加入批次</option><option value="week">当前仓 · 未来七日原窗</option><option value="onroad">全部在途</option><option value="missing">缺定位</option>${Object.entries(statusNames).map(([v,n])=>option(v,n,'')).join('')}</select>
-        <select data-field="stateFilter" aria-label="按州筛选"></select>${btn('fit','定位结果')}${btn('prefs','保存筛选')}${btn('unfilter','重置')}${btn('pool','展开 / 收起订单池')}</div>
+        <select data-field="stateFilter" aria-label="按州筛选"></select><select data-field="modeFilter" aria-label="履约方式"><option value="">全部履约</option>${['A','B','C1','C2','pickup'].map(x=>option(x,x==='pickup'?'授权自提':x,'')).join('')}</select><select data-field="actionFilter" aria-label="终点与动作"><option value="">全部终点 / 动作</option>${['L1','L2','L3','L4','L5'].map(x=>option(x,x,'')).join('')}</select><select data-field="originFilter" aria-label="实际起仓筛选"><option value="">全部实际起仓</option>${warehouses.map(w=>option(w.name,w.name,'')).join('')}</select>${btn('fit','定位结果')}${btn('prefs','保存筛选')}${btn('unfilter','重置')}${btn('pool','展开 / 收起订单池')}</div>
       <div class="dm-decision" data-box="decision" aria-live="polite"></div>
       <div class="dm-shortcuts" aria-label="调度区定位">${btn('jumpList','选单')}${btn('jumpMap','看图')}${btn('jumpPlan','站序')}</div>
       <div class="dm-grid"><section class="dm-mapcard"><header><div><small>DISPATCH COVERAGE</small><h3>交付点与仓点</h3></div><div class="dm-actions"><select data-field="region" aria-label="聚焦区域"><option value="">聚焦区域…</option>${Object.entries(regions).map(([k,v])=>option(k,v[0],'')).join('')}</select>${btn('home','回到本仓')}${btn('nation','全美视图')}</div></header>
@@ -309,6 +315,10 @@
       }
     }
     restructure();
+    const timelineBox=document.createElement('details');timelineBox.className='dm-shared-timeline';timelineBox.open=true;timelineBox.innerHTML='<summary>逐站时间轴 · 到场 / 准入 / 候场 / 作业 / 回程</summary><div data-box="timeline"></div>';root.querySelector('.dm-console').after(timelineBox);
+    sharedPanel=window.DispatchWorkspace.panel(el('unified'),ctx,loadUnifiedRoute);
+    cleanups.push(()=>sharedPanel.destroy());
+    cleanups.push(workspace.subscribe(()=>{if(destroyed)return;dayFilter=shared.view.day||'';if(!dayFilter&&!shared.view.from&&!shared.view.to&&!shared.view.search){filter='';stateFilter='';search='';root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';}paint();}));
 
     function initMap(){
       if (!window.L || !window.US_STATES) {el('map').textContent='地图资源未加载。可继续在订单池查看订单和排线。';return;}
@@ -426,7 +436,7 @@
       el('routeCredit').innerHTML=validRoad()?'线路 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>':'';
       if(!map){drawCapabilities();return}
       pins.clearLayers();lines.clearLayers();drawCapabilities();
-      const orders=[...new Map([...visible(),...selected.map(byKey).filter(Boolean)].map(o=>[orderKey(o),o])).values()];
+      const orders=[...new Map([...visible(),...selected.map(byKey).filter(Boolean),...shared.order_ids.map(byKey).filter(Boolean)].map(o=>[orderKey(o),o])).values()];
       const assignedStatuses=['dispatched','in_transit','at_station','last_mile','delivered','settled'];
       const delays=new Set(orders.filter(o=>['new','ready','dispatched','in_transit','last_mile'].includes(o.status)
         && instant(o.window_end,o.timezone)<Date.now()).map(orderKey));
@@ -465,12 +475,29 @@
           marker.bindPopup(box).openPopup();
         });
       }
+      if(showLayer.route){
+        const palette=['#16785f','#3275a8','#9c6c2a','#8e529a','#bc604c','#428e8f'];
+        workspace.routes().forEach((candidate,index)=>{
+          window.DispatchWorkspace.routeSegments(candidate).forEach(({route:r,future},leg)=>{
+            if(['pickup','supplier_commitment'].includes(r.kind))return;
+            const wh=warehouses.find(w=>w.name===r.warehouse||w.id===r.warehouse_id),preview=window.DispatchWorkspace.roadPreview(r,ctx);
+            const roadGeom=preview?.geometry,hasGeometry=Array.isArray(roadGeom)&&roadGeom.length>1,computed=hasGeometry&&!preview.stale;
+            const destinations=(r.order_ids||[]).map(id=>{
+              const station=(r.first_leg_ids||[]).includes(id)&&r.stops?.[id]?.station_id;
+              return position(station?warehouses.find(w=>w.id===station):(ctx.orders||[]).find(o=>o.id===id));
+            });
+            const points=hasGeometry?roadGeom:[position(wh),...destinations].filter(Boolean);
+            if(points.length<2||!(computed?showLayer.computed:showLayer.draft))return;
+            L.polyline(points,{pane:'dispatchPlan',color:palette[index%palette.length],weight:3,opacity:.7,dashArray:computed?null:'6 7'}).bindTooltip(e('计划 '+(index+1)+' · 第 '+(leg+1)+' 段'+(future?' · 后程预排':'')+' · '+(hasGeometry?(preview.stale?'历史几何待重核':r.road_basis):'站点关系示意'))).on('click',()=>loadUnifiedRoute(candidate,index)).addTo(lines);
+          });
+        });
+      }
       if(selected.length && eligibleDepot() && selected.every(id=>position(byKey(id)))){
         const r=validRoad();
-        const visibleLine=r&&!r.cached?showLayer.computed:showLayer.draft;
+        const visibleLine=r&&!r.cached&&!r.stale?showLayer.computed:showLayer.draft;
         if(!showLayer.route||!visibleLine)return;
         const points=r?r.geometry:[eligibleDepot(),...selected.map(id=>position(byKey(id)))];
-        L.polyline(points,{pane:'dispatchPlan',interactive:false,color:'#176d60',weight:3.5,opacity:0.92,dashArray:r?null:'7 7'}).addTo(lines);
+        L.polyline(points,{pane:'dispatchPlan',interactive:false,color:'#176d60',weight:3.5,opacity:0.92,dashArray:r&&!r.stale?null:'7 7'}).addTo(lines);
         if(r && points.length>3){
           for(const fraction of [0.23,0.55,0.81]){
             const idx=Math.min(points.length-2,Math.floor(points.length*fraction));
@@ -481,7 +508,7 @@
               icon:L.divIcon({className:'dm-direction',html:`<i style="transform:rotate(${angle.toFixed(1)}deg)">➤</i>`,iconSize:[12,12],iconAnchor:[6,6]})}).addTo(lines);
           }
         }
-      }else if(!selected.length && byKey(focused)){
+      }else if(!unifiedReadOnly && !selected.length && byKey(focused)){
         if(!showLayer.route||!showLayer.draft)return;const pts=ticketPoints(byKey(focused));
         if(pts.length>1&&pts.every(Boolean))L.polyline(pts,{pane:'dispatchPlan',interactive:false,color:'#486b99',weight:3,dashArray:'4 6'}).addTo(lines);
       }
@@ -499,11 +526,11 @@
       el('metrics').innerHTML=metrics.map(([key,label,tone])=>
         btn('slice',`<span><i></i>${label}</span><strong>${all().filter(o=>accepts(o,key)).length}</strong><small>票</small>`,`class="dm-kpi ${tone}" data-slice="${key}" aria-pressed="${filter===key}"`)
       ).join('');
-      el('counts').textContent=`${rows.length-missing} 票已核入口 · ${missing} 票待核址`;
+      el('counts').textContent=workspace.dataset==='sim200'?`${rows.length-missing} 票演练定位（测试坐标） · ${missing} 票待补定位`:`${rows.length-missing} 票已核入口 · ${missing} 票待核址`;
       el('total').textContent=rows.length+' 票';pageNo=Math.min(pageNo,Math.max(0,Math.ceil(rows.length/40)-1));
       el('list').innerHTML=rows.length?rows.slice(pageNo*40,(pageNo+1)*40).map(o=>{
         const id=orderKey(o), issue=gate(o,'',true) || (ctx.routingEnabled&&needsAddress(o)?'请先核实装卸入口':'');
-        return `<div class="dm-item ${id===focused?'active':''}"><button type="button" class="dm-item-main" data-act="focus" data-id="${e(id)}"><b>${e(o.city||o.customer||'目的地待补')} <em>${e(o.state||'')} ${e(o.zip||'')}</em></b><span>${e(o.model||'型号待补')} × ${e(o.quantity||'—')} 台 · ${e(o.pickup?'客户自提':levels[o.level]||'终点待核')}</span><small>${e(id)} · ${e(o.customer||'客户待补')}</small></button>
+        return `<div class="dm-item ${id===focused?'active':''}"><button type="button" class="dm-item-main" data-act="focus" data-id="${e(id)}"><b>${e(o.city||o.customer||'目的地待补')} <em>${e(o.state||'')} ${e(o.zip||'')}</em></b><span>${e(o.model||'型号待补')} × ${e(o.quantity||'—')} 台 · ${e(o.pickup?'客户自提':levels[o.level]||'终点待核')}</span><small>${e(id)} · ${e(o.customer||'客户待补')}</small><small>▣ ${e(dispatchOrigin(o)||'实际起仓待补')} · ${e(o.pickup?'授权自提':o.route||'履约待核')}${o.addon_l4?' + L4':''}${o.addon_l5?' + L5':''}</small><small>${e((o.window_start||'预约待补').replace('T',' '))} · ${e(o.timezone||'时区待核')}</small>${issue?`<small class="dm-card-issue">⚠ ${e(issue)}</small>`:''}</button>
           <div class="dm-item-end"><span class="dm-badge ${o.status==='exception'?'warn':''}">${e(needsAddress(o)?'待核址':statusNames[o.status]||o.status)}</span>
             ${canEdit()?rowBtn('toggle',id,selected.includes(id)?'移出':'＋ 排线',issue&&!selected.includes(id)?`disabled title="${e(issue)}"`:''):''}</div></div>`;
       }).join('')+(rows.length>40?`<div class="dm-actions">${btn('prev','上一页',pageNo?'':'disabled')} ${pageNo+1}/${Math.ceil(rows.length/40)} ${btn('next','下一页',(pageNo+1)*40<rows.length?'':'disabled')}</div>`:''):'<p class="dm-empty">当前条件下没有订单。</p>';
@@ -535,6 +562,10 @@
       focused=id;list();details();drawMap();const p=position(byKey(id));if(map && pan && p)map.setView(p,Math.max(6,map.getZoom()),{animate:false});
     }
     function config(){
+      if(unifiedReadOnly){
+        el('config').innerHTML='<p class="uw-notice">'+e(window.DispatchWorkspace.routeView(unifiedReadOnly).title)+'：当前只读。逐段依据和后程依赖见时间轴；退出只读查看后可另建配送草案。</p>';
+        el('facts').innerHTML='';return;
+      }
       const zoneOptions=[...new Set([...zones,zone])];
       const disabled=canEdit()?'':'disabled';
       const controls=[
@@ -563,6 +594,7 @@
       el('costResult').textContent=ok?'原线 $'+(cents('original')/100).toFixed(2)+' · 新线 $'+(candidate/100).toFixed(2)+' · '+(candidate>=cents('original')?'按试算保留原线':'候选较低，须另核覆盖、原窗及同范围书面回价')+'。不计财务实绩。':'录入两条同范围全价及新增费用。核定基线请到原单比价。';
     }
     function costs(){
+      if(unifiedReadOnly){el('cost').innerHTML='<p class="uw-capability">本候选全范围费用 '+window.DispatchWorkspace.money(unifiedReadOnly.total_minor,unifiedReadOnly.currency)+'；各项付款范围见统一计划明细。</p>';el('costResult').textContent='只读计划不使用手工车次试算覆盖已核委托或分段费用。';return;}
       el('cost').innerHTML=Object.entries(costLabels).map(([k,v])=>field(v+' USD',k,()=>`<input data-cost="${k}" type="number" step=".01" min="0" value="${e(costDraft[k]??'')}" ${canEdit()?'':'disabled'}>`)).join('');
       costResult();
     }
@@ -575,7 +607,16 @@
     function grouped(i){const x=stopFacts[selected[i]];return !!(i&&x?.merge_ref&&x.merge_after===selected[i-1]&&sameStop(i))}
     function stopNumber(i){return selected.slice(0,i+1).reduce((n,_,j)=>n+(grouped(j)?0:1),0)}
     function plan(){
-      const d=depot(), r=validRoad(), rows=[], problems=[], totalUnits=selected.reduce((sum,id)=>sum+(Number(byKey(id)?.quantity)||0),0);
+      if(unifiedReadOnly){
+        const r=unifiedReadOnly,W=window.DispatchWorkspace,view=W.routeView(r);
+        el('timeline').innerHTML=W.timelineHTML(r,ctx.orders||[],shared.timezone,true);
+        el('stops').innerHTML='<div class="dm-summary"><b>'+e(view.title)+'</b><span>'+(r.order_ids||[]).length+' 票 · '+view.segments.length+' 个履约阶段</span></div><p class="uw-notice">此候选按完整委托与依赖只读展示。采用方案保留全链；正式执行回原单核验。后程须实际到站实收后重新核验，不会以空车辆生成配送车次。</p><div class="dm-actions">'+(r.order_ids||[]).map(id=>rowBtn('open',id,'打开 '+e(id))).join('')+btn('clear','退出只读查看')+'</div>';
+        el('save').innerHTML='';el('message').textContent=message;el('itinerary').innerHTML='<b>'+e(view.title)+'</b><span> · 全批 '+shared.order_ids.length+' 票保持不变</span>';
+        el('trial').innerHTML='<b>履约链只读核对</b><span>以实际交接凭据推进后续阶段</span>';
+        el('decision').innerHTML='<div><strong>'+e(view.title)+'</strong><small>使用统一计划采用入口；车辆、承诺与技术资源按各段独立核验。</small></div>'+btn('clear','退出只读查看');el('decision').classList.remove('has-conflict');return;
+      }
+      if(manualDirty&&selected.length)workspace.stageRoute(planPayload(),unifiedRouteIndex);
+      const d=depot(), r=validRoad(), rows=[], timeline=[], problems=[], totalUnits=selected.reduce((sum,id)=>sum+(Number(byKey(id)?.quantity)||0),0);
       let prev=position(d), cursor=instant(date+'T'+start,zone), totalDistance=0, complete=Boolean(prev), warnings=0;
       if(!prev)problems.push('请选择有经纬度的出发仓');
       if(!Number.isFinite(cursor))problems.push('发仓时间无效或处于夏令时切换的重复/跳过时段');
@@ -587,7 +628,7 @@
         const o=byKey(id), p=position(o), reason=gate(o,warehouse);
         if(reason)problems.push(`${id} · ${reason}`);
         let distance, transit;
-        if(r){distance=r.legs[i].distance/1609.344;transit=r.legs[i].duration/60;}
+        if(r){distance=Number.isFinite(r.legs?.[i]?.distance)?r.legs[i].distance/1609.344:NaN;transit=Number.isFinite(r.legs?.[i]?.duration)?r.legs[i].duration/60:NaN;}
         else if(prev && p){distance=miles(prev,p);}
         if(Number.isFinite(distance))totalDistance+=distance;else complete=false;
         const f=stopFacts[id]||{}, from=i?selected[i-1]:depot()?.id;
@@ -611,8 +652,13 @@
           <div><b>${e(fmtMi(distance))} · 行驶 ${Number.isFinite(transit)?Math.ceil(transit):'—'} / 作业 ${e(job)} 分钟</b><small>卸毕后在车 ${Number.isFinite(remainingKg)?Math.round(remainingKg)+' kg':'待核'}</small><small>到场 ${e(clock(arrival,o?.timezone))} / 开工 ${e(clock(enter,o?.timezone))} / 离场 ${e(clock(exit,o?.timezone))}</small></div>
           <span class="dm-badge ${reason||!validWindow||late||!Number.isFinite(arrival)?'warn':''}">${e(warn)}</span>
           ${canEdit()?`<div class="dm-actions">${(sameStop(i)||f.merge_after)?rowBtn('mergeStop',id,f.merge_after?'取消同停':'确认同停'):''}${rowBtn('lock',id,locked===id?'解锁':'锁站')}${rowBtn('up',id,'↑',`aria-label="上移 ${e(id)}" ${i===0?'disabled':''}`)}${rowBtn('down',id,'↓',`aria-label="下移 ${e(id)}" ${i===selected.length-1?'disabled':''}`)}${rowBtn('toggle',id,'移出')}</div>`:''}</li>`);
+        timeline.push(`<li><span>${stopNumber(i)}</span><div><b>${e(id)} · ${e(o?.city)}</b><small>${e(o?.timezone||'时区待核')}</small><small>到场 ${e(clock(arrival,shared.timezone))} → 开工 ${e(clock(enter,shared.timezone))} → 离场 ${e(clock(exit,shared.timezone))}</small><small>行驶 ${Number.isFinite(transit)?Math.ceil(transit):'待核'} 分 · 准入 ${Number(f.admission||0)} 分 · 候场 ${Number.isFinite(wait)?wait:'待核'} 分 · 作业 ${job} 分</small></div></li>`);
         cursor=exit;prev=p;
       });
+      const returnMinutes=routeChecks.return_min===''||routeChecks.return_min==null?null:Number(routeChecks.return_min);
+      if(selected.length&&returnMinutes===null)problems.push('回程行时与结束地点待核，尚不能确认全班次可行');
+      el('timeline').innerHTML=selected.length?`<p class="uw-capability">时间轴显示 ${e(shared.timezone)}；节点预约按各站当地时区。未知行时保持待核。</p><ol class="uw-timeline"><li><span>▣</span><div><b>提货 · ${e(warehouse)}</b><small>${e(clock(instant(date+'T'+start,zone),shared.timezone))} · ${e(vehicle||'车辆待核')} / ${e(crew||'班组待核')}</small></div></li>${timeline.join('')}<li><span>↩</span><div><b>回程 / 结束地点待复核</b><small>${returnMinutes===null?'回程行时待核':returnMinutes+' 分 · '+e(clock(cursor+returnMinutes*60000,shared.timezone))}</small></div></li></ol>`:'<p class="uw-capability">选择候选车次或从左侧排线，底图不可用时仍可核对本表。</p>';
+      if(unifiedFocused&&!manualDirty)el('timeline').innerHTML=window.DispatchWorkspace.timelineHTML(unifiedFocused,ctx.orders||[],shared.timezone,true);
       const elapsed=(cursor-instant(date+'T'+start,zone))/60000;
       el('stops').innerHTML=`<div class="dm-summary"><b>${selected.length} 票 / ${totalUnits} 台</b><span>${r?'路网里程':'直线合计'} <strong>${complete?e(fmtMi(totalDistance)):'—'}</strong></span><span>含作业 / 等待 ${Number.isFinite(elapsed)?Math.ceil(elapsed)+' 分钟':'—'}</span><span>${warnings} 票待复核</span><div class="dm-actions">
         ${btn('fitPlan','查看全线',selected.length&&complete?'':'disabled')}
@@ -629,11 +675,11 @@
       const stops=selected.map(byKey).filter(Boolean);
       const sameSite=new Map();
       for(const o of stops){const key=locationKey(o);if(key)sameSite.set(key,(sameSite.get(key)||0)+1);}
-      const shared=[...sameSite.values()].filter(n=>n>1).length;
+      const sharedStops=[...sameSite.values()].filter(n=>n>1).length;
       el('trial').innerHTML=ctx.demo && !ctx.publicDemo && canEdit() && !selected.length?
         `<div><small>DALLAS · 路线演练</small><b>一仓三站 · 已配车组和预约窗</b></div>${btn('truckDemo','装入达拉斯三站','class="dm-primary"')}`:demoOrders()?`<div><small>DALLAS · 路网演练</small><b>一仓两站，检查预约窗</b></div>${btn('sample','试排 Dallas 双站','class="dm-primary"')}`:
         `<div><small>MULTI-STOP · 当前批次</small><b>${selected.length?e(warehouse)+' · '+selected.length+' 票 / '+totalUnits+' 台':'按同仓、约窗与交接位置排线'}</b></div>${btn('jumpPlan',selected.length?'查看排线 ↓':'打开排线 ↓','class="dm-jump"')}`;
-      el('itinerary').innerHTML=stops.length?`<div class="dm-flow-label"><b>计划站序</b><small>${r?'公路参考':'直线参考'} · ${complete?e(fmtMi(totalDistance)):'—'}</small></div><div class="dm-flow"><span class="dm-from">▣ ${e(warehouse)}</span>${stops.map((o,i)=>rowBtn('focus',o.id,`<i>${stopNumber(i)}</i>${e(o.city||o.zip)}<small>× ${e(o.quantity)} 台</small>`)).join('')}</div><p class="dm-group-note">${shared?'发现 '+shared+' 处跨票同址。收货方、原窗和同一装卸口一致时可登记确认同停。各票作业与 SN 分开记录。':stops.some(o=>o.quantity>1)?'含同址多台订单。台数计入装载，逐票核对卸货与摆位时长。':''}</p>`:
+      el('itinerary').innerHTML=stops.length?`<div class="dm-flow-label"><b>计划站序</b><small>${r?'公路参考':'直线参考'} · ${complete?e(fmtMi(totalDistance)):'—'}</small></div><div class="dm-flow"><span class="dm-from">▣ ${e(warehouse)}</span>${stops.map((o,i)=>rowBtn('focus',o.id,`<i>${stopNumber(i)}</i>${e(o.city||o.zip)}<small>× ${e(o.quantity)} 台</small>`)).join('')}</div><p class="dm-group-note">${sharedStops?'发现 '+sharedStops+' 处跨票同址。收货方、原窗和同一装卸口一致时可登记确认同停。各票作业与 SN 分开记录。':stops.some(o=>o.quantity>1)?'含同址多台订单。台数计入装载，逐票核对卸货与摆位时长。':''}</p>`:
         '<span class="dm-route-hint"><b>排线起点</b> 点选城市标记下钻，或在订单池中点「＋ 排线」。</span>';
     }
     function runs(){
@@ -651,7 +697,7 @@
           <em class="${signed?'ok':''}">${signed?'已签':'草案'}</em></button>`;
       }).join(''):'<p class="dm-empty">今日暂无车次。左侧选票 → 右侧排线 → 保存即生成。</p>';
     }
-    /* 交付日条：按天取票，票数取自可排订单 */
+    /* 交付日条：与日期视图按同一交付日期计全部订单，不隐式排除外包/自提。 */
     function dates(){
       const box=el('dates');if(!box)return;
       const tz=depot()?.timezone||zone;
@@ -664,26 +710,28 @@
         if(available(o))ready.set(k,(ready.get(k)||0)+1);
       }
       for(const k of [...total.keys()].sort())if(!days.includes(k))days.push(k);
-      const totalReady=[...ready.values()].reduce((a,b)=>a+b,0);
+      const totalCount=[...total.values()].reduce((a,b)=>a+b,0);
       const chip=(key,on)=>{
         const n=ready.get(key)||0,m=total.get(key)||0;
-        return `<button type="button" class="dm-daychip${on?' on':''}${n?'':' empty'}" data-act="day" data-day="${key}" aria-pressed="${on}">
-          <i>${e(weekdayOf(key))}</i><b>${e(key.slice(5).replace('-','/'))}</b>${n?`<em>${n}</em>`:''}</button>`;
+        return `<button type="button" class="dm-daychip${on?' on':''}${m?'':' empty'}" data-act="day" data-day="${key}" aria-pressed="${on}" title="${m} 票 · 可直接排车 ${n} 票">
+          <i>${e(weekdayOf(key))}</i><b>${e(key.slice(5).replace('-','/'))}</b>${m?`<em>${m}</em>`:''}</button>`;
       };
       box.innerHTML=`<div class="dm-daybar" role="group" aria-label="按交付日筛选">
         <button type="button" class="dm-daychip all${dayFilter?'':' on'}" data-act="dayAll" aria-pressed="${!dayFilter}">
-          <i>全部</i><b>日期</b><em>${totalReady}</em></button>
+          <i>全部</i><b>日期</b><em>${totalCount}</em></button>
         <div class="dm-daylist">${days.map((k,i)=>(i&&weekdayOf(k)==='周一'?'<i class="dm-daysep" aria-hidden="true"></i>':'')+chip(k,k===dayFilter)).join('')}</div>
         <label class="dm-daypick"><span>指定日期</span>
           <input type="date" data-field="dayPick" value="${e(dayFilter||'')}" aria-label="选择交付日"></label>
       </div>`;
     }
     function paint(){dates();config();list();runs();details();plan();costs();drawMap();
+      const shown=new Set(visible().map(orderKey)),hidden=shared.order_ids.filter(id=>!shown.has(id)).length;
+      el('batchScope').innerHTML=`<b>计算批次 ${shared.order_ids.length} 票</b><span>本车编辑 ${selected.length} 票 · 筛选外仍纳入 ${hidden} 票</span>${canEdit()?btn('batchVisible','将当前 '+visible().length+' 票加入计算')+btn('batchRoute','将本车加入计算',selected.length?'':'disabled'):''}${btn('batchFull','返回完整批次')}<small>日期和图层只改变视图，不改变已选范围。</small>`;
       const note=root.querySelector('[data-box="stops"] .dm-note'),slot=el('routenote');
       if(note&&slot)slot.appendChild(note);
     }
     function reset(){
-      selected=[];costDraft={};grantNote='';routeChecks={};stopFacts={};crew='';executor='';lastCheck=null;undoStack=[];splitOut=[];locked='';routeId='';version=null;name='';notes='';message='';vehicle='';invalidateRoad();
+      selected=[];manualDirty=false;unifiedRouteIndex=null;unifiedFocused=null;unifiedReadOnly=null;costDraft={};grantNote='';routeChecks={};stopFacts={};crew='';executor='';lastCheck=null;undoStack=[];splitOut=[];locked='';routeId='';version=null;name='';notes='';message='';vehicle='';invalidateRoad();
     }
     function toggle(id){
       checkpoint();if(selected.includes(id)){selected=selected.filter(x=>x!==id);}
@@ -696,6 +744,7 @@
         if(o.station_target)stopFacts[id]={...stopFacts[id],station_id:o.station_target,timezone:o.timezone};
         selected.push(id);
       }
+      if(selected.includes(id)&&!shared.order_ids.includes(id))workspace.selection([...shared.order_ids,id]);
       invalidateRoad();message='';paint();
     }
     function planPayload(){
@@ -723,18 +772,38 @@
       }}
       finally{if(!destroyed && controller===req){controller=null;roadBusy=false;drawMap();plan();}}
     }
+    function loadUnifiedRoute(r,index){
+      if(!r)return;manualDirty=false;unifiedRouteIndex=index;unifiedFocused=r;
+      unifiedReadOnly=window.DispatchWorkspace.routeView(r).readOnly?r:null;
+      if(unifiedReadOnly){
+        invalidateRoad();selected=[];vehicle='';crew='';executor='';routeChecks={};stopFacts={};lastCheck=null;routeId='';version=null;
+        message='只读核对履约链；全批 '+shared.order_ids.length+' 票保持不变。';paint();
+        const geometries=window.DispatchWorkspace.routeSegments(r).flatMap(x=>window.DispatchWorkspace.roadPreview(x.route,ctx)?.geometry||[]);
+        fit(geometries.length?geometries:(r.order_ids||[]).map(id=>position((ctx.orders||[]).find(o=>o.id===id))).filter(Boolean),12);return;
+      }
+      invalidateRoad();selected=(r.order_ids||[]).map(String).filter(id=>byKey(id));
+      warehouse=r.warehouse||byKey(selected[0])?.warehouse||warehouse;zone=r.timezone||depot()?.timezone||zone;
+      date=r.date||byKey(selected[0])?.window_start?.slice(0,10)||date;start=r.start_time||'08:00';
+      vehicle=String(r.resource_id||r.vehicle_id||'');crew=r.crew_id||'';executor=r.executor_id||'';
+      routeChecks=structuredClone(r.checks||{});stopFacts=Array.isArray(r.stops)?{}:structuredClone(r.stops||{});
+      routeId='';version=null;name=r.name||('统一计划 '+shared.plan_id+' · 车次 '+(index+1));
+      lastCheck=null;message='统一计划车次 '+(index+1)+'，全批 '+shared.order_ids.length+' 票保持不变。地图编辑后须重新预检。';
+      const preview=window.DispatchWorkspace.roadPreview(r,ctx);
+      if(preview){road={...preview,key:roadKey()};if(preview.stale)message+=' 历史道路几何仅供核对：'+preview.stale_reason+'。';}
+      paint();fit([position(depot()),...selected.map(id=>position(byKey(id)))].filter(Boolean),12);
+    }
     function loadRoute(id){
       const r=routes.find(x=>String(x.id)===String(id));if(!r)return;
+      unifiedFocused=null;unifiedReadOnly=null;unifiedRouteIndex=null;manualDirty=false;
       invalidateRoad();routeId=String(r.id);version=r.version;name=r.name;warehouse=r.warehouse;date=r.date;vehicle=String(r.resource_id??'');notes=r.notes||'';
       start=r.start_time||'08:00';zone=r.timezone||depot()?.timezone||'America/Chicago';service=r.service_minutes||45;
       selected=(r.order_ids||[]).map(String);costDraft=structuredClone(r.cost_scenario||{});crew=r.crew_id||'';executor=r.executor_id||'';routeChecks=structuredClone(r.checks||{});stopFacts=structuredClone(r.stops||{});lastCheck=r.check_result;
       const changed=selected.filter(id=>r.order_versions?.[id]!=null && r.order_versions[id]!==byKey(id)?.version);
       const hints=changed.length?['保存后订单已变更，请核对新版窗口与派单条件：'+changed.join('、')]:['已调出共享草案，时窗与停靠状态按当前订单重新核算。'];
       if(r.road_basis==='valhalla_truck' && r.road?.geometry){
-        const resourceVersions=new Map((ctx.resources||[]).map(x=>[x.id,x.version]));
-        const stale=changed.length || !ctx.routingEnabled || Object.entries(r.road.resources).some(([id,v])=>resourceVersions.get(id)!==v) || Date.now()-Date.parse(r.road.timestamp)>3600000;
-        road={...r.road,key:roadKey(),stale};
-        if(stale){lastCheck=null;hints.push('历史路线仅供查阅，须按当前输入重算。')}
+        const preview=window.DispatchWorkspace.roadPreview(r,ctx);
+        road=preview?{...preview,key:roadKey()}:null;
+        if(!preview||preview.stale){lastCheck=null;hints.push('历史路线仅供查阅，须按当前输入重算。'+(preview?.stale_reason||''))}
       }else if(r.road_basis==='demo_cache'){
         const legs=cachedLegs();
         if(legs)road={key:roadKey(),legs,geometry:legs.flatMap(l=>l.geometry),cached:true};
@@ -786,6 +855,10 @@
     function click(ev){
       const b=ev.target.closest('[data-act]');if(!b || !root.contains(b) || b.disabled || busy)return;
       const id=b.dataset.id, a=b.dataset.act;
+      if(unifiedReadOnly&&['mergeStop','truckDemo','bindGrant','undo','split','lock','cached','sample','roads','orderedRoad','toggle','save','up','down','dispatch','station_release'].includes(a)){notice('此履约链只读，请先退出只读查看，再另建配送草案。');return;}
+      if(a==='batchVisible'){workspace.selection([...shared.order_ids,...visible().map(orderKey)]);return}
+      if(a==='batchRoute'){workspace.selection([...shared.order_ids,...selected]);return}
+      if(a==='batchFull'){modeFilter='';actionFilter='';originFilter='';for(const k of ['modeFilter','actionFilter','originFilter'])root.querySelector('[data-field='+k+']').value='';workspace.view({day:'',from:'',to:'',search:''});workspace.emit();fit(shared.order_ids.map(id=>position(byKey(id))).filter(Boolean),10);return}
       if(a==='capLayer'){capLayer(b);return}
       if(a==='capAll'){capFilter='';drawMap();return}
       if(a==='mergeStop'&&canEdit()){
@@ -805,13 +878,11 @@
       if(a==='bindGrant'){bindGrant(id);return}
       if(a==='prev'||a==='next'){pageNo=Math.max(0,pageNo+(a==='next'?1:-1));list();return}
       if(a==='prefs'){writePref('filters',{filter,search,stateFilter});notice('已保存当前账号的筛选');return}
-      if(a==='unfilter'){filter='';stateFilter='';search='';pageNo=0;writePref('filters',{});root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';paint();return}
+      if(a==='unfilter'){modeFilter='';actionFilter='';originFilter='';for(const k of ['modeFilter','actionFilter','originFilter'])root.querySelector('[data-field='+k+']').value='';filter='';stateFilter='';search='';pageNo=0;writePref('filters',{});root.querySelector('[data-field=filter]').value='';root.querySelector('[data-field=search]').value='';paint();return}
       if(a==='pool'){root.querySelector('.dm-console')?.classList.toggle('hide-pool');return}
       if(a==='day'||a==='dayAll'){
         dayFilter=a==='day'?(b.dataset.day||''):'';
-        if(dayFilter)date=dayFilter;
-        selected=selected.filter(id=>{const o=byKey(id);return !dayFilter||dayKeyOf(o)===dayFilter});
-        invalidateRoad();
+        workspace.view({day:dayFilter,from:'',to:''});
         pageNo=0;paint();
         const pts=all().filter(o=>accepts(o,'available')).map(position).filter(Boolean);
         if(pts.length)fit(pts,9);
@@ -821,7 +892,7 @@
       if(a==='layer'){const k=b.dataset.key;showLayer[k]=!showLayer[k];b.setAttribute('aria-pressed',String(showLayer[k]));prefMap.set('layers',showLayer);drawMap();return}
       if(a==='undo'&&undoStack.length){const x=undoStack.pop();selected=x.ids;splitOut=x.split;stopFacts=x.facts;locked=x.locked;lastCheck=null;invalidateRoad();paint();return}
       if(a==='split'&&selected.length>1){if(locked===selected.at(-1)){notice('请先解锁末站');return}checkpoint();splitOut.push(selected.pop());invalidateRoad();paint();return}
-      if(a==='lock'){locked=locked===id?'':id;plan();return}
+      if(a==='lock'){locked=locked===id?'':id;workspace.edit('站序锁定已修改',{locks:{...shared.locks,station_order:locked?selected.slice():[]}});plan();return}
       if(a==='slice'){
         pageNo=0;
         filter=filter===b.dataset.slice?'':b.dataset.slice;search='';stateFilter='';
@@ -858,15 +929,14 @@
     }
     function change(ev){
       const key=ev.target.dataset.field, value=ev.target.value;
-      if(ev.target.dataset.cost){costDraft[ev.target.dataset.cost]=value;costResult();return}
-      if(ev.target.dataset.check){invalidateRoad();routeChecks[ev.target.dataset.check]=value;lastCheck=null;plan();return}
-      if(ev.target.dataset.leg){invalidateRoad();const {leg,prop}=ev.target.dataset;const s=stopFacts[leg]||={};s[prop]=value;if(prop==='road_ref'){const i=selected.indexOf(leg);s.from_id=i?selected[i-1]:depot()?.id}lastCheck=null;plan();return}
+      if(unifiedReadOnly&&(ev.target.dataset.cost||ev.target.dataset.check||ev.target.dataset.leg||['driver','crew','vehicle','executor','date','zone','start','service','warehouse'].includes(key)))return;
+      if(ev.target.dataset.cost){editShared('费用输入已修改，旧候选价格已失效');costDraft[ev.target.dataset.cost]=value;costResult();return}
+      if(ev.target.dataset.check){editShared('班次或道路约束已修改');invalidateRoad();routeChecks[ev.target.dataset.check]=value;lastCheck=null;plan();return}
+      if(ev.target.dataset.leg){editShared('逐站作业参数已修改');invalidateRoad();const {leg,prop}=ev.target.dataset;const s=stopFacts[leg]||={};s[prop]=value;if(prop==='road_ref'){const i=selected.indexOf(leg);s.from_id=i?selected[i-1]:depot()?.id}lastCheck=null;plan();return}
       if(!key || busy)return;
       if(key==='dayPick'){
         dayFilter=value||'';
-        if(dayFilter)date=dayFilter;
-        selected=selected.filter(id=>{const o=byKey(id);return !dayFilter||dayKeyOf(o)===dayFilter});
-        invalidateRoad();
+        workspace.view({day:dayFilter,from:'',to:''});
         pageNo=0;paint();
         const pts=all().filter(o=>accepts(o,'available')).map(position).filter(Boolean);
         if(pts.length)fit(pts,9);
@@ -875,10 +945,11 @@
       if(key==='opacity'){el('map').style.setProperty('--basemap-opacity',String(Number(value)/100));return}
       if(key==='region'){const r=regions[value];if(map && r)map.setView([r[1],r[2]],r[3],{animate:false});ev.target.value='';return;}
       if(key==='routeLoad'){if(value)loadRoute(value);return;}
+      if(['modeFilter','actionFilter','originFilter'].includes(key)){if(key==='modeFilter')modeFilter=value;if(key==='actionFilter')actionFilter=value;if(key==='originFilter')originFilter=value;pageNo=0;paint();return;}
       if(key==='filter'||key==='stateFilter'){pageNo=0;if(key==='filter')filter=value;else stateFilter=value;list();drawMap();return;}
       if(!canEdit())return;
       lastCheck=null;
-      if(['driver','crew','vehicle','executor','date','zone','start','service'].includes(key))invalidateRoad();
+      if(['driver','crew','vehicle','executor','date','zone','start','service','warehouse'].includes(key)){editShared('车辆、班组、时间或起仓已修改');invalidateRoad();}
       if(key==='driver')routeChecks.driver=value;
       else if(key==='executor')executor=value;
       else if(key==='crew')crew=value;
@@ -893,7 +964,7 @@
     }
     function input(ev){
       const {field:key}=ev.target.dataset;
-      if(key==='search'){pageNo=0;search=ev.target.value;list();drawMap();}
+      if(key==='search'){pageNo=0;search=ev.target.value;workspace.view({search});list();drawMap();}
       if(key==='name')name=ev.target.value;
       if(key==='notes')notes=ev.target.value;
     }
@@ -903,6 +974,10 @@
     initMap();if(maySeeScope())fetchScope();el('layer').textContent=ctx.tilesEnabled?'内网街道底图':'离线州界';paint();
     if(ctx.demo || ctx.publicDemo)demoLegs().then(data=>{if(!destroyed){demoCache=data;plan();}}).catch(()=>{});
     if(ctx.focusOrderId && byKey(ctx.focusOrderId))focusOrder(ctx.focusOrderId,true);
+    if(ctx.focusDraftIndex!==null&&ctx.focusDraftIndex!==undefined&&workspace.drafts()[Number(ctx.focusDraftIndex)])loadUnifiedRoute(workspace.drafts()[Number(ctx.focusDraftIndex)],Number(ctx.focusDraftIndex));
+    else if(workspace.routes().length)loadUnifiedRoute(workspace.routes()[Number(ctx.focusRouteIndex||shared.focus_route||0)]||workspace.routes()[0],Number(ctx.focusRouteIndex||shared.focus_route||0));
+    else if(shared.order_ids.length){paint();fit(shared.order_ids.map(id=>position(byKey(id))).filter(Boolean),10);}
+    if(ctx.focusPlanId&&ctx.focusPlanId!==shared.plan_id&&!ctx.focusPlanId.startsWith('LOCAL-'))ctx.api('/api/ops/plans/'+encodeURIComponent(ctx.focusPlanId)).then(result=>{if(!destroyed){workspace.update(result.plan||result);loadUnifiedRoute(workspace.routes()[0],0)}}).catch(err=>notice(err.message));
     function dragStart(ev){const row=ev.target.closest('[data-stop]');if(row && canEdit())ev.dataTransfer.setData('text/plain',row.dataset.stop)}
     function dragOver(ev){if(ev.target.closest('[data-stop]'))ev.preventDefault()}
     function drop(ev){
@@ -920,7 +995,8 @@
       getSelection(){return selected.map(byKey).filter(Boolean)},
       getDepot(){return depot()},
       focusOrder(id){if(byKey(id))focusOrder(id,true)},
-      update(next){ctx=next;sync();capabilities=null;fetchScope();if(road && !validRoad())invalidateRoad();paint();},
+      focusPlan(index,draft=false){loadUnifiedRoute((draft?workspace.drafts():workspace.routes())[Number(index)||0],Number(index)||0)},
+      update(next){ctx=next;sync();workspace.checkVersions(ctx.orders||[]);sharedPanel.update(ctx);capabilities=null;fetchScope();if(road && !validRoad())invalidateRoad();paint();},
       destroy(){if(destroyed)return;destroyed=true;invalidateRoad();observer?.disconnect();cleanups.forEach(fn=>fn());map?.stop();map?.remove();map=null;root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',input);}
     };
   }

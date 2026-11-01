@@ -22,7 +22,12 @@ from urllib.parse import quote, unquote, urlsplit
 
 import sys
 ROOT = Path(__file__).resolve().parent
-STATIC = ROOT / 'v12'
+if (ROOT / '.deps' / 'optimizer').is_dir():
+    sys.path.insert(0, str(ROOT / '.deps' / 'optimizer'))
+APP_VERSION = os.environ.get('HH_APP_VERSION', 'v13')
+if APP_VERSION not in {'v12', 'v13'}:
+    raise RuntimeError('HH_APP_VERSION must be v12 or v13')
+STATIC = ROOT / APP_VERSION
 sys.path.insert(0, str(STATIC / 'engine'))
 import core
 import lifecycle
@@ -75,8 +80,14 @@ def initialize(path, demo):
         core.core_schema(db)
         if operations:
             operations.init_db(db)
+        if APP_VERSION == 'v13':
+            import dispatch_jobs
+            dispatch_jobs.schema(db)
         db.execute("BEGIN IMMEDIATE")
         with db:
+            if APP_VERSION == 'v13':
+                import migrations
+                migrations.migrate(db)
             existing_mode = db.execute("SELECT value FROM metadata WHERE key='mode'").fetchone()
             if existing_mode and existing_mode[0] != mode:
                 raise ValueError("库模式冲突")
@@ -86,7 +97,7 @@ def initialize(path, demo):
                     seed(db)
             elif demo and operations:
                 operations.upgrade_demo_quotes(db)
-            if demo:
+            if demo and not db.execute("SELECT 1 FROM orders WHERE id GLOB 'SIM200-*' LIMIT 1").fetchone():
                 import practice
                 practice.provision_training(db)
 
@@ -114,6 +125,16 @@ class Server(ThreadingHTTPServer):
         self.guard = threading.Lock()
         self.failures = {}
         self.fake_hash = password_hash(secrets.token_urlsafe(32))
+        self.jobs_stop = None
+        if APP_VERSION == 'v13':
+            import dispatch_jobs
+            self.jobs_stop = dispatch_jobs.start(connect, dbpath)
+
+    def server_close(self):
+        if self.jobs_stop:
+            self.jobs_stop.set()
+            self.jobs_stop.dispatcher.join(timeout=2)
+        super().server_close()
 
     def allow_attempt(self, ip, account):
         # Track the pair to avoid one mistyped password locking every user behind a proxy.
@@ -240,9 +261,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def api(self, path, db, body):
         method = self.command
+        if method == 'GET' and path == '/api/health':
+            from importlib.util import find_spec
+            return {'ok': True, 'app_version': APP_VERSION,
+                    'engine_version': Path(core.__file__).parent.parent.name,
+                    'static_entry': '/' + APP_VERSION + '/',
+                    'data_mode': 'demo' if self.server.demo else 'production',
+                    'road_configured': road_service.configured(),
+                    'road_coverage': os.environ.get('HH_ROAD_COVERAGE', '未配置'),
+                    'road_data_date': os.environ.get('HH_ROAD_DATA_DATE'),
+                    'cp_sat_available': find_spec('ortools') is not None}
         user = self.auth(db)
         if method=="GET" and path=="/api/session":
-            return {"user":user,"demo":self.server.demo,
+            return {"user":user,"demo":self.server.demo,"app_version":APP_VERSION,
+                    "engine_version":Path(core.__file__).parent.parent.name,
                     "routing":road_service.configured(),
                     "road_coverage":os.environ.get("HH_ROAD_COVERAGE","由运营方登记"),
                     "tiles":os.environ.get("HH_TILES_ENABLED")=="1",
@@ -257,6 +289,11 @@ class Handler(BaseHTTPRequestHandler):
         import partner
         limited=partner.restrict(db,path,method,body,user)
         if limited is not None:return limited
+        if path.startswith('/api/ops/jobs') and APP_VERSION == 'v13':
+            import dispatch_jobs
+            return dispatch_jobs.handle(db,method,path,body,user)
+        if path == '/api/ops/plans/optimize' and APP_VERSION == 'v13' and method == 'POST':
+            raise ApiError(422, '本机优化请提交 /api/ops/jobs；计算任务在独立进程线程中运行并支持取消')
         live_sms=re.fullmatch(r"/api/communications/authorize/([a-zA-Z0-9_-]+)",path)
         if live_sms and method=="POST":
             if self.server.demo or not self.server.secure:raise ApiError(403,"正式短信须使用员工 HTTPS 服务")
@@ -272,6 +309,8 @@ class Handler(BaseHTTPRequestHandler):
             return road_practice.prepare(db,user)
         if method == "POST" and path == "/api/road/plan":
             return road_service.compute(db,body,user)
+        if method == "POST" and path == "/api/road/candidates":
+            return road_service.candidates(db,body,user)
         if path == "/api/practice/dfw":
             if not self.server.demo: raise ApiError(404,"样单仅在演练环境开放")
             import practice
@@ -306,6 +345,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise ApiError(403,"此附件当前岗位不可见")
             blob = db.execute("SELECT name,mime,content FROM files WHERE id=?",(link[1],)).fetchone()
             return bytes(blob["content"]), {"Content-Disposition": "attachment; filename*=UTF-8''"+quote(blob["name"],safe="")}, blob["mime"]
+        if path.startswith("/api/simulation/") and self.server.demo:
+            import simulation
+            result = simulation.handle(db,method,path,body,user)
+            if result is not None:return result
         if operations:
             result = operations.handle(db,method,path,body,user)
             if result is not None:
@@ -337,12 +380,12 @@ class Handler(BaseHTTPRequestHandler):
     def static(self, path):
         if self.command not in {"GET","HEAD"}:
             raise ApiError(405, "方法不支持")
-        if path in ("/","/training","/v12"):
-            target = "/v12/" if path == "/v12" or self.server.demo else "/training/"
+        if path in ("/","/training",'/' + APP_VERSION):
+            target = '/' + APP_VERSION + '/' if path == '/' + APP_VERSION or self.server.demo else "/training/"
             self.headers_out(302,"text/plain",0,{"Location":target})
             return
         training = path.startswith("/training/")
-        prefix = "/training/" if training else "/v12/"
+        prefix = "/training/" if training else '/' + APP_VERSION + '/'
         if not path.startswith(prefix):
             raise ApiError(404,"文件不存在")
         relative = unquote(path[len(prefix):]) or "index.html"
@@ -379,7 +422,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             body = self.read_json() if self.command in {"POST","PATCH","PUT","DELETE"} else {}
             with closing(connect(self.server.path)) as db:
-                db.execute("BEGIN" if self.command == "GET" or path=="/api/road/plan" else "BEGIN IMMEDIATE")
+                db.execute("BEGIN" if self.command == "GET" or path in {"/api/road/plan", "/api/road/candidates"} else "BEGIN IMMEDIATE")
                 with db:
                     result = self.transact(path,db,body)
             if isinstance(result,tuple):
@@ -434,7 +477,7 @@ def main():
     subs.add_parser("disable-user").add_argument("username")
     subs.add_parser("backup").add_argument("destination",type=Path)
     a=p.parse_args()
-    path = (a.db or ROOT/"data"/("demo.sqlite3" if a.demo else "production.sqlite3")).resolve()
+    path = (a.db or ROOT/"data"/(APP_VERSION + ("-demo.sqlite3" if a.demo else "-production.sqlite3"))).resolve()
     try:
         if a.demo and (a.host not in LOOPBACK or a.public_host or a.behind_https):
             raise ValueError("演练服务只能在本机使用")
@@ -482,7 +525,7 @@ def main():
             ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ctx.load_cert_chain(a.tls_cert,a.tls_key)
             httpd.socket=ctx.wrap_socket(httpd.socket,server_side=True)
-        print(f"Dispatch {'DEMO' if a.demo else 'INTERNAL'} · {'https' if a.tls_cert else 'http'}://{a.host}:{httpd.server_port} · {path}",flush=True)
+        print(f"Dispatch {APP_VERSION} / engine {Path(core.__file__).parent.parent.name} {'DEMO' if a.demo else 'INTERNAL'} · {'https' if a.tls_cert else 'http'}://{a.host}:{httpd.server_port}/{APP_VERSION}/ · {path}",flush=True)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

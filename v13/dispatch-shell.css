@@ -341,3 +341,6 @@
 }
 
 .dm-daysep{flex:none;width:1px;align-self:stretch;margin:4px 5px;background:#d6e3d4}
+/* Keep late desktop overrides from forcing three columns on narrow screens. */
+@media(max-width:1180px){.dm-console>.dm-plan{grid-column:1 / -1}.dm-console.hide-pool{grid-template-columns:minmax(0,1fr)}.dm-console.hide-pool>.dm-plan{grid-column:1}}
+@media(max-width:900px){.dm-console>.dm-mapcard,.dm-console>.dm-queue,.dm-console>.dm-plan{grid-column:1}.dm-console{grid-template-columns:minmax(0,1fr)}}

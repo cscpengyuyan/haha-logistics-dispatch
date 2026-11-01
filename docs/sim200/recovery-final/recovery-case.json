@@ -1,0 +1,471 @@
+{
+  "reported_at": "2030-07-10T16:00:00+00:00",
+  "reason": "SIM vehicle mechanical breakdown",
+  "evidence": "SIM-FAULT-PHOTO",
+  "custody_ref": "SIM-DRIVER-SN-COUNT",
+  "origin": {
+    "lat": 32.781,
+    "lng": -96.806,
+    "timezone": "America/Chicago",
+    "address": "SIM actual fault bay; witness verified",
+    "name": "故障现场 REC-A1F320EA5484",
+    "evidence": "SIM-FAULT-PHOTO",
+    "custody_ref": "SIM-DRIVER-SN-COUNT",
+    "case_id": "REC-A1F320EA5484",
+    "id": "REC-4A16E1707F55",
+    "type": "recovery_origin",
+    "version": 1
+  },
+  "source_route": {
+    "name": "SIM T30 original four stops",
+    "warehouse": "SIM Dallas",
+    "warehouse_id": "WAR-A3BE9D30E6FC",
+    "date": "2030-07-10",
+    "order_ids": [
+      "SIM200-053",
+      "SIM200-054",
+      "SIM200-055",
+      "SIM200-056"
+    ],
+    "road_basis": "carrier",
+    "order_versions": {
+      "SIM200-053": 3,
+      "SIM200-054": 3,
+      "SIM200-055": 3,
+      "SIM200-056": 3
+    },
+    "resource_id": "VEH-E262BC70E213",
+    "crew_id": "CRE-07AE4C010380",
+    "executor_id": "SIM-TX",
+    "start_time": "08:00",
+    "timezone": "America/Chicago",
+    "service_minutes": 45.0,
+    "notes": "",
+    "checks": {
+      "shift_start": "2030-07-10T07:00",
+      "shift_end": "2030-07-10T18:00",
+      "warehouse_start": "2030-07-10T07:30",
+      "warehouse_end": "2030-07-10T14:00",
+      "return_min": "25",
+      "handling_ref": "SIM-TOOL",
+      "scope_ref": "SIM-SCOPE",
+      "driver": "driver"
+    },
+    "stops": {
+      "SIM200-053": {
+        "travel": "30",
+        "admission": "10",
+        "service": "40",
+        "unload": "10",
+        "height": "193",
+        "kg": "180",
+        "road_ref": "SIM-TRUCK",
+        "dock_ref": "SIM-DOCK-01",
+        "package_ref": "SIM-PACK-01",
+        "required_people": "2",
+        "required_tools": "dolly,straps",
+        "requires_lift": "yes",
+        "from_id": "WAR-A3BE9D30E6FC"
+      },
+      "SIM200-054": {
+        "travel": "30",
+        "admission": "10",
+        "service": "40",
+        "unload": "10",
+        "height": "193",
+        "kg": "180",
+        "road_ref": "SIM-TRUCK",
+        "dock_ref": "SIM-DOCK-01",
+        "package_ref": "SIM-PACK-01",
+        "required_people": "2",
+        "required_tools": "dolly,straps",
+        "requires_lift": "yes",
+        "from_id": "SIM200-053"
+      },
+      "SIM200-055": {
+        "travel": "30",
+        "admission": "10",
+        "service": "40",
+        "unload": "10",
+        "height": "193",
+        "kg": "180",
+        "road_ref": "SIM-TRUCK",
+        "dock_ref": "SIM-DOCK-01",
+        "package_ref": "SIM-PACK-01",
+        "required_people": "2",
+        "required_tools": "dolly,straps",
+        "requires_lift": "yes",
+        "from_id": "SIM200-054"
+      },
+      "SIM200-056": {
+        "travel": "30",
+        "admission": "10",
+        "service": "40",
+        "unload": "10",
+        "height": "193",
+        "kg": "180",
+        "road_ref": "SIM-TRUCK",
+        "dock_ref": "SIM-DOCK-01",
+        "package_ref": "SIM-PACK-01",
+        "required_people": "2",
+        "required_tools": "dolly,straps",
+        "requires_lift": "yes",
+        "from_id": "SIM200-055"
+      }
+    },
+    "first_leg": false,
+    "return_policy": "open",
+    "collections": {},
+    "cost_scenario": {},
+    "first_leg_ids": [],
+    "check_result": {
+      "issues": [],
+      "stop_count": 4,
+      "timeline": [
+        {
+          "id": "SIM200-053",
+          "stop": 1,
+          "shared_stop": false,
+          "sns": "SIM-RECOVERY-001",
+          "service_minutes": 40.0,
+          "arrival": "2030-07-10T13:30:00+00:00",
+          "start": "2030-07-10T13:40:00+00:00",
+          "unload": "2030-07-10T13:50:00+00:00",
+          "departure": "2030-07-10T14:20:00+00:00",
+          "late": 0,
+          "timezone": "America/Chicago"
+        },
+        {
+          "id": "SIM200-054",
+          "stop": 2,
+          "shared_stop": false,
+          "sns": "SIM-RECOVERY-002",
+          "service_minutes": 40.0,
+          "arrival": "2030-07-10T14:50:00+00:00",
+          "start": "2030-07-10T15:00:00+00:00",
+          "unload": "2030-07-10T15:10:00+00:00",
+          "departure": "2030-07-10T15:40:00+00:00",
+          "late": 0,
+          "timezone": "America/Chicago"
+        },
+        {
+          "id": "SIM200-055",
+          "stop": 3,
+          "shared_stop": false,
+          "sns": "SIM-RECOVERY-003",
+          "service_minutes": 40.0,
+          "arrival": "2030-07-10T16:10:00+00:00",
+          "start": "2030-07-10T16:20:00+00:00",
+          "unload": "2030-07-10T16:30:00+00:00",
+          "departure": "2030-07-10T17:00:00+00:00",
+          "late": 0,
+          "timezone": "America/Chicago"
+        },
+        {
+          "id": "SIM200-056",
+          "stop": 4,
+          "shared_stop": false,
+          "sns": "SIM-RECOVERY-004",
+          "service_minutes": 40.0,
+          "arrival": "2030-07-10T17:30:00+00:00",
+          "start": "2030-07-10T17:40:00+00:00",
+          "unload": "2030-07-10T17:50:00+00:00",
+          "departure": "2030-07-10T18:20:00+00:00",
+          "late": 0,
+          "timezone": "America/Chicago"
+        }
+      ],
+      "resource_versions": {
+        "WAR-A3BE9D30E6FC": 1,
+        "VEH-E262BC70E213": 1,
+        "CRE-07AE4C010380": 1
+      },
+      "start_utc": "2030-07-10T13:00:00+00:00",
+      "end_utc": "2030-07-10T18:45:00+00:00",
+      "mixed_load": {}
+    },
+    "id": "ROU-DD5E895C6BE1",
+    "version": 1
+  },
+  "source_bookings": [
+    {
+      "oid": "SIM200-053",
+      "leg": 1,
+      "route_id": "ROU-DD5E895C6BE1",
+      "revision": 1,
+      "vehicle": "VEH-E262BC70E213",
+      "crew": "CRE-07AE4C010380",
+      "driver": "driver",
+      "start_utc": "2030-07-10T13:00:00+00:00",
+      "end_utc": "2030-07-10T18:45:00+00:00",
+      "cancelled": ""
+    },
+    {
+      "oid": "SIM200-054",
+      "leg": 1,
+      "route_id": "ROU-DD5E895C6BE1",
+      "revision": 1,
+      "vehicle": "VEH-E262BC70E213",
+      "crew": "CRE-07AE4C010380",
+      "driver": "driver",
+      "start_utc": "2030-07-10T13:00:00+00:00",
+      "end_utc": "2030-07-10T18:45:00+00:00",
+      "cancelled": ""
+    },
+    {
+      "oid": "SIM200-055",
+      "leg": 1,
+      "route_id": "ROU-DD5E895C6BE1",
+      "revision": 1,
+      "vehicle": "VEH-E262BC70E213",
+      "crew": "CRE-07AE4C010380",
+      "driver": "driver",
+      "start_utc": "2030-07-10T13:00:00+00:00",
+      "end_utc": "2030-07-10T18:45:00+00:00",
+      "cancelled": ""
+    },
+    {
+      "oid": "SIM200-056",
+      "leg": 1,
+      "route_id": "ROU-DD5E895C6BE1",
+      "revision": 1,
+      "vehicle": "VEH-E262BC70E213",
+      "crew": "CRE-07AE4C010380",
+      "driver": "driver",
+      "start_utc": "2030-07-10T13:00:00+00:00",
+      "end_utc": "2030-07-10T18:45:00+00:00",
+      "cancelled": ""
+    }
+  ],
+  "frozen_prefix": [
+    {
+      "id": "SIM200-053",
+      "sn": "SIM-RECOVERY-001",
+      "issue_version": 4,
+      "release_route": {
+        "id": "ROU-DD5E895C6BE1",
+        "name": "SIM T30 original four stops",
+        "date": "2030-07-10",
+        "warehouse": "SIM Dallas",
+        "resource_id": "VEH-E262BC70E213",
+        "crew_id": "CRE-07AE4C010380",
+        "executor_id": "SIM-TX",
+        "start_time": "08:00",
+        "timezone": "America/Chicago",
+        "leg_id": 1,
+        "route_version": 1,
+        "stop": 1,
+        "stops": 4,
+        "driver": "driver",
+        "issued_at": "2026-11-01T16:08:10+00:00",
+        "start_utc": "2030-07-10T13:00:00+00:00",
+        "end_utc": "2030-07-10T18:45:00+00:00",
+        "resource_versions": {
+          "WAR-A3BE9D30E6FC": 1,
+          "VEH-E262BC70E213": 1,
+          "CRE-07AE4C010380": 1
+        }
+      },
+      "driver": "driver",
+      "signer": "SIM receiver",
+      "delivered_at": "2030-07-10T09:20",
+      "delivery_note": "SIM-DONE",
+      "endpoint_receipt": null
+    },
+    {
+      "id": "SIM200-054",
+      "sn": "SIM-RECOVERY-002",
+      "issue_version": 4,
+      "release_route": {
+        "id": "ROU-DD5E895C6BE1",
+        "name": "SIM T30 original four stops",
+        "date": "2030-07-10",
+        "warehouse": "SIM Dallas",
+        "resource_id": "VEH-E262BC70E213",
+        "crew_id": "CRE-07AE4C010380",
+        "executor_id": "SIM-TX",
+        "start_time": "08:00",
+        "timezone": "America/Chicago",
+        "leg_id": 1,
+        "route_version": 1,
+        "stop": 2,
+        "stops": 4,
+        "driver": "driver",
+        "issued_at": "2026-11-01T16:08:10+00:00",
+        "start_utc": "2030-07-10T13:00:00+00:00",
+        "end_utc": "2030-07-10T18:45:00+00:00",
+        "resource_versions": {
+          "WAR-A3BE9D30E6FC": 1,
+          "VEH-E262BC70E213": 1,
+          "CRE-07AE4C010380": 1
+        }
+      },
+      "driver": "driver",
+      "signer": "SIM receiver",
+      "delivered_at": "2030-07-10T10:40",
+      "delivery_note": "SIM-DONE",
+      "endpoint_receipt": null
+    }
+  ],
+  "remaining_ids": [
+    "SIM200-055",
+    "SIM200-056"
+  ],
+  "onboard_assets": {
+    "SIM200-055": [
+      {
+        "sn": "SIM-RECOVERY-003",
+        "version": 3,
+        "state": "transit",
+        "warehouse": "SIM Dallas",
+        "model": "M01",
+        "order_id": "SIM200-055",
+        "data": "{\"bin\": \"SIM-Z1\", \"condition\": \"intact\", \"batch\": \"SIM-ASN\", \"evidence\": \"SIM-GRN\", \"received_at\": \"2026-11-01T16:08:10+00:00\", \"updated_at\": \"2026-11-01T16:08:10+00:00\", \"custodian\": \"driver\", \"custody_ref\": \"SIM-GATE\"}"
+      }
+    ],
+    "SIM200-056": [
+      {
+        "sn": "SIM-RECOVERY-004",
+        "version": 3,
+        "state": "transit",
+        "warehouse": "SIM Dallas",
+        "model": "M01",
+        "order_id": "SIM200-056",
+        "data": "{\"bin\": \"SIM-Z1\", \"condition\": \"intact\", \"batch\": \"SIM-ASN\", \"evidence\": \"SIM-GRN\", \"received_at\": \"2026-11-01T16:08:10+00:00\", \"updated_at\": \"2026-11-01T16:08:10+00:00\", \"custodian\": \"driver\", \"custody_ref\": \"SIM-GATE\"}"
+      }
+    ]
+  },
+  "old_releases": {
+    "SIM200-055": {
+      "release_route": {
+        "id": "ROU-DD5E895C6BE1",
+        "name": "SIM T30 original four stops",
+        "date": "2030-07-10",
+        "warehouse": "SIM Dallas",
+        "resource_id": "VEH-E262BC70E213",
+        "crew_id": "CRE-07AE4C010380",
+        "executor_id": "SIM-TX",
+        "start_time": "08:00",
+        "timezone": "America/Chicago",
+        "leg_id": 1,
+        "route_version": 1,
+        "stop": 3,
+        "stops": 4,
+        "driver": "driver",
+        "issued_at": "2026-11-01T16:08:10+00:00",
+        "start_utc": "2030-07-10T13:00:00+00:00",
+        "end_utc": "2030-07-10T18:45:00+00:00",
+        "resource_versions": {
+          "WAR-A3BE9D30E6FC": 1,
+          "VEH-E262BC70E213": 1,
+          "CRE-07AE4C010380": 1
+        }
+      },
+      "issue_version": 4,
+      "pickup_code": "P-589E1451A3",
+      "gate_grant_id": "LEG-db0875bc3937",
+      "driver": "driver",
+      "custodian": "driver"
+    },
+    "SIM200-056": {
+      "release_route": {
+        "id": "ROU-DD5E895C6BE1",
+        "name": "SIM T30 original four stops",
+        "date": "2030-07-10",
+        "warehouse": "SIM Dallas",
+        "resource_id": "VEH-E262BC70E213",
+        "crew_id": "CRE-07AE4C010380",
+        "executor_id": "SIM-TX",
+        "start_time": "08:00",
+        "timezone": "America/Chicago",
+        "leg_id": 1,
+        "route_version": 1,
+        "stop": 4,
+        "stops": 4,
+        "driver": "driver",
+        "issued_at": "2026-11-01T16:08:10+00:00",
+        "start_utc": "2030-07-10T13:00:00+00:00",
+        "end_utc": "2030-07-10T18:45:00+00:00",
+        "resource_versions": {
+          "WAR-A3BE9D30E6FC": 1,
+          "VEH-E262BC70E213": 1,
+          "CRE-07AE4C010380": 1
+        }
+      },
+      "issue_version": 4,
+      "pickup_code": "P-6CB3823F6F",
+      "gate_grant_id": "LEG-0a9032a83284",
+      "driver": "driver",
+      "custodian": "driver"
+    }
+  },
+  "route_id": "ROU-20AE8CF6FF80",
+  "route_version": 1,
+  "order_versions": {
+    "SIM200-055": 8,
+    "SIM200-056": 8
+  },
+  "issued_orders": {
+    "SIM200-055": 9,
+    "SIM200-056": 9
+  },
+  "acceptance": {
+    "acceptance_ref": "SIM-CARRIER-RESCUE-ACCEPT",
+    "approval_ref": "SIM-CONTRACT-INCLUDES-RESCUE",
+    "handover_ref": "SIM-FAULT-POINT-HANDOVER",
+    "links": {
+      "SIM200-055": {
+        "leg": 1,
+        "link_id": "NET-ad736b1503ec",
+        "link_version": 1,
+        "scope_key": "05c966bc3aa8f02361668cd2a6752808e1f516c3deeeec67c0c671e5e40120f4",
+        "executor_id": "SIM-TX",
+        "crew_id": "CRE-07AE4C010380",
+        "vehicle_id": "VEH-C311F2999F5F",
+        "driver": "driver",
+        "plate": "SIM-RESCUE",
+        "sns": [
+          "SIM-RECOVERY-003"
+        ],
+        "supplier_id": "SIM-TX",
+        "payee_id": "INTERNAL"
+      },
+      "SIM200-056": {
+        "leg": 1,
+        "link_id": "NET-ad736b1503ec",
+        "link_version": 1,
+        "scope_key": "ade150c065d02efedb6625a84d5407136b4a9b8a2324abdf0ea10117f34559d5",
+        "executor_id": "SIM-TX",
+        "crew_id": "CRE-07AE4C010380",
+        "vehicle_id": "VEH-C311F2999F5F",
+        "driver": "driver",
+        "plate": "SIM-RESCUE",
+        "sns": [
+          "SIM-RECOVERY-004"
+        ],
+        "supplier_id": "SIM-TX",
+        "payee_id": "INTERNAL"
+      }
+    },
+    "accepted_by": "procurement",
+    "included_in_original_contract": true
+  },
+  "handover": {
+    "evidence": "SIM-ROAD-SIDE-TRANSFER",
+    "old_custodian_ref": "SIM-ORIGINAL-DRIVER-SIGNED",
+    "receiving_driver_ref": "SIM-RESCUE-DRIVER-SIGNED",
+    "safety_ref": "SIM-SAFE-TRANSFER-BAY",
+    "at": "2030-07-10T16:20:00+00:00",
+    "location_id": "REC-4A16E1707F55"
+  },
+  "vehicle_repair": {
+    "repair_ref": "SIM-REPAIR-WORKORDER",
+    "inspection_ref": "SIM-MECHANICAL-INSPECTED",
+    "approval_ref": "SIM-SUPERVISOR-RESUME",
+    "approved_by": "admin",
+    "approved_at": "2026-11-01T16:08:12+00:00"
+  },
+  "id": "REC-A1F320EA5484",
+  "version": 10,
+  "state": "handed_over"
+}

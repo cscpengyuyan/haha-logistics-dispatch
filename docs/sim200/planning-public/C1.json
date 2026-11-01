@@ -1,0 +1,3011 @@
+{
+  "id": "PLAN-7d8570b065be4da0",
+  "plan_id": "PLAN-7d8570b065be4da0",
+  "version": 1,
+  "state": "candidates_ready",
+  "created_at": "2026-11-01T15:43:19+00:00",
+  "order_ids": [
+    "SIM200-129"
+  ],
+  "planning_scope": "delivery_complete",
+  "objective": "lowest_cost",
+  "input_hash": "b698a308b87bb325ab914e8700d137d5484a9f062be1657100ea824b56404e3c",
+  "candidates": [
+    {
+      "id": "ALT-1",
+      "objective": "lowest_cost",
+      "routes": [
+        {
+          "id": "CHAIN-82f3e89b940a",
+          "name": "供应商承诺 / SIM200-129",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "planning_scope": "delivery_complete",
+          "warehouse": "SIM Houston",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-129"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "arrival": "2026-11-09T15:00:00+00:00",
+                "start": "2026-11-09T15:00:00+00:00",
+                "departure": "2026-11-09T16:00:00+00:00",
+                "timezone": "America/Chicago"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T15:00:00+00:00",
+            "end_utc": "2026-11-09T16:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Houston:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            },
+            {
+              "key": "station:WAR-8084E8AC1B24:2026-11-09",
+              "quantity": 1,
+              "capacity": 30
+            }
+          ],
+          "finish": 1794262800,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Chicago",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Houston",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Houston",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "77002",
+              "address": "SIM Houston 演练路口 129",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": true,
+              "addon_l5": false,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Chicago",
+              "endpoint_ref": "SIM-CONTRACT-129",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "需专项勘查",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l4_evidence": "SIM-L4-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 7,
+            "profile_version": 1
+          },
+          "issues": [],
+          "validation_status": "passed",
+          "segments": [
+            {
+              "id": "PROMISE-91910d7534b9",
+              "name": "供应商承诺 / SIM200-129",
+              "kind": "supplier_commitment",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "planning_scope": "delivery_complete",
+              "warehouse": "SIM Houston",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "road_basis": "supplier_commitment",
+              "resource_id": "",
+              "crew_id": "",
+              "first_leg_ids": [
+                "SIM200-129"
+              ],
+              "check_result": {
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "arrival": "2026-11-09T15:00:00+00:00",
+                    "start": "2026-11-09T15:00:00+00:00",
+                    "departure": "2026-11-09T16:00:00+00:00",
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "issues": [],
+                "start_utc": "2026-11-09T15:00:00+00:00",
+                "end_utc": "2026-11-09T16:00:00+00:00",
+                "resource_versions": {}
+              },
+              "total_minor": 40000,
+              "currency": "USD",
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [],
+              "activations": {},
+              "pools": [
+                {
+                  "key": "SIM-NETWORK-Houston:2026-11-09",
+                  "quantity": 1,
+                  "capacity": 40
+                }
+              ],
+              "finish": 1794240000,
+              "commitment": {
+                "start": "2026-11-09T09:00",
+                "end": "2026-11-09T10:00",
+                "timezone": "America/Chicago",
+                "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+                "capacity_units": 40,
+                "pool_key": "SIM-NETWORK-Houston",
+                "authorized_collector": "SIM 授权提货人",
+                "identity_ref": "SIM-ID",
+                "handling_minor": 0,
+                "scope_snapshot": {
+                  "warehouse": "SIM Houston",
+                  "model": "M01",
+                  "quantity": 1,
+                  "zip": "77002",
+                  "address": "SIM Houston 演练路口 129",
+                  "endpoint": "SIM 室内约定机位",
+                  "level": "L3",
+                  "addon_l4": true,
+                  "addon_l5": false,
+                  "pack_version": "SIM-M01-PALLET-v1",
+                  "procurement_mode": "platform",
+                  "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+                  "exclusions": null,
+                  "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+                  "window_start": "2026-11-09T09:00",
+                  "window_end": "2026-11-09T17:00",
+                  "timezone": "America/Chicago",
+                  "endpoint_ref": "SIM-CONTRACT-129",
+                  "door_width_cm": "140",
+                  "door_height_cm": "240",
+                  "site_access": "需专项勘查",
+                  "path_survey_ref": "SIM-SURVEY",
+                  "technical_ref": "SIM-TECH",
+                  "l4_evidence": "SIM-L4-CONTRACT",
+                  "unload_ref": "SIM-UNLOAD"
+                },
+                "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+                "updated_at": "2026-11-01T15:40:06+00:00",
+                "updated_by": "procurement",
+                "order_version": 7,
+                "profile_version": 1
+              },
+              "issues": [
+                {
+                  "code": "CHAIN_INCOMPLETE",
+                  "message": "供应商只承诺到站首程，需衔接后程",
+                  "object_id": "SIM200-129",
+                  "field": "second_leg",
+                  "next_step": "请责任岗位补齐并重新计算"
+                }
+              ],
+              "validation_status": "conditions_pending"
+            },
+            {
+              "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+              "warehouse": "SIM Houston 接站",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "start_time": "14:00",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "resource_id": "VEH-898630C80110",
+              "crew_id": "CRE-D344CB4A0689",
+              "executor_id": "SUP-7E10CCB8961B",
+              "service_minutes": 45,
+              "road_basis": "carrier",
+              "checks": {
+                "driver": "sim_driver_11",
+                "shift_start": "2026-11-09T07:00",
+                "shift_end": "2026-11-09T19:00",
+                "warehouse_start": "2026-11-09T07:00",
+                "warehouse_end": "2026-11-09T17:00",
+                "return_min": 30,
+                "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+                "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+              },
+              "stops": {
+                "SIM200-129": {
+                  "kg": 226,
+                  "height": 191,
+                  "length_cm": 100,
+                  "width_cm": 83,
+                  "lift_extra_kg": 80,
+                  "required_people": 3,
+                  "required_tools": "dolly,straps,stair_climber",
+                  "requires_lift": "yes",
+                  "service": 70,
+                  "unload": 10,
+                  "admission": 10,
+                  "dock_ref": "SIM-PUBLIC-ENTRANCE",
+                  "package_ref": "SIM-M01-PALLET-v1",
+                  "finish_by": "2026-11-09T17:00",
+                  "travel": 30,
+                  "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+                  "from_id": "WAR-8084E8AC1B24"
+                }
+              },
+              "id": "C-ef8590031d65",
+              "version": 0,
+              "warehouse_id": "WAR-8084E8AC1B24",
+              "planning_scope": "delivery_complete",
+              "first_leg_ids": [],
+              "check_result": {
+                "issues": [],
+                "stop_count": 1,
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "stop": 1,
+                    "shared_stop": false,
+                    "sns": "SIM-SN-129-01",
+                    "service_minutes": 70.0,
+                    "arrival": "2026-11-09T20:30:00+00:00",
+                    "start": "2026-11-09T20:40:00+00:00",
+                    "unload": "2026-11-09T20:50:00+00:00",
+                    "departure": "2026-11-09T21:50:00+00:00",
+                    "late": 0,
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "resource_versions": {
+                  "WAR-8084E8AC1B24": 1,
+                  "VEH-898630C80110": 1,
+                  "CRE-D344CB4A0689": 1
+                },
+                "start_utc": "2026-11-09T20:00:00+00:00",
+                "end_utc": "2026-11-09T22:20:00+00:00"
+              },
+              "issues": [],
+              "load_profile": [
+                {
+                  "before": "SIM200-129",
+                  "units": 1,
+                  "kg": 226.0,
+                  "floor_length_cm": 100.0
+                },
+                {
+                  "after": "SIM200-129",
+                  "units": 0,
+                  "kg": 0,
+                  "floor_length_cm": 0
+                }
+              ],
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "total_minor": 40000,
+              "currency": "USD",
+              "validation_status": "passed",
+              "activations": {},
+              "pools": [],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [
+                {
+                  "kind": "vehicle",
+                  "id": "VEH-898630C80110",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "crew",
+                  "id": "CRE-D344CB4A0689",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "driver",
+                  "id": "sim_driver_11",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                }
+              ],
+              "finish": 1794262800
+            }
+          ],
+          "future_segments": [
+            {
+              "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+              "warehouse": "SIM Houston 接站",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "start_time": "14:00",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "resource_id": "VEH-898630C80110",
+              "crew_id": "CRE-D344CB4A0689",
+              "executor_id": "SUP-7E10CCB8961B",
+              "service_minutes": 45,
+              "road_basis": "carrier",
+              "checks": {
+                "driver": "sim_driver_11",
+                "shift_start": "2026-11-09T07:00",
+                "shift_end": "2026-11-09T19:00",
+                "warehouse_start": "2026-11-09T07:00",
+                "warehouse_end": "2026-11-09T17:00",
+                "return_min": 30,
+                "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+                "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+              },
+              "stops": {
+                "SIM200-129": {
+                  "kg": 226,
+                  "height": 191,
+                  "length_cm": 100,
+                  "width_cm": 83,
+                  "lift_extra_kg": 80,
+                  "required_people": 3,
+                  "required_tools": "dolly,straps,stair_climber",
+                  "requires_lift": "yes",
+                  "service": 70,
+                  "unload": 10,
+                  "admission": 10,
+                  "dock_ref": "SIM-PUBLIC-ENTRANCE",
+                  "package_ref": "SIM-M01-PALLET-v1",
+                  "finish_by": "2026-11-09T17:00",
+                  "travel": 30,
+                  "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+                  "from_id": "WAR-8084E8AC1B24"
+                }
+              },
+              "id": "C-ef8590031d65",
+              "version": 0,
+              "warehouse_id": "WAR-8084E8AC1B24",
+              "planning_scope": "delivery_complete",
+              "first_leg_ids": [],
+              "check_result": {
+                "issues": [],
+                "stop_count": 1,
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "stop": 1,
+                    "shared_stop": false,
+                    "sns": "SIM-SN-129-01",
+                    "service_minutes": 70.0,
+                    "arrival": "2026-11-09T20:30:00+00:00",
+                    "start": "2026-11-09T20:40:00+00:00",
+                    "unload": "2026-11-09T20:50:00+00:00",
+                    "departure": "2026-11-09T21:50:00+00:00",
+                    "late": 0,
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "resource_versions": {
+                  "WAR-8084E8AC1B24": 1,
+                  "VEH-898630C80110": 1,
+                  "CRE-D344CB4A0689": 1
+                },
+                "start_utc": "2026-11-09T20:00:00+00:00",
+                "end_utc": "2026-11-09T22:20:00+00:00"
+              },
+              "issues": [],
+              "load_profile": [
+                {
+                  "before": "SIM200-129",
+                  "units": 1,
+                  "kg": 226.0,
+                  "floor_length_cm": 100.0
+                },
+                {
+                  "after": "SIM200-129",
+                  "units": 0,
+                  "kg": 0,
+                  "floor_length_cm": 0
+                }
+              ],
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "total_minor": 40000,
+              "currency": "USD",
+              "validation_status": "passed",
+              "activations": {},
+              "pools": [],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [
+                {
+                  "kind": "vehicle",
+                  "id": "VEH-898630C80110",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "crew",
+                  "id": "CRE-D344CB4A0689",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "driver",
+                  "id": "sim_driver_11",
+                  "start": 1794254400,
+                  "end": 1794262800,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                }
+              ],
+              "finish": 1794262800
+            }
+          ],
+          "transfers": 1,
+          "dependencies": [
+            {
+              "order_id": "SIM200-129",
+              "event": "actual_station_receipt",
+              "processing_minutes": 30,
+              "station_id": "WAR-8084E8AC1B24",
+              "capacity_evidence": "SIM-STATION-CAPACITY"
+            }
+          ]
+        }
+      ],
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "unassigned": [],
+      "coverage": {
+        "total": 1,
+        "assigned": 1,
+        "order_complete": 1,
+        "stage_assigned": 1,
+        "order_coverage": 1.0,
+        "stage_coverage": 1.0
+      },
+      "validation_status": "passed",
+      "solver": {
+        "indices": [
+          1
+        ],
+        "solver": "OR-Tools CP-SAT",
+        "exhausted": false,
+        "proven": true,
+        "seconds": 0.0,
+        "nodes": 0
+      },
+      "solve_status": "completed",
+      "optimality_scope": "generated_candidates"
+    },
+    {
+      "id": "ALT-2",
+      "objective": "earliest_finish",
+      "routes": [
+        {
+          "id": "CHAIN-5da2a4965f8d",
+          "name": "供应商承诺 / SIM200-129",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "planning_scope": "delivery_complete",
+          "warehouse": "SIM Houston",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-129"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "arrival": "2026-11-09T15:00:00+00:00",
+                "start": "2026-11-09T15:00:00+00:00",
+                "departure": "2026-11-09T16:00:00+00:00",
+                "timezone": "America/Chicago"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T15:00:00+00:00",
+            "end_utc": "2026-11-09T16:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Houston:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            },
+            {
+              "key": "station:WAR-8084E8AC1B24:2026-11-09",
+              "quantity": 1,
+              "capacity": 30
+            }
+          ],
+          "finish": 1794252000,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Chicago",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Houston",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Houston",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "77002",
+              "address": "SIM Houston 演练路口 129",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": true,
+              "addon_l5": false,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Chicago",
+              "endpoint_ref": "SIM-CONTRACT-129",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "需专项勘查",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l4_evidence": "SIM-L4-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 7,
+            "profile_version": 1
+          },
+          "issues": [],
+          "validation_status": "passed",
+          "segments": [
+            {
+              "id": "PROMISE-91910d7534b9",
+              "name": "供应商承诺 / SIM200-129",
+              "kind": "supplier_commitment",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "planning_scope": "delivery_complete",
+              "warehouse": "SIM Houston",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "road_basis": "supplier_commitment",
+              "resource_id": "",
+              "crew_id": "",
+              "first_leg_ids": [
+                "SIM200-129"
+              ],
+              "check_result": {
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "arrival": "2026-11-09T15:00:00+00:00",
+                    "start": "2026-11-09T15:00:00+00:00",
+                    "departure": "2026-11-09T16:00:00+00:00",
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "issues": [],
+                "start_utc": "2026-11-09T15:00:00+00:00",
+                "end_utc": "2026-11-09T16:00:00+00:00",
+                "resource_versions": {}
+              },
+              "total_minor": 40000,
+              "currency": "USD",
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [],
+              "activations": {},
+              "pools": [
+                {
+                  "key": "SIM-NETWORK-Houston:2026-11-09",
+                  "quantity": 1,
+                  "capacity": 40
+                }
+              ],
+              "finish": 1794240000,
+              "commitment": {
+                "start": "2026-11-09T09:00",
+                "end": "2026-11-09T10:00",
+                "timezone": "America/Chicago",
+                "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+                "capacity_units": 40,
+                "pool_key": "SIM-NETWORK-Houston",
+                "authorized_collector": "SIM 授权提货人",
+                "identity_ref": "SIM-ID",
+                "handling_minor": 0,
+                "scope_snapshot": {
+                  "warehouse": "SIM Houston",
+                  "model": "M01",
+                  "quantity": 1,
+                  "zip": "77002",
+                  "address": "SIM Houston 演练路口 129",
+                  "endpoint": "SIM 室内约定机位",
+                  "level": "L3",
+                  "addon_l4": true,
+                  "addon_l5": false,
+                  "pack_version": "SIM-M01-PALLET-v1",
+                  "procurement_mode": "platform",
+                  "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+                  "exclusions": null,
+                  "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+                  "window_start": "2026-11-09T09:00",
+                  "window_end": "2026-11-09T17:00",
+                  "timezone": "America/Chicago",
+                  "endpoint_ref": "SIM-CONTRACT-129",
+                  "door_width_cm": "140",
+                  "door_height_cm": "240",
+                  "site_access": "需专项勘查",
+                  "path_survey_ref": "SIM-SURVEY",
+                  "technical_ref": "SIM-TECH",
+                  "l4_evidence": "SIM-L4-CONTRACT",
+                  "unload_ref": "SIM-UNLOAD"
+                },
+                "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+                "updated_at": "2026-11-01T15:40:06+00:00",
+                "updated_by": "procurement",
+                "order_version": 7,
+                "profile_version": 1
+              },
+              "issues": [
+                {
+                  "code": "CHAIN_INCOMPLETE",
+                  "message": "供应商只承诺到站首程，需衔接后程",
+                  "object_id": "SIM200-129",
+                  "field": "second_leg",
+                  "next_step": "请责任岗位补齐并重新计算"
+                }
+              ],
+              "validation_status": "conditions_pending"
+            },
+            {
+              "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+              "warehouse": "SIM Houston 接站",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "start_time": "11:00",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "resource_id": "VEH-898630C80110",
+              "crew_id": "CRE-D344CB4A0689",
+              "executor_id": "SUP-7E10CCB8961B",
+              "service_minutes": 45,
+              "road_basis": "carrier",
+              "checks": {
+                "driver": "sim_driver_11",
+                "shift_start": "2026-11-09T07:00",
+                "shift_end": "2026-11-09T19:00",
+                "warehouse_start": "2026-11-09T07:00",
+                "warehouse_end": "2026-11-09T17:00",
+                "return_min": 30,
+                "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+                "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+              },
+              "stops": {
+                "SIM200-129": {
+                  "kg": 226,
+                  "height": 191,
+                  "length_cm": 100,
+                  "width_cm": 83,
+                  "lift_extra_kg": 80,
+                  "required_people": 3,
+                  "required_tools": "dolly,straps,stair_climber",
+                  "requires_lift": "yes",
+                  "service": 70,
+                  "unload": 10,
+                  "admission": 10,
+                  "dock_ref": "SIM-PUBLIC-ENTRANCE",
+                  "package_ref": "SIM-M01-PALLET-v1",
+                  "finish_by": "2026-11-09T17:00",
+                  "travel": 30,
+                  "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+                  "from_id": "WAR-8084E8AC1B24"
+                }
+              },
+              "id": "C-793c80d10b99",
+              "version": 0,
+              "warehouse_id": "WAR-8084E8AC1B24",
+              "planning_scope": "delivery_complete",
+              "first_leg_ids": [],
+              "check_result": {
+                "issues": [],
+                "stop_count": 1,
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "stop": 1,
+                    "shared_stop": false,
+                    "sns": "SIM-SN-129-01",
+                    "service_minutes": 70.0,
+                    "arrival": "2026-11-09T17:30:00+00:00",
+                    "start": "2026-11-09T17:40:00+00:00",
+                    "unload": "2026-11-09T17:50:00+00:00",
+                    "departure": "2026-11-09T18:50:00+00:00",
+                    "late": 0,
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "resource_versions": {
+                  "WAR-8084E8AC1B24": 1,
+                  "VEH-898630C80110": 1,
+                  "CRE-D344CB4A0689": 1
+                },
+                "start_utc": "2026-11-09T17:00:00+00:00",
+                "end_utc": "2026-11-09T19:20:00+00:00"
+              },
+              "issues": [],
+              "load_profile": [
+                {
+                  "before": "SIM200-129",
+                  "units": 1,
+                  "kg": 226.0,
+                  "floor_length_cm": 100.0
+                },
+                {
+                  "after": "SIM200-129",
+                  "units": 0,
+                  "kg": 0,
+                  "floor_length_cm": 0
+                }
+              ],
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "total_minor": 40000,
+              "currency": "USD",
+              "validation_status": "passed",
+              "activations": {},
+              "pools": [],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [
+                {
+                  "kind": "vehicle",
+                  "id": "VEH-898630C80110",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "crew",
+                  "id": "CRE-D344CB4A0689",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "driver",
+                  "id": "sim_driver_11",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                }
+              ],
+              "finish": 1794252000
+            }
+          ],
+          "future_segments": [
+            {
+              "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+              "warehouse": "SIM Houston 接站",
+              "date": "2026-11-09",
+              "timezone": "America/Chicago",
+              "start_time": "11:00",
+              "order_ids": [
+                "SIM200-129"
+              ],
+              "order_versions": {
+                "SIM200-129": 7
+              },
+              "resource_id": "VEH-898630C80110",
+              "crew_id": "CRE-D344CB4A0689",
+              "executor_id": "SUP-7E10CCB8961B",
+              "service_minutes": 45,
+              "road_basis": "carrier",
+              "checks": {
+                "driver": "sim_driver_11",
+                "shift_start": "2026-11-09T07:00",
+                "shift_end": "2026-11-09T19:00",
+                "warehouse_start": "2026-11-09T07:00",
+                "warehouse_end": "2026-11-09T17:00",
+                "return_min": 30,
+                "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+                "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+              },
+              "stops": {
+                "SIM200-129": {
+                  "kg": 226,
+                  "height": 191,
+                  "length_cm": 100,
+                  "width_cm": 83,
+                  "lift_extra_kg": 80,
+                  "required_people": 3,
+                  "required_tools": "dolly,straps,stair_climber",
+                  "requires_lift": "yes",
+                  "service": 70,
+                  "unload": 10,
+                  "admission": 10,
+                  "dock_ref": "SIM-PUBLIC-ENTRANCE",
+                  "package_ref": "SIM-M01-PALLET-v1",
+                  "finish_by": "2026-11-09T17:00",
+                  "travel": 30,
+                  "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+                  "from_id": "WAR-8084E8AC1B24"
+                }
+              },
+              "id": "C-793c80d10b99",
+              "version": 0,
+              "warehouse_id": "WAR-8084E8AC1B24",
+              "planning_scope": "delivery_complete",
+              "first_leg_ids": [],
+              "check_result": {
+                "issues": [],
+                "stop_count": 1,
+                "timeline": [
+                  {
+                    "id": "SIM200-129",
+                    "stop": 1,
+                    "shared_stop": false,
+                    "sns": "SIM-SN-129-01",
+                    "service_minutes": 70.0,
+                    "arrival": "2026-11-09T17:30:00+00:00",
+                    "start": "2026-11-09T17:40:00+00:00",
+                    "unload": "2026-11-09T17:50:00+00:00",
+                    "departure": "2026-11-09T18:50:00+00:00",
+                    "late": 0,
+                    "timezone": "America/Chicago"
+                  }
+                ],
+                "resource_versions": {
+                  "WAR-8084E8AC1B24": 1,
+                  "VEH-898630C80110": 1,
+                  "CRE-D344CB4A0689": 1
+                },
+                "start_utc": "2026-11-09T17:00:00+00:00",
+                "end_utc": "2026-11-09T19:20:00+00:00"
+              },
+              "issues": [],
+              "load_profile": [
+                {
+                  "before": "SIM200-129",
+                  "units": 1,
+                  "kg": 226.0,
+                  "floor_length_cm": 100.0
+                },
+                {
+                  "after": "SIM200-129",
+                  "units": 0,
+                  "kg": 0,
+                  "floor_length_cm": 0
+                }
+              ],
+              "cost_items": [
+                {
+                  "order_id": "SIM200-129",
+                  "amount_minor": 40000,
+                  "currency": "USD",
+                  "payee": "SUP-7E10CCB8961B",
+                  "source": "QUO-6554C5CBF62E",
+                  "source_version": 1,
+                  "event": "delivery"
+                }
+              ],
+              "total_minor": 40000,
+              "currency": "USD",
+              "validation_status": "passed",
+              "activations": {},
+              "pools": [],
+              "sns": [
+                "SIM-SN-129-01"
+              ],
+              "occupancy": [
+                {
+                  "kind": "vehicle",
+                  "id": "VEH-898630C80110",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "crew",
+                  "id": "CRE-D344CB4A0689",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                },
+                {
+                  "kind": "driver",
+                  "id": "sim_driver_11",
+                  "start": 1794243600,
+                  "end": 1794252000,
+                  "start_location": "SIM Houston 接站",
+                  "end_location": "SIM Houston 接站"
+                }
+              ],
+              "finish": 1794252000
+            }
+          ],
+          "transfers": 1,
+          "dependencies": [
+            {
+              "order_id": "SIM200-129",
+              "event": "actual_station_receipt",
+              "processing_minutes": 30,
+              "station_id": "WAR-8084E8AC1B24",
+              "capacity_evidence": "SIM-STATION-CAPACITY"
+            }
+          ]
+        }
+      ],
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "unassigned": [],
+      "coverage": {
+        "total": 1,
+        "assigned": 1,
+        "order_complete": 1,
+        "stage_assigned": 1,
+        "order_coverage": 1.0,
+        "stage_coverage": 1.0
+      },
+      "validation_status": "passed",
+      "solver": {
+        "indices": [
+          0
+        ],
+        "solver": "OR-Tools CP-SAT",
+        "exhausted": false,
+        "proven": true,
+        "seconds": 0.0,
+        "nodes": 0
+      },
+      "solve_status": "completed",
+      "optimality_scope": "generated_candidates"
+    }
+  ],
+  "draft_routes": [
+    {
+      "id": "PROMISE-91910d7534b9",
+      "name": "供应商承诺 / SIM200-129",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-129"
+      ],
+      "order_versions": {
+        "SIM200-129": 7
+      },
+      "planning_scope": "delivery_complete",
+      "warehouse": "SIM Houston",
+      "date": "2026-11-09",
+      "timezone": "America/Chicago",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-129"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-129",
+            "arrival": "2026-11-09T15:00:00+00:00",
+            "start": "2026-11-09T15:00:00+00:00",
+            "departure": "2026-11-09T16:00:00+00:00",
+            "timezone": "America/Chicago"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T15:00:00+00:00",
+        "end_utc": "2026-11-09T16:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "sns": [
+        "SIM-SN-129-01"
+      ],
+      "occupancy": [],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Houston:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        }
+      ],
+      "finish": 1794240000,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Chicago",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Houston",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Houston",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "77002",
+          "address": "SIM Houston 演练路口 129",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": true,
+          "addon_l5": false,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Chicago",
+          "endpoint_ref": "SIM-CONTRACT-129",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "需专项勘查",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l4_evidence": "SIM-L4-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 7,
+        "profile_version": 1
+      },
+      "issues": [
+        {
+          "code": "CHAIN_INCOMPLETE",
+          "message": "供应商只承诺到站首程，需衔接后程",
+          "object_id": "SIM200-129",
+          "field": "second_leg",
+          "next_step": "请责任岗位补齐并重新计算"
+        }
+      ],
+      "validation_status": "conditions_pending"
+    },
+    {
+      "id": "CHAIN-5da2a4965f8d",
+      "name": "供应商承诺 / SIM200-129",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-129"
+      ],
+      "order_versions": {
+        "SIM200-129": 7
+      },
+      "planning_scope": "delivery_complete",
+      "warehouse": "SIM Houston",
+      "date": "2026-11-09",
+      "timezone": "America/Chicago",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-129"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-129",
+            "arrival": "2026-11-09T15:00:00+00:00",
+            "start": "2026-11-09T15:00:00+00:00",
+            "departure": "2026-11-09T16:00:00+00:00",
+            "timezone": "America/Chicago"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T15:00:00+00:00",
+        "end_utc": "2026-11-09T16:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "sns": [
+        "SIM-SN-129-01"
+      ],
+      "occupancy": [
+        {
+          "kind": "vehicle",
+          "id": "VEH-898630C80110",
+          "start": 1794243600,
+          "end": 1794252000,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "crew",
+          "id": "CRE-D344CB4A0689",
+          "start": 1794243600,
+          "end": 1794252000,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "driver",
+          "id": "sim_driver_11",
+          "start": 1794243600,
+          "end": 1794252000,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        }
+      ],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Houston:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        },
+        {
+          "key": "station:WAR-8084E8AC1B24:2026-11-09",
+          "quantity": 1,
+          "capacity": 30
+        }
+      ],
+      "finish": 1794252000,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Chicago",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Houston",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Houston",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "77002",
+          "address": "SIM Houston 演练路口 129",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": true,
+          "addon_l5": false,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Chicago",
+          "endpoint_ref": "SIM-CONTRACT-129",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "需专项勘查",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l4_evidence": "SIM-L4-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 7,
+        "profile_version": 1
+      },
+      "issues": [],
+      "validation_status": "passed",
+      "segments": [
+        {
+          "id": "PROMISE-91910d7534b9",
+          "name": "供应商承诺 / SIM200-129",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "planning_scope": "delivery_complete",
+          "warehouse": "SIM Houston",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-129"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "arrival": "2026-11-09T15:00:00+00:00",
+                "start": "2026-11-09T15:00:00+00:00",
+                "departure": "2026-11-09T16:00:00+00:00",
+                "timezone": "America/Chicago"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T15:00:00+00:00",
+            "end_utc": "2026-11-09T16:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Houston:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            }
+          ],
+          "finish": 1794240000,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Chicago",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Houston",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Houston",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "77002",
+              "address": "SIM Houston 演练路口 129",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": true,
+              "addon_l5": false,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Chicago",
+              "endpoint_ref": "SIM-CONTRACT-129",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "需专项勘查",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l4_evidence": "SIM-L4-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 7,
+            "profile_version": 1
+          },
+          "issues": [
+            {
+              "code": "CHAIN_INCOMPLETE",
+              "message": "供应商只承诺到站首程，需衔接后程",
+              "object_id": "SIM200-129",
+              "field": "second_leg",
+              "next_step": "请责任岗位补齐并重新计算"
+            }
+          ],
+          "validation_status": "conditions_pending"
+        },
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "11:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-793c80d10b99",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T17:30:00+00:00",
+                "start": "2026-11-09T17:40:00+00:00",
+                "unload": "2026-11-09T17:50:00+00:00",
+                "departure": "2026-11-09T18:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T17:00:00+00:00",
+            "end_utc": "2026-11-09T19:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794252000
+        }
+      ],
+      "future_segments": [
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "11:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-793c80d10b99",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T17:30:00+00:00",
+                "start": "2026-11-09T17:40:00+00:00",
+                "unload": "2026-11-09T17:50:00+00:00",
+                "departure": "2026-11-09T18:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T17:00:00+00:00",
+            "end_utc": "2026-11-09T19:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794243600,
+              "end": 1794252000,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794252000
+        }
+      ],
+      "transfers": 1,
+      "dependencies": [
+        {
+          "order_id": "SIM200-129",
+          "event": "actual_station_receipt",
+          "processing_minutes": 30,
+          "station_id": "WAR-8084E8AC1B24",
+          "capacity_evidence": "SIM-STATION-CAPACITY"
+        }
+      ]
+    },
+    {
+      "id": "CHAIN-82f3e89b940a",
+      "name": "供应商承诺 / SIM200-129",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-129"
+      ],
+      "order_versions": {
+        "SIM200-129": 7
+      },
+      "planning_scope": "delivery_complete",
+      "warehouse": "SIM Houston",
+      "date": "2026-11-09",
+      "timezone": "America/Chicago",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-129"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-129",
+            "arrival": "2026-11-09T15:00:00+00:00",
+            "start": "2026-11-09T15:00:00+00:00",
+            "departure": "2026-11-09T16:00:00+00:00",
+            "timezone": "America/Chicago"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T15:00:00+00:00",
+        "end_utc": "2026-11-09T16:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "sns": [
+        "SIM-SN-129-01"
+      ],
+      "occupancy": [
+        {
+          "kind": "vehicle",
+          "id": "VEH-898630C80110",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "crew",
+          "id": "CRE-D344CB4A0689",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "driver",
+          "id": "sim_driver_11",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        }
+      ],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Houston:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        },
+        {
+          "key": "station:WAR-8084E8AC1B24:2026-11-09",
+          "quantity": 1,
+          "capacity": 30
+        }
+      ],
+      "finish": 1794262800,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Chicago",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Houston",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Houston",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "77002",
+          "address": "SIM Houston 演练路口 129",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": true,
+          "addon_l5": false,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Chicago",
+          "endpoint_ref": "SIM-CONTRACT-129",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "需专项勘查",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l4_evidence": "SIM-L4-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 7,
+        "profile_version": 1
+      },
+      "issues": [],
+      "validation_status": "passed",
+      "segments": [
+        {
+          "id": "PROMISE-91910d7534b9",
+          "name": "供应商承诺 / SIM200-129",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "planning_scope": "delivery_complete",
+          "warehouse": "SIM Houston",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-129"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "arrival": "2026-11-09T15:00:00+00:00",
+                "start": "2026-11-09T15:00:00+00:00",
+                "departure": "2026-11-09T16:00:00+00:00",
+                "timezone": "America/Chicago"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T15:00:00+00:00",
+            "end_utc": "2026-11-09T16:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Houston:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            }
+          ],
+          "finish": 1794240000,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Chicago",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Houston",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Houston",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "77002",
+              "address": "SIM Houston 演练路口 129",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": true,
+              "addon_l5": false,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Chicago",
+              "endpoint_ref": "SIM-CONTRACT-129",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "需专项勘查",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l4_evidence": "SIM-L4-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 7,
+            "profile_version": 1
+          },
+          "issues": [
+            {
+              "code": "CHAIN_INCOMPLETE",
+              "message": "供应商只承诺到站首程，需衔接后程",
+              "object_id": "SIM200-129",
+              "field": "second_leg",
+              "next_step": "请责任岗位补齐并重新计算"
+            }
+          ],
+          "validation_status": "conditions_pending"
+        },
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "14:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-ef8590031d65",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T20:30:00+00:00",
+                "start": "2026-11-09T20:40:00+00:00",
+                "unload": "2026-11-09T20:50:00+00:00",
+                "departure": "2026-11-09T21:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T20:00:00+00:00",
+            "end_utc": "2026-11-09T22:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794262800
+        }
+      ],
+      "future_segments": [
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "14:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-ef8590031d65",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T20:30:00+00:00",
+                "start": "2026-11-09T20:40:00+00:00",
+                "unload": "2026-11-09T20:50:00+00:00",
+                "departure": "2026-11-09T21:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T20:00:00+00:00",
+            "end_utc": "2026-11-09T22:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794262800
+        }
+      ],
+      "transfers": 1,
+      "dependencies": [
+        {
+          "order_id": "SIM200-129",
+          "event": "actual_station_receipt",
+          "processing_minutes": 30,
+          "station_id": "WAR-8084E8AC1B24",
+          "capacity_evidence": "SIM-STATION-CAPACITY"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "id": "CHAIN-82f3e89b940a",
+      "name": "供应商承诺 / SIM200-129",
+      "kind": "supplier_commitment",
+      "order_ids": [
+        "SIM200-129"
+      ],
+      "order_versions": {
+        "SIM200-129": 7
+      },
+      "planning_scope": "delivery_complete",
+      "warehouse": "SIM Houston",
+      "date": "2026-11-09",
+      "timezone": "America/Chicago",
+      "road_basis": "supplier_commitment",
+      "resource_id": "",
+      "crew_id": "",
+      "first_leg_ids": [
+        "SIM200-129"
+      ],
+      "check_result": {
+        "timeline": [
+          {
+            "id": "SIM200-129",
+            "arrival": "2026-11-09T15:00:00+00:00",
+            "start": "2026-11-09T15:00:00+00:00",
+            "departure": "2026-11-09T16:00:00+00:00",
+            "timezone": "America/Chicago"
+          }
+        ],
+        "issues": [],
+        "start_utc": "2026-11-09T15:00:00+00:00",
+        "end_utc": "2026-11-09T16:00:00+00:00",
+        "resource_versions": {}
+      },
+      "total_minor": 40000,
+      "currency": "USD",
+      "cost_items": [
+        {
+          "order_id": "SIM200-129",
+          "amount_minor": 40000,
+          "currency": "USD",
+          "payee": "SUP-7E10CCB8961B",
+          "source": "QUO-6554C5CBF62E",
+          "source_version": 1,
+          "event": "delivery"
+        }
+      ],
+      "sns": [
+        "SIM-SN-129-01"
+      ],
+      "occupancy": [
+        {
+          "kind": "vehicle",
+          "id": "VEH-898630C80110",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "crew",
+          "id": "CRE-D344CB4A0689",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        },
+        {
+          "kind": "driver",
+          "id": "sim_driver_11",
+          "start": 1794254400,
+          "end": 1794262800,
+          "start_location": "SIM Houston 接站",
+          "end_location": "SIM Houston 接站"
+        }
+      ],
+      "activations": {},
+      "pools": [
+        {
+          "key": "SIM-NETWORK-Houston:2026-11-09",
+          "quantity": 1,
+          "capacity": 40
+        },
+        {
+          "key": "station:WAR-8084E8AC1B24:2026-11-09",
+          "quantity": 1,
+          "capacity": 30
+        }
+      ],
+      "finish": 1794262800,
+      "commitment": {
+        "start": "2026-11-09T09:00",
+        "end": "2026-11-09T10:00",
+        "timezone": "America/Chicago",
+        "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+        "capacity_units": 40,
+        "pool_key": "SIM-NETWORK-Houston",
+        "authorized_collector": "SIM 授权提货人",
+        "identity_ref": "SIM-ID",
+        "handling_minor": 0,
+        "scope_snapshot": {
+          "warehouse": "SIM Houston",
+          "model": "M01",
+          "quantity": 1,
+          "zip": "77002",
+          "address": "SIM Houston 演练路口 129",
+          "endpoint": "SIM 室内约定机位",
+          "level": "L3",
+          "addon_l4": true,
+          "addon_l5": false,
+          "pack_version": "SIM-M01-PALLET-v1",
+          "procurement_mode": "platform",
+          "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+          "exclusions": null,
+          "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+          "window_start": "2026-11-09T09:00",
+          "window_end": "2026-11-09T17:00",
+          "timezone": "America/Chicago",
+          "endpoint_ref": "SIM-CONTRACT-129",
+          "door_width_cm": "140",
+          "door_height_cm": "240",
+          "site_access": "需专项勘查",
+          "path_survey_ref": "SIM-SURVEY",
+          "technical_ref": "SIM-TECH",
+          "l4_evidence": "SIM-L4-CONTRACT",
+          "unload_ref": "SIM-UNLOAD"
+        },
+        "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+        "updated_at": "2026-11-01T15:40:06+00:00",
+        "updated_by": "procurement",
+        "order_version": 7,
+        "profile_version": 1
+      },
+      "issues": [],
+      "validation_status": "passed",
+      "segments": [
+        {
+          "id": "PROMISE-91910d7534b9",
+          "name": "供应商承诺 / SIM200-129",
+          "kind": "supplier_commitment",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "planning_scope": "delivery_complete",
+          "warehouse": "SIM Houston",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "road_basis": "supplier_commitment",
+          "resource_id": "",
+          "crew_id": "",
+          "first_leg_ids": [
+            "SIM200-129"
+          ],
+          "check_result": {
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "arrival": "2026-11-09T15:00:00+00:00",
+                "start": "2026-11-09T15:00:00+00:00",
+                "departure": "2026-11-09T16:00:00+00:00",
+                "timezone": "America/Chicago"
+              }
+            ],
+            "issues": [],
+            "start_utc": "2026-11-09T15:00:00+00:00",
+            "end_utc": "2026-11-09T16:00:00+00:00",
+            "resource_versions": {}
+          },
+          "total_minor": 40000,
+          "currency": "USD",
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [],
+          "activations": {},
+          "pools": [
+            {
+              "key": "SIM-NETWORK-Houston:2026-11-09",
+              "quantity": 1,
+              "capacity": 40
+            }
+          ],
+          "finish": 1794240000,
+          "commitment": {
+            "start": "2026-11-09T09:00",
+            "end": "2026-11-09T10:00",
+            "timezone": "America/Chicago",
+            "acceptance_ref": "SIM-NETWORK-CAPACITY-CONFIRMATION",
+            "capacity_units": 40,
+            "pool_key": "SIM-NETWORK-Houston",
+            "authorized_collector": "SIM 授权提货人",
+            "identity_ref": "SIM-ID",
+            "handling_minor": 0,
+            "scope_snapshot": {
+              "warehouse": "SIM Houston",
+              "model": "M01",
+              "quantity": 1,
+              "zip": "77002",
+              "address": "SIM Houston 演练路口 129",
+              "endpoint": "SIM 室内约定机位",
+              "level": "L3",
+              "addon_l4": true,
+              "addon_l5": false,
+              "pack_version": "SIM-M01-PALLET-v1",
+              "procurement_mode": "platform",
+              "delivery_actions": "SIM 逐台卸货交接、按已购终点放置",
+              "exclusions": null,
+              "site_note": "SIM 现场核验，通道净宽 140cm、净高 240cm，已核人员工具",
+              "window_start": "2026-11-09T09:00",
+              "window_end": "2026-11-09T17:00",
+              "timezone": "America/Chicago",
+              "endpoint_ref": "SIM-CONTRACT-129",
+              "door_width_cm": "140",
+              "door_height_cm": "240",
+              "site_access": "需专项勘查",
+              "path_survey_ref": "SIM-SURVEY",
+              "technical_ref": "SIM-TECH",
+              "l4_evidence": "SIM-L4-CONTRACT",
+              "unload_ref": "SIM-UNLOAD"
+            },
+            "evidence": "SIM SUPPLIER PROMISE NOT CONTROLLED VEHICLE",
+            "updated_at": "2026-11-01T15:40:06+00:00",
+            "updated_by": "procurement",
+            "order_version": 7,
+            "profile_version": 1
+          },
+          "issues": [
+            {
+              "code": "CHAIN_INCOMPLETE",
+              "message": "供应商只承诺到站首程，需衔接后程",
+              "object_id": "SIM200-129",
+              "field": "second_leg",
+              "next_step": "请责任岗位补齐并重新计算"
+            }
+          ],
+          "validation_status": "conditions_pending"
+        },
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "14:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-ef8590031d65",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T20:30:00+00:00",
+                "start": "2026-11-09T20:40:00+00:00",
+                "unload": "2026-11-09T20:50:00+00:00",
+                "departure": "2026-11-09T21:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T20:00:00+00:00",
+            "end_utc": "2026-11-09T22:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794262800
+        }
+      ],
+      "future_segments": [
+        {
+          "name": "SIM Houston 接站 · 2026-11-09 · SIM 车辆 11",
+          "warehouse": "SIM Houston 接站",
+          "date": "2026-11-09",
+          "timezone": "America/Chicago",
+          "start_time": "14:00",
+          "order_ids": [
+            "SIM200-129"
+          ],
+          "order_versions": {
+            "SIM200-129": 7
+          },
+          "resource_id": "VEH-898630C80110",
+          "crew_id": "CRE-D344CB4A0689",
+          "executor_id": "SUP-7E10CCB8961B",
+          "service_minutes": 45,
+          "road_basis": "carrier",
+          "checks": {
+            "driver": "sim_driver_11",
+            "shift_start": "2026-11-09T07:00",
+            "shift_end": "2026-11-09T19:00",
+            "warehouse_start": "2026-11-09T07:00",
+            "warehouse_end": "2026-11-09T17:00",
+            "return_min": 30,
+            "scope_ref": "SIM-FULL-PURCHASED-SCOPE",
+            "handling_ref": "SIM-TOOLS-AND-PERSONNEL"
+          },
+          "stops": {
+            "SIM200-129": {
+              "kg": 226,
+              "height": 191,
+              "length_cm": 100,
+              "width_cm": 83,
+              "lift_extra_kg": 80,
+              "required_people": 3,
+              "required_tools": "dolly,straps,stair_climber",
+              "requires_lift": "yes",
+              "service": 70,
+              "unload": 10,
+              "admission": 10,
+              "dock_ref": "SIM-PUBLIC-ENTRANCE",
+              "package_ref": "SIM-M01-PALLET-v1",
+              "finish_by": "2026-11-09T17:00",
+              "travel": 30,
+              "road_ref": "SIM-CONTROLLED-LAST-LEG-NOT-REAL-ROAD",
+              "from_id": "WAR-8084E8AC1B24"
+            }
+          },
+          "id": "C-ef8590031d65",
+          "version": 0,
+          "warehouse_id": "WAR-8084E8AC1B24",
+          "planning_scope": "delivery_complete",
+          "first_leg_ids": [],
+          "check_result": {
+            "issues": [],
+            "stop_count": 1,
+            "timeline": [
+              {
+                "id": "SIM200-129",
+                "stop": 1,
+                "shared_stop": false,
+                "sns": "SIM-SN-129-01",
+                "service_minutes": 70.0,
+                "arrival": "2026-11-09T20:30:00+00:00",
+                "start": "2026-11-09T20:40:00+00:00",
+                "unload": "2026-11-09T20:50:00+00:00",
+                "departure": "2026-11-09T21:50:00+00:00",
+                "late": 0,
+                "timezone": "America/Chicago"
+              }
+            ],
+            "resource_versions": {
+              "WAR-8084E8AC1B24": 1,
+              "VEH-898630C80110": 1,
+              "CRE-D344CB4A0689": 1
+            },
+            "start_utc": "2026-11-09T20:00:00+00:00",
+            "end_utc": "2026-11-09T22:20:00+00:00"
+          },
+          "issues": [],
+          "load_profile": [
+            {
+              "before": "SIM200-129",
+              "units": 1,
+              "kg": 226.0,
+              "floor_length_cm": 100.0
+            },
+            {
+              "after": "SIM200-129",
+              "units": 0,
+              "kg": 0,
+              "floor_length_cm": 0
+            }
+          ],
+          "cost_items": [
+            {
+              "order_id": "SIM200-129",
+              "amount_minor": 40000,
+              "currency": "USD",
+              "payee": "SUP-7E10CCB8961B",
+              "source": "QUO-6554C5CBF62E",
+              "source_version": 1,
+              "event": "delivery"
+            }
+          ],
+          "total_minor": 40000,
+          "currency": "USD",
+          "validation_status": "passed",
+          "activations": {},
+          "pools": [],
+          "sns": [
+            "SIM-SN-129-01"
+          ],
+          "occupancy": [
+            {
+              "kind": "vehicle",
+              "id": "VEH-898630C80110",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "crew",
+              "id": "CRE-D344CB4A0689",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            },
+            {
+              "kind": "driver",
+              "id": "sim_driver_11",
+              "start": 1794254400,
+              "end": 1794262800,
+              "start_location": "SIM Houston 接站",
+              "end_location": "SIM Houston 接站"
+            }
+          ],
+          "finish": 1794262800
+        }
+      ],
+      "transfers": 1,
+      "dependencies": [
+        {
+          "order_id": "SIM200-129",
+          "event": "actual_station_receipt",
+          "processing_minutes": 30,
+          "station_id": "WAR-8084E8AC1B24",
+          "capacity_evidence": "SIM-STATION-CAPACITY"
+        }
+      ]
+    }
+  ],
+  "unassigned": [],
+  "coverage": {
+    "total": 1,
+    "assigned": 1,
+    "order_complete": 1,
+    "stage_assigned": 1,
+    "order_coverage": 1.0,
+    "stage_coverage": 1.0
+  },
+  "cost_items": [
+    {
+      "order_id": "SIM200-129",
+      "amount_minor": 40000,
+      "currency": "USD",
+      "payee": "SUP-7E10CCB8961B",
+      "source": "QUO-6554C5CBF62E",
+      "source_version": 1,
+      "event": "delivery"
+    }
+  ],
+  "total_minor": 40000,
+  "currency": "USD",
+  "solve_status": "completed",
+  "validation_status": "passed",
+  "optimality_scope": "generated_candidates",
+  "assumptions": [
+    "候选为有限枚举；最优性只适用于本次已生成且已校验候选。",
+    "未知道路、未确认价格及缺少包装/班次证据不会按零值参与可行方案。",
+    "SIM 承运商逐段时间、班次和服务依据为受控合成演练；真实道路仅限明确标注 Valhalla truck 的结果。"
+  ],
+  "locks": {},
+  "road_errors": [],
+  "precheck": {
+    "order_ids": [
+      "SIM200-129"
+    ],
+    "planning_scope": "delivery_complete",
+    "input_hash": "b698a308b87bb325ab914e8700d137d5484a9f062be1657100ea824b56404e3c",
+    "orders": [
+      {
+        "id": "SIM200-129",
+        "issues": [],
+        "ready": true
+      }
+    ],
+    "issues": [],
+    "ready_count": 1,
+    "validation_status": "passed"
+  },
+  "metrics": {
+    "candidate_count": 3,
+    "feasible_count": 2,
+    "seconds": 0.6100000000005821
+  },
+  "pending_legs": []
+}

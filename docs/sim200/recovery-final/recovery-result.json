@@ -1,0 +1,29 @@
+{
+  "case_id": "REC-A1F320EA5484",
+  "source_order_ids": [
+    "SIM200-053",
+    "SIM200-054",
+    "SIM200-055",
+    "SIM200-056"
+  ],
+  "frozen_prefix": [
+    "SIM200-053",
+    "SIM200-054"
+  ],
+  "remaining_sequence": [
+    "SIM200-056",
+    "SIM200-055"
+  ],
+  "status": "passed",
+  "delivered": 4,
+  "old_grants_unchanged": true,
+  "prefix_order_rows_byte_equal": true,
+  "old_auth_rejected": true,
+  "cancellation_preserves_custody": true,
+  "idempotency_no_duplicate_effects": true,
+  "atomic_handover_rejection": true,
+  "trace_events": 65,
+  "expected_rejections": 14,
+  "road_basis": "real Valhalla truck + VROOM from fault point; original run uses synthetic carrier fixture",
+  "scope": "pure full-SN terminal delivery, original contracted executor, replacement vehicle, explicit witnessed fault point; no extra costs"
+}

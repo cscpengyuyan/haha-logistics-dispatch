@@ -1,3 +1,9 @@
+# HAHA Logistics V13 · Unified Dispatch
+
+[打开 200 票地图演练](https://cscpengyuyan.github.io/haha-logistics-dispatch/v13/?dataset=sim200#map) · [演练验收记录](https://cscpengyuyan.github.io/haha-logistics-dispatch/v13/data/acceptance.html) · [本机启动与恢复](docs/V13-RUN.md) · [44 项验收矩阵与边界](docs/V13-ACCEPTANCE-MATRIX.md)
+
+V13 地图与日期计划共享同一批订单、计划版本、候选方案和逐站时间轴。公开入口使用每访客独立的合成演练数据库；本机 Python 服务提供持久计算任务、Valhalla/VROOM 道路候选与 OR-Tools CP-SAT。200 票通过业务入口完成终态，20 原 SN 完成返修回送；业务、原生道路、优化与浏览器证据分别记录。完整生产验收仍以逐项矩阵为准。
+
 # HAHA Logistics V12
 
 [销售导表到核账 · 操作与验收口径](docs/SALES-TO-SETTLEMENT.md)

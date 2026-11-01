@@ -15,7 +15,7 @@
     resources:['仓网与运力','NETWORK & CAPACITY','维护实际仓址、车组和服务商的可用条件。','M2 10l10-7 10 7M4 10v11h16V10M8 21v-8h8v8'],
     rehearsal:['达拉斯两台演练','DALLAS TRAINING','用虚构工作簿在同一票办理交接。','M4 4h16v16H4z M8 9h8m-8 5h5'],
     sales:['销售交单','SALES INTAKE','下载工作簿，预检明细后交给物流核实。','M4 4h16v16H4z M8 9h8m-8 5h5'],
-    plan:['派单计划','DISPATCH PLANNING','按交付日与片区把待排订单聚成车次，再去地图排线。','M3 5h18v16H3z M3 10h18M8 3v4m8-4v4M7 15h4m2 0h4'],
+    plan:['派单计划','DISPATCH PLANNING','与地图共用订单批次、版本、候选方案和逐站时间轴。','M3 5h18v16H3z M3 10h18M8 3v4m8-4v4M7 15h4m2 0h4'],
     ocean:['海运计划','OCEAN PLANNING','比较船期、跟进逐柜到仓负荷与改约。','M3 16h18l-3 4H6z M6 14V7h12v7'],
     procurement:['运输采购与方案','TRANSPORT SOURCING','核实终点和实物，发起询价，按同窗同范围比价并书面委托。','M3 5h18v13H3z M7 9h9m-9 4h6'],
     communications:['预约与短信','APPOINTMENTS','按收件地日历办理预约、提醒和人工跟进。','M3 4h18v13H9l-5 4v-4H3z'],
@@ -70,14 +70,14 @@
     if(history.state?.ticket===id)history.back();
     else history.replaceState(null,'',hashOf(visible(view)?view:'dock',params));
   }
-  function ctx(){return {...data,user:session.user,publicDemo:!!window.PublicDemo,demo:session.demo,openOrder,closeTicket,navigate,toast,focusOrderId:route().params.get('focus'),refresh:()=>refresh(true),api,
+  function ctx(){return {...data,user:session.user,publicDemo:!!window.PublicDemo,demo:session.demo,openOrder,closeTicket,navigate,toast,focusOrderId:route().params.get('focus'),focusPlanId:route().params.get('plan'),focusRouteIndex:route().params.get('run'),focusDraftIndex:route().params.get('draft'),refresh:()=>refresh(true),api,
     saveRoute:async p=>{const result=await api('/api/ops/routes',{method:'POST',body:p});data.routes=(await api('/api/ops/routes')).routes;return result.route},
     downloadFile:window.PublicDemo?((id,name)=>window.PublicDemo.downloadFile(id,name)):undefined,statusNames,roleNames,escape:esc,routingEnabled:!!session.routing,roadCoverage:session.road_coverage,tilesEnabled:!!session.tiles}}
   function destroy(){if(mounted?.destroy)mounted.destroy();mounted=null}
   function login(error=''){
     destroy();refreshNo++;workingUser='';current='';document.querySelectorAll('dialog').forEach(x=>x.remove());
     const demo=session.demo;const publicMode=!!window.PublicDemo;
-    $('#root').innerHTML='<main class="auth-screen"><section class="auth-brand"><div class="brand"><img src="brand.svg" width="40" height="40" alt=""><div><strong>哈哈便利</strong><small>HAHA VENDING</small></div></div><div><div class="kicker">OPERATIONS CONTROL CENTER</div><h1>美国物流<br>协作中心</h1><p>从仓库放货，到设备交到约定位置。</p></div><small>SUPPLY CHAIN OPERATIONS &nbsp; / &nbsp; V12</small></section><section class="auth-side"><div class="auth-card"><span class="env '+(demo?'demo':'')+'">'+(publicMode?'公开演练 · 个人浏览器':demo?'本机演练库':'内部工作库')+'</span><h2>'+(demo?'进入岗位演练':'员工登录')+'</h2><p class="muted">'+(publicMode?'每位访客独立试跑。请只使用虚构订单与凭据。':demo?'以不同岗位接力办理同一笔示例订单。':'使用管理员分配的个人账号进入共享工作库。')+'</p><form id="signin">'+(demo?'<label class="field"><span>演练身份</span><select name="username">'+(session.demo_users||[]).map(u=>'<option value="'+esc(u.username||u)+'">'+esc(roleNames[u.role||u]||u.name||u)+'</option>').join('')+'</select></label>':'<label class="field"><span>员工账号</span><input name="username" autocomplete="username" required></label><label class="field"><span>密码</span><input name="password" type="password" autocomplete="current-password" required></label>')+'<div class="error-line" role="alert">'+esc(error)+'</div><button class="primary" type="submit">'+(demo?'进入工作台':'登录工作台')+' →</button></form><p class="login-note">'+(demo?'示例仓址、订单、车组与金额均用于操作演练。':'工作记录按账号与订单版本留痕。')+'</p></div></section></main>';
+    $('#root').innerHTML='<main class="auth-screen"><section class="auth-brand"><div class="brand"><img src="brand.svg" width="40" height="40" alt=""><div><strong>哈哈便利</strong><small>HAHA VENDING</small></div></div><div><div class="kicker">OPERATIONS CONTROL CENTER</div><h1>美国物流<br>协作中心</h1><p>从仓库放货，到设备交到约定位置。</p></div><small>SUPPLY CHAIN OPERATIONS &nbsp; / &nbsp; V13</small></section><section class="auth-side"><div class="auth-card"><span class="env '+(demo?'demo':'')+'">'+(publicMode?'公开演练 · 个人浏览器':demo?'本机演练库':'内部工作库')+'</span><h2>'+(demo?'进入岗位演练':'员工登录')+'</h2><p class="muted">'+(publicMode?'每位访客独立试跑。请只使用虚构订单与凭据。':demo?'以不同岗位接力办理同一笔示例订单。':'使用管理员分配的个人账号进入共享工作库。')+'</p><form id="signin">'+(demo?'<label class="field"><span>演练身份</span><select name="username">'+(session.demo_users||[]).map(u=>'<option value="'+esc(u.username||u)+'">'+esc(roleNames[u.role||u]||u.name||u)+'</option>').join('')+'</select></label>':'<label class="field"><span>员工账号</span><input name="username" autocomplete="username" required></label><label class="field"><span>密码</span><input name="password" type="password" autocomplete="current-password" required></label>')+'<div class="error-line" role="alert">'+esc(error)+'</div><button class="primary" type="submit">'+(demo?'进入工作台':'登录工作台')+' →</button></form><p class="login-note">'+(demo?'示例仓址、订单、车组与金额均用于操作演练。':'工作记录按账号与订单版本留痕。')+'</p></div></section></main>';
     $('#signin').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button');b.disabled=true;try{await api(demo?'/api/demo-login':'/api/login',{method:'POST',body:Object.fromEntries(new FormData(f))});await boot()}catch(err){f.querySelector('.error-line').textContent=err.message}finally{b.disabled=false}};
   }
   function navigate(v){const page=v.split('?')[0];if(!pages[page]||!visible(page))v='dock';if(location.hash.slice(1)!==v){location.hash=v;return}renderPage(true)}
@@ -87,7 +87,7 @@
     $('#root').innerHTML='<div class="shell"><aside class="rail" id="rail"><div class="brand"><img src="brand.svg" alt="" width="37" height="37"><div><strong>哈哈便利</strong><small>LOGISTICS OPERATIONS</small></div></div><nav>'+navGroup('调度中心',['dock','rehearsal','sales','plan','map','orders'])+navGroup('业务协作',['ocean','inventory','procurement','gate','communications','finance','exceptions','recovery','tasks'])+navGroup('工作空间',['resources','dashboard','review','guide'])+'</nav><div class="rail-bottom"><span class="avatar">'+esc(session.user.name?.slice(0,1)||'H')+'</span><div><b>'+esc(session.user.name)+'</b><small>'+esc(roleNames[session.user.role])+'</small></div><button id="signout" title="退出 / 切换岗位" aria-label="退出 / 切换岗位">'+icon('M9 3H4v18h5m4-14 5 5-5 5m-5-5h12')+'</button></div></aside><div class="main"><header class="topbar"><div class="crumb"><button class="menu-mobile btn-icon" aria-label="打开导航">'+icon('M3 6h18M3 12h18M3 18h18')+'</button>美国物流 <span>/</span> <b id="crumb"></b><span class="shell-version">V13</span></div><div class="top-rt"><button id="quick-find" aria-label="全局查单">⌕　查单 <kbd>Ctrl K</kbd></button><time id="clock"></time><span class="env '+(session.demo?'demo':'')+'">'+(window.PublicDemo?'仅本设备演练 · 虚构数据':session.demo?'本机演练库':'内部共享工作库')+'</span></div></header><div id="network"></div><main class="page-pad"><header class="mast"><div><div class="kicker" id="section-kicker"></div><h1 id="section-title"></h1><p id="section-hint"></p></div><div class="mast-actions"><button id="refresh" title="刷新共享数据">'+icon('M20 7v5h-5M4 17v-5h5M5.5 8a7 7 0 0 1 12-2L20 9M4 15l2.5 3a7 7 0 0 0 12-2',15)+'刷新</button>'+(canAdd()?'<button id="create" class="primary">＋ 新建订单</button>':'')+'</div></header><div id="content" class="content"></div></main></div></div>';
     $('.menu-mobile').onclick=()=>{const rail=$('#rail');rail.classList.add('open');const mask=document.createElement('button');mask.className='scrim';mask.setAttribute('aria-label','收起导航');mask.onclick=closeNav;rail.after(mask)};
     if(document.documentElement.dataset.sharedHost && window.PublicDemo){
-      const staff=document.createElement('a');staff.href='/v12/#dock';staff.textContent='员工登录';staff.className='btn';
+      const staff=document.createElement('a');staff.href='/v13/#dock';staff.textContent='员工登录';staff.className='btn';
       $('#signout').before(staff);
     }
     $('#signout').onclick=async()=>{try{await api('/api/logout',{method:'POST',body:{}});await boot()}catch(e){toast(e.message)}};
@@ -109,8 +109,8 @@
     return scripts.get(src);
   }
   function mountMap(host){host.innerHTML='<p role="status">正在打开调度地图…</p>';
-    mapPromise??=(async()=>{if(!window.L)await script('./vendor/leaflet.js?v=d40f33c2a370');await script('./vendor/us-states.js?v=e67bc2e1c565');await script('./dispatch-map.js?v=13day3')})().catch(e=>{mapPromise=null;throw e});
-    mapPromise.then(()=>{if(current==='map'&&host.isConnected&&!mounted)mounted=window.DispatchMap.mount(host,ctx())}).catch(()=>{if(current==='map'){host.innerHTML='<p>地图资源未能加载，可继续从订单工作台作业。</p><button data-nav="orders">打开订单列表</button> <button data-nav="map">重新加载地图</button>'}});
+    mapPromise??=(async()=>{if(!window.L)await script('./vendor/leaflet.js?v=d40f33c2a370');await script('./vendor/us-states.js?v=e67bc2e1c565');await script('./dispatch-map.js?v=7383eb615862')})().catch(e=>{mapPromise=null;throw e});
+    mapPromise.then(()=>{if(current==='map'&&host.isConnected&&!mounted)mounted=window.DispatchMap.mount(host,ctx())}).catch(error=>{console.error('Dispatch map failed to mount',error);if(current==='map'){host.innerHTML='<p>地图资源未能加载，可继续从订单工作台作业。</p><button data-nav="orders">打开订单列表</button> <button data-nav="map">重新加载地图</button>'}});
   }
   function renderPage(force=false){
     if(!session.user||!$('#content'))return;
@@ -127,6 +127,8 @@
     if(v==='map'&&current==='map'&&mounted){
       if(force)mounted.update?.(ctx());
       if(pageKey!==nextKey&&params.get('focus'))mounted.focusOrder?.(params.get('focus'));
+      if(pageKey!==nextKey&&params.has('draft'))mounted.focusPlan?.(params.get('draft'),true);
+      if(pageKey!==nextKey&&params.has('run'))mounted.focusPlan?.(params.get('run'));
       pageKey=nextKey;if(ticket)syncTicket(ticket);return;
     }
     pageKey=nextKey;
@@ -140,7 +142,7 @@
     else if(v==='sales')window.HHSales.mount(host,ctx(),params);
     else if(v==='procurement')window.Procurement.mount(host,ctx(),params);
     else if(v==='communications')window.Communications.mount(host,ctx(),params);
-    else if(v==='plan')window.DispatchPlan.mount(host,ctx());
+    else if(v==='plan')mounted=window.DispatchPlan.mount(host,ctx());
     else if(v==='ocean')window.OceanDesk.mount(host,ctx());
     else if(v==='ledger')host.innerHTML='<section class="card"><h2>选择作业台</h2><p>按航次看进口、按客户单采购美国运输。</p><button data-nav="ocean">海运计划</button> <button data-nav="procurement">运输采购与比价</button></section>';
     else if(v==='gate')window.Dock.mount(host,ctx());
@@ -188,7 +190,7 @@
     }
   }
   function guide(h){
-    h.innerHTML='<article class="card guide"><div class="eyebrow">V12 FIELD MANUAL</div><h2>从一笔销售订单开始</h2><p>每次操作由当前账号提交。跨岗位验收时，可退出并使用下一岗位登录。</p>'+[
+    h.innerHTML='<article class="card guide"><div class="eyebrow">V13 FIELD MANUAL</div><h2>从一笔销售订单开始</h2><p>每次操作由当前账号提交。跨岗位验收时，可退出并使用下一岗位登录。</p>'+[
     ['01　销售与订单','录入 CRM 参考、收货位置、型号和服务。L1 为基础交接，L2 为入口，L3 为室内机位。特殊搬运和技术启用分别勾选 L4、L5。'],
     ['02　仓库与询价','核对实际仓址、逐台 SN、包装与货况。海运与采购页按同一票、终点和窗口登记主备报价，条件未齐应继续补证。'],
     ['03　调度与车组','在地图按仓点筛可发订单，查看站序和时窗，保存排线草案。客户自提单在仓口交接。订单详情里核对发车条件，指定执行人并签发。'],
@@ -201,7 +203,7 @@
   function guideLinks(h){
     if(document.documentElement.dataset.sharedHost){
       const mode=document.createElement('p'), link=document.createElement('a');
-      link.href=window.PublicDemo?'/v12/#dock':'/training/#dock';
+      link.href=window.PublicDemo?'/v13/#dock':'/training/#dock';
       link.textContent=window.PublicDemo?'员工登录共享工作库':'进入独立访客演练';mode.append(link);h.prepend(mode);
     }
     if(window.PublicDemo){
@@ -210,7 +212,7 @@
       reset.onclick=async()=>{
         if(!confirm('清除本浏览器当前演练记录并重新开始？'))return;
         reset.disabled=true;
-        try{await api('/api/demo/reset',{method:'POST',body:{}});sessionStorage.removeItem('haha-v12-role');localStorage.removeItem('haha-v12-dallas-road-draft-v1');location.replace('#dock');location.reload()}
+        try{await api('/api/demo/reset',{method:'POST',body:{}});sessionStorage.removeItem('haha-v13-role');localStorage.removeItem('haha-v12-dallas-road-draft-v1');location.replace('#dock');location.reload()}
         catch(error){toast(error.message);reset.disabled=false}
       };
       h.append(reset);

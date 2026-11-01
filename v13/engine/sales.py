@@ -249,6 +249,13 @@ def confirm(db,body,user):
             core.save(db,o,user,"sales_revision",f"交单修订 v{rev} · "+", ".join(label(k) for k in g["changes"]))
         else:
             rev=1;oid="HH-"+uuid.uuid4().hex[:12].upper();ids[" / ".join(key)]=oid
+            if (db.execute("SELECT 1 FROM metadata WHERE key='mode' AND value='demo'").fetchone()
+                    and re.fullmatch(r"SIM200-(?:00[1-9]|0[1-9][0-9]|1[0-9]{2}|200)", key[0])
+                    and key[1:] == ("SIM-SITE", "1")):
+                oid=key[0]
+                if db.execute("SELECT 1 FROM orders WHERE id=?",(oid,)).fetchone():
+                    raise core.ApiError(409,"该演练 ID 已由其他建单入口使用")
+                ids[" / ".join(key)]=oid
             o={"owner":user["username"],"sales_submitted_at":ts,"created_at":ts,"updated_at":ts,"route":"","level":"","lat":None,"lng":None,
                "addon_l4":False,"addon_l5":False,"pickup":False,"sales_revision":1,"training":bool(db.execute("SELECT 1 FROM metadata WHERE key='mode' AND value='demo'").fetchone())}
             apply_facts(o,facts)

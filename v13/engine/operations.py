@@ -164,6 +164,8 @@ def save_route(db,body,user,first_leg=False):
     if not isinstance(ids,list) or not 1<=len(ids)<=60 or not all(type(x) is str for x in ids) or len(set(ids))!=len(ids):
         raise ApiError(400,"路线须包含 1–60 个不重复订单")
     orders=[get_order(db,i,user) for i in ids]
+    import load_profile
+    collections=load_profile.parse(body.get('collections'),ids)
     versions={o["id"]:o["version"] for o in orders}
     if body.get("order_versions")!=versions:
         raise ApiError(409,"排线期间订单版本已变更，请刷新并重新核对收货窗口")
@@ -176,6 +178,8 @@ def save_route(db,body,user,first_leg=False):
     minutes=number(body.get("service_minutes",45),"逐站作业分钟",1,720)
     if not minutes.is_integer():raise ApiError(400,"逐站作业分钟须为整数")
     basis=body.get("road_basis","estimate")
+    return_policy=body.get('return_policy','open')
+    if return_policy not in ('open','origin'):raise ApiError(400,'回程方式无效')
     if basis not in ("estimate","demo_cache","private_osrm","carrier","valhalla_truck"):raise ApiError(400,"里程来源无效")
     checks,stops=routing.facts(body,ids)
     warehouse=required(body,"warehouse",140)
@@ -183,7 +187,7 @@ def save_route(db,body,user,first_leg=False):
           "date":iso_date(body.get("date")),"order_ids":ids,"road_basis":basis,"order_versions":versions,
           "resource_id":string(body.get("resource_id") or "","车辆编号",100),"crew_id":string(body.get("crew_id") or "","班组编号",100),
           "executor_id":string(body.get("executor_id") or "","执行方 ID",100),"start_time":start,"timezone":timezone,"service_minutes":minutes,"notes":string(body.get("notes") or "","备注"),
-          "checks":checks,"stops":stops,"first_leg":first_leg}
+          "checks":checks,"stops":stops,"first_leg":first_leg,"return_policy":return_policy,"collections":collections}
     scenario=body.get("cost_scenario",{})
     if not isinstance(scenario,dict):raise ApiError(400,"试算金额格式有误")
     data["cost_scenario"]={k:number(scenario[k],"试算金额",0,100000000) for k in ("original","transport","extra","coordination","incentive") if scenario.get(k) not in (None,"")}
@@ -230,6 +234,20 @@ def award_quote(db,body,user,*,written_commission=None):
     return {"order":save_order(db,o,user,"award_quote","中选 "+q["name"]+" · "+str(q["amount"])+" USD · "+approval)}
 
 def handle(db,method,path,body,user):
+    if path.startswith('/api/ops/dispatch-batches'):
+        import batch_release
+        return batch_release.handle(db,method,path,body,user)
+    if path.startswith('/api/ops/recovery'):
+        import recovery
+        return recovery.handle(db,method,path,body,user)
+    if path.startswith('/api/ops/collections/'):
+        import load_profile
+        if method=='POST' and path.endswith('/confirm'):return load_profile.confirm(db,body,user)
+        if method=='POST' and path.endswith('/compare'):return load_profile.compare(db,body,user)
+        raise ApiError(404,'回收装载接口不存在')
+    if path.startswith("/api/ops/plans"):
+        import planning
+        return planning.handle(db,method,path,body,user)
     if path.startswith("/api/practice/ticket/"):
         import ticket_training
         return ticket_training.handle(db,method,path,body,user)

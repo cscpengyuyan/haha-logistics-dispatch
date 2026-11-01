@@ -1,0 +1,2 @@
+# CP-SAT is native-only. The public Pyodide worker uses bounded search.
+ortools==9.15.6755

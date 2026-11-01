@@ -1,0 +1,24 @@
+test_atomic_adoption_rolls_back_first_route_when_second_fails (__main__.Contracts.test_atomic_adoption_rolls_back_first_route_when_second_fails) ... ok
+test_currency_precision_never_uses_float_rounding (__main__.Contracts.test_currency_precision_never_uses_float_rounding) ... ok
+test_dst_repeated_and_missing_wall_time_rejected (__main__.Contracts.test_dst_repeated_and_missing_wall_time_rejected) ... ok
+test_floor_space_is_released_per_stop_and_freeform_pickup_rejected (__main__.Contracts.test_floor_space_is_released_per_stop_and_freeform_pickup_rejected) ... ok
+test_l5_requires_authorized_independent_technician_after_delivery (__main__.Contracts.test_l5_requires_authorized_independent_technician_after_delivery) ... ok
+test_missing_cost_is_null_and_not_a_zero_price_winner (__main__.Contracts.test_missing_cost_is_null_and_not_a_zero_price_winner) ... ok
+test_permissions_enforced_server_side (__main__.Contracts.test_permissions_enforced_server_side) ... ok
+test_price_card_is_procurement_only_and_missing_component_rejected (__main__.Contracts.test_price_card_is_procurement_only_and_missing_component_rejected) ... ok
+test_unpublished_async_result_never_writes_candidate (__main__.Contracts.test_unpublished_async_result_never_writes_candidate) ... ok
+test_unsupported_lock_not_silently_ignored (__main__.Contracts.test_unsupported_lock_not_silently_ignored) ... ok
+test_activation_cost_changes_actual_best_choice (__main__.Selection.test_activation_cost_changes_actual_best_choice) ... ok
+test_complete_coverage_precedes_low_partial_cost (__main__.Selection.test_complete_coverage_precedes_low_partial_cost) ... ok
+test_nonoverlap_requires_reposition_between_origins (__main__.Selection.test_nonoverlap_requires_reposition_between_origins) ... ok
+test_pool_capacity_cannot_be_counted_twice (__main__.Selection.test_pool_capacity_cannot_be_counted_twice) ... ok
+test_return_is_included_in_occupancy (__main__.Selection.test_return_is_included_in_occupancy) ... ok
+test_same_crew_across_vehicles_conflicts (__main__.Selection.test_same_crew_across_vehicles_conflicts) ... ok
+test_same_sn_cannot_be_reserved_twice (__main__.Selection.test_same_sn_cannot_be_reserved_twice) ... ok
+test_short_budget_never_claims_infeasibility (__main__.Selection.test_short_budget_never_claims_infeasibility) ... ok
+test_sparse_skill_kept_for_difficult_order (__main__.Selection.test_sparse_skill_kept_for_difficult_order) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.751s
+
+OK

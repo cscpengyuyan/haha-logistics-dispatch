@@ -1,0 +1,45 @@
+{
+  "copy_id": "SIM200-edge-cases-v1",
+  "source_main_ids": [
+    "SIM200-005",
+    "SIM200-094"
+  ],
+  "T39": {
+    "status": "passed_business_api",
+    "low": 1,
+    "base": 3,
+    "high": 5,
+    "requested": 3,
+    "approved_by_independent_admin": true,
+    "stock_increases_only_after_receipt": true,
+    "final_available": 3,
+    "remaining_replenishment": 0
+  },
+  "T42": {
+    "status": "passed_business_api",
+    "manifest_units": 3,
+    "actual_receipts": 2,
+    "missing_original": "SIM-SN-094-01",
+    "replacement": "SIM-REPLACEMENT-094-01",
+    "quarantine_rejections": 2,
+    "final_order_state": "settled",
+    "delivered_sns": [
+      "SIM-REPLACEMENT-094-01",
+      "SIM-SN-094-02"
+    ]
+  },
+  "T06": {
+    "status": "not_implemented",
+    "reason": "strict_load only decreases delivery quantities; no pickup load delta"
+  },
+  "T30": {
+    "status": "not_implemented",
+    "reason": "No executed-prefix/current-location/onboard-SN planning input contract"
+  },
+  "inventory": {
+    "available": 3,
+    "delivered": 2
+  },
+  "trace_events": 59,
+  "actual_expected_rejections": 9
+}

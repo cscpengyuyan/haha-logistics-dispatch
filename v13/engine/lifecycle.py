@@ -284,6 +284,9 @@ def advance_case(db,body,user):
             custody["receiver_id"]=data["receiver_id"]
             custody["physical_location"]=data["return_to"]
         update_asset(db,asset,"returning" if shipped else "returned_hold",user,custody,row["order_id"])
+        if not shipped and db.execute("SELECT 1 FROM sqlite_master WHERE name='collection_bookings'").fetchone():
+            # Only an actual warehouse receipt ends the reserved return movement.
+            db.execute('UPDATE collection_bookings SET active=0 WHERE rma_id=?',(cid,))
     data["updated_at"]=now()
     db.execute("UPDATE after_cases SET version=version+1,state=?,data=? WHERE id=?",(rule["to"],encode(data),cid))
     updated=db.execute("SELECT * FROM after_cases WHERE id=?",(cid,)).fetchone()

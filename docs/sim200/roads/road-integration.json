@@ -1,0 +1,141 @@
+{
+  "DFW": {
+    "status": "passed",
+    "valhalla_version": "3.8.3",
+    "source": {
+      "source": "preexisting DFW fixture",
+      "config_sha256": "53204471da3fafececad5202bcb425d43f5bc81fcfaea9eb3dcd0b02d51d83cf"
+    },
+    "input_orders": 120,
+    "unique_snapped_points": 36,
+    "matrix_pairs": 1296,
+    "asymmetric_pairs": 619,
+    "route_km": 2.797,
+    "route_seconds": 356.22,
+    "geometry_legs": 3,
+    "vroom_vehicles_used": 2,
+    "vroom_unassigned": 0,
+    "max_snap_offset_m": 35.5,
+    "seconds": 1.518,
+    "raw_sha256": "1ae3fc64672035892ec4aee9a6df236737b8b6fbe47c3e843a515737747dfc17",
+    "limits": [
+      "Bounded city sample, no intercity routes",
+      "No live traffic or official truck permit guarantee",
+      "Snapping proves OSM road geometry, not customer entrance verification"
+    ]
+  },
+  "Houston": {
+    "status": "passed",
+    "valhalla_version": "3.8.3",
+    "source": {
+      "region": "Houston",
+      "bbox": [
+        29.7304,
+        -95.3998,
+        29.7984,
+        -95.3278
+      ],
+      "source": "https://overpass.kumi.systems/api/interpreter",
+      "osm_base": {
+        "osm_base": "2026-07-24T11:04:51Z"
+      },
+      "sha256": "041bb7a92253470d70ee56c2c21b3f3af1878dc66e0e761713d2c50fe5d0b8af",
+      "nodes": 78117,
+      "ways": 25284,
+      "source_note": "Original downloader requested kumi; preserve the raw returned osm_base date."
+    },
+    "input_orders": 30,
+    "unique_snapped_points": 31,
+    "matrix_pairs": 961,
+    "asymmetric_pairs": 457,
+    "route_km": 1.558,
+    "route_seconds": 150.344,
+    "geometry_legs": 3,
+    "vroom_vehicles_used": 2,
+    "vroom_unassigned": 0,
+    "max_snap_offset_m": 88.3,
+    "seconds": 1.099,
+    "raw_sha256": "fc8c03b0582b7b1a854275993dd7530520521b8c3e85b0c31fa782e50b4fe0e4",
+    "limits": [
+      "Bounded city sample, no intercity routes",
+      "No live traffic or official truck permit guarantee",
+      "Snapping proves OSM road geometry, not customer entrance verification"
+    ]
+  },
+  "Los_Angeles": {
+    "status": "passed",
+    "valhalla_version": "3.8.3",
+    "source": {
+      "region": "Los_Angeles",
+      "bbox": [
+        34.0422,
+        -118.2537,
+        34.0702,
+        -118.2217
+      ],
+      "source": "https://overpass-api.de/api/interpreter",
+      "query": "[out:xml][timeout:40];way[highway~\"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|residential|unclassified|service)$\"](34.0422,-118.2537,34.0702,-118.2217)->.r;(.r;rel(bw.r)[type=restriction];);(._;>;);out meta;",
+      "osm_base": {
+        "osm_base": "2026-11-01T15:30:32Z"
+      },
+      "nodes": 10232,
+      "ways": 2778,
+      "sha256": "1049693a2fc343f8090dfb1db47d5cfb4eb6e090d87387e1b2f2f2c1a3f190ec"
+    },
+    "input_orders": 30,
+    "unique_snapped_points": 31,
+    "matrix_pairs": 961,
+    "asymmetric_pairs": 442,
+    "route_km": 1.899,
+    "route_seconds": 161.644,
+    "geometry_legs": 3,
+    "vroom_vehicles_used": 2,
+    "vroom_unassigned": 0,
+    "max_snap_offset_m": 53.2,
+    "seconds": 0.882,
+    "raw_sha256": "c0966b8ce08b4a6fbe2e1f2ec98e6b00e0a32cc646ed399a554a9657cca35ab7",
+    "limits": [
+      "Bounded city sample, no intercity routes",
+      "No live traffic or official truck permit guarantee",
+      "Snapping proves OSM road geometry, not customer entrance verification"
+    ]
+  },
+  "Atlanta": {
+    "status": "passed",
+    "valhalla_version": "3.8.3",
+    "source": {
+      "region": "Atlanta",
+      "bbox": [
+        33.739,
+        -84.398,
+        33.767,
+        -84.366
+      ],
+      "source": "https://overpass-api.de/api/interpreter",
+      "query": "[out:xml][timeout:40];way[highway~\"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|residential|unclassified|service)$\"](33.739,-84.398,33.767,-84.366)->.r;(.r;rel(bw.r)[type=restriction];);(._;>;);out meta;",
+      "osm_base": {
+        "osm_base": "2026-11-01T15:30:32Z"
+      },
+      "nodes": 12288,
+      "ways": 3722,
+      "sha256": "ac3aacd4e1d43fd76a7c9873fbfe16a1ebc1dacde3ba8a7afbbf6fa2759c7745"
+    },
+    "input_orders": 20,
+    "unique_snapped_points": 21,
+    "matrix_pairs": 441,
+    "asymmetric_pairs": 207,
+    "route_km": 2.413,
+    "route_seconds": 220.748,
+    "geometry_legs": 3,
+    "vroom_vehicles_used": 2,
+    "vroom_unassigned": 0,
+    "max_snap_offset_m": 48.1,
+    "seconds": 0.848,
+    "raw_sha256": "e3d065e13e96562e0de3d633a33b61c767facdf004eb3c6f858e5a4bc5cf718a",
+    "limits": [
+      "Bounded city sample, no intercity routes",
+      "No live traffic or official truck permit guarantee",
+      "Snapping proves OSM road geometry, not customer entrance verification"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "path": "v13/data/sim200-ready.sqlite3",
+  "sha256": "631fb73f79e126a28da884a98e009c41d71c2f52a7e3a598e69f701f34d008f3",
+  "orders": 200,
+  "only_sim_customer_ids": true,
+  "non_operational_passwords": true,
+  "synthetic_phone": true,
+  "sms_disabled": true,
+  "profiles": [
+    {
+      "kind": "commitment",
+      "count": 120
+    },
+    {
+      "kind": "order",
+      "count": 180
+    },
+    {
+      "kind": "resource",
+      "count": 16
+    },
+    {
+      "kind": "stage",
+      "count": 30
+    },
+    {
+      "kind": "technical",
+      "count": 35
+    }
+  ],
+  "states": [
+    {
+      "state": "ready",
+      "count": 200
+    }
+  ],
+  "integrity": "ok",
+  "notes": "Ready-state synthetic fixture; terminal acceptance database is separate."
+}

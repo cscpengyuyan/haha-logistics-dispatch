@@ -1,0 +1,1864 @@
+{
+  "seed": 20261101,
+  "synthetic": true,
+  "initial_stock_units": 174,
+  "ocean_units": 86,
+  "initial_assets": [
+    {
+      "sn": "SIM-SN-001-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-002-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-003-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-004-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-005-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-006-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-007-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-008-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-009-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-010-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-011-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-012-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-013-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-014-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-049-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-050-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-051-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-052-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-053-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-054-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-055-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-056-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-057-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-058-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-059-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-060-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-061-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-062-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-063-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-064-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-065-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-066-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-067-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-068-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-069-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-070-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-071-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-072-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-073-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-074-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-075-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-076-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-077-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-078-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-079-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-079-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-080-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-080-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-081-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-081-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-082-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-082-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-D"
+    },
+    {
+      "sn": "SIM-SN-109-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-109-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-110-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-110-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-111-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-111-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-112-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-112-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-113-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-113-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-114-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-114-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-115-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-115-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-116-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-116-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-117-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-117-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-118-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-118-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-119-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-119-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-119-03",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-120-01",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-120-02",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-120-03",
+      "warehouse": "SIM Dallas",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-121-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-121-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-121-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-122-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-122-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-122-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-123-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-123-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-123-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-124-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-124-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-124-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-125-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-125-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-125-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-126-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-126-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-126-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-127-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-127-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-127-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-128-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-128-02",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-128-03",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-129-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-130-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-131-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-132-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-133-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-134-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-135-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-136-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-137-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-138-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-139-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-140-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-141-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-142-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-143-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-144-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-145-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-146-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-147-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-148-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-149-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-150-01",
+      "warehouse": "SIM Houston",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-151-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-152-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-153-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-154-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-155-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-156-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-157-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-158-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-159-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-160-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-161-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-162-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-163-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-164-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-165-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-166-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-167-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-168-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-169-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-170-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-171-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-172-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-173-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-174-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-175-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-176-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-177-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-178-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-179-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-180-01",
+      "warehouse": "SIM Los Angeles",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-181-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-182-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-183-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-184-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-185-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-186-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-187-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-188-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-189-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-190-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-191-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-192-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-193-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-194-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-195-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-196-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-197-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-198-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-199-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    },
+    {
+      "sn": "SIM-SN-200-01",
+      "warehouse": "SIM Atlanta",
+      "model": "M01",
+      "state": "available",
+      "source": "SIM-INITIAL"
+    }
+  ],
+  "ocean_batches": [
+    {
+      "id": "SIM-OCEAN-1",
+      "orders": [
+        "SIM200-015",
+        "SIM200-016",
+        "SIM200-017",
+        "SIM200-018",
+        "SIM200-019",
+        "SIM200-020",
+        "SIM200-021",
+        "SIM200-022",
+        "SIM200-023",
+        "SIM200-024",
+        "SIM200-025",
+        "SIM200-026",
+        "SIM200-027",
+        "SIM200-028",
+        "SIM200-029"
+      ],
+      "serials": [
+        "SIM-SN-015-01",
+        "SIM-SN-016-01",
+        "SIM-SN-017-01",
+        "SIM-SN-018-01",
+        "SIM-SN-019-01",
+        "SIM-SN-020-01",
+        "SIM-SN-021-01",
+        "SIM-SN-022-01",
+        "SIM-SN-023-01",
+        "SIM-SN-024-01",
+        "SIM-SN-025-01",
+        "SIM-SN-026-01",
+        "SIM-SN-027-01",
+        "SIM-SN-028-01",
+        "SIM-SN-029-01"
+      ]
+    },
+    {
+      "id": "SIM-OCEAN-2",
+      "orders": [
+        "SIM200-030",
+        "SIM200-031",
+        "SIM200-032",
+        "SIM200-033",
+        "SIM200-034",
+        "SIM200-035",
+        "SIM200-036",
+        "SIM200-037",
+        "SIM200-038",
+        "SIM200-039",
+        "SIM200-040",
+        "SIM200-041",
+        "SIM200-042",
+        "SIM200-043",
+        "SIM200-044"
+      ],
+      "serials": [
+        "SIM-SN-030-01",
+        "SIM-SN-031-01",
+        "SIM-SN-032-01",
+        "SIM-SN-033-01",
+        "SIM-SN-034-01",
+        "SIM-SN-035-01",
+        "SIM-SN-036-01",
+        "SIM-SN-037-01",
+        "SIM-SN-038-01",
+        "SIM-SN-039-01",
+        "SIM-SN-040-01",
+        "SIM-SN-041-01",
+        "SIM-SN-042-01",
+        "SIM-SN-043-01",
+        "SIM-SN-044-01"
+      ]
+    },
+    {
+      "id": "SIM-OCEAN-3",
+      "orders": [
+        "SIM200-045",
+        "SIM200-046",
+        "SIM200-047",
+        "SIM200-048",
+        "SIM200-083",
+        "SIM200-084",
+        "SIM200-085",
+        "SIM200-086",
+        "SIM200-087",
+        "SIM200-088",
+        "SIM200-089",
+        "SIM200-090",
+        "SIM200-091",
+        "SIM200-092",
+        "SIM200-093"
+      ],
+      "serials": [
+        "SIM-SN-045-01",
+        "SIM-SN-046-01",
+        "SIM-SN-047-01",
+        "SIM-SN-048-01",
+        "SIM-SN-083-01",
+        "SIM-SN-083-02",
+        "SIM-SN-084-01",
+        "SIM-SN-084-02",
+        "SIM-SN-085-01",
+        "SIM-SN-085-02",
+        "SIM-SN-086-01",
+        "SIM-SN-086-02",
+        "SIM-SN-087-01",
+        "SIM-SN-087-02",
+        "SIM-SN-088-01",
+        "SIM-SN-088-02",
+        "SIM-SN-089-01",
+        "SIM-SN-089-02",
+        "SIM-SN-090-01",
+        "SIM-SN-090-02",
+        "SIM-SN-091-01",
+        "SIM-SN-091-02",
+        "SIM-SN-092-01",
+        "SIM-SN-092-02",
+        "SIM-SN-093-01",
+        "SIM-SN-093-02"
+      ]
+    },
+    {
+      "id": "SIM-OCEAN-4",
+      "orders": [
+        "SIM200-094",
+        "SIM200-095",
+        "SIM200-096",
+        "SIM200-097",
+        "SIM200-098",
+        "SIM200-099",
+        "SIM200-100",
+        "SIM200-101",
+        "SIM200-102",
+        "SIM200-103",
+        "SIM200-104",
+        "SIM200-105",
+        "SIM200-106",
+        "SIM200-107",
+        "SIM200-108"
+      ],
+      "serials": [
+        "SIM-SN-094-01",
+        "SIM-SN-094-02",
+        "SIM-SN-095-01",
+        "SIM-SN-095-02",
+        "SIM-SN-096-01",
+        "SIM-SN-096-02",
+        "SIM-SN-097-01",
+        "SIM-SN-097-02",
+        "SIM-SN-098-01",
+        "SIM-SN-098-02",
+        "SIM-SN-099-01",
+        "SIM-SN-099-02",
+        "SIM-SN-100-01",
+        "SIM-SN-100-02",
+        "SIM-SN-101-01",
+        "SIM-SN-101-02",
+        "SIM-SN-102-01",
+        "SIM-SN-102-02",
+        "SIM-SN-103-01",
+        "SIM-SN-103-02",
+        "SIM-SN-104-01",
+        "SIM-SN-104-02",
+        "SIM-SN-105-01",
+        "SIM-SN-105-02",
+        "SIM-SN-106-01",
+        "SIM-SN-106-02",
+        "SIM-SN-107-01",
+        "SIM-SN-107-02",
+        "SIM-SN-108-01",
+        "SIM-SN-108-02"
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "name": "SIM Dallas",
+      "timezone": "America/Chicago",
+      "zip": "75201",
+      "lat": 32.778,
+      "lng": -96.806,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Dallas 接站",
+      "timezone": "America/Chicago",
+      "zip": "75201",
+      "lat": 32.781,
+      "lng": -96.803,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Houston",
+      "timezone": "America/Chicago",
+      "zip": "77002",
+      "lat": 29.7604,
+      "lng": -95.3698,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Houston 接站",
+      "timezone": "America/Chicago",
+      "zip": "77002",
+      "lat": 29.7634,
+      "lng": -95.3668,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Los Angeles",
+      "timezone": "America/Los_Angeles",
+      "zip": "90012",
+      "lat": 34.0522,
+      "lng": -118.2437,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Los Angeles 接站",
+      "timezone": "America/Los_Angeles",
+      "zip": "90012",
+      "lat": 34.0552,
+      "lng": -118.2407,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Atlanta",
+      "timezone": "America/New_York",
+      "zip": "30303",
+      "lat": 33.749,
+      "lng": -84.388,
+      "coordinate_basis": "synthetic_grid_unverified"
+    },
+    {
+      "name": "SIM Atlanta 接站",
+      "timezone": "America/New_York",
+      "zip": "30303",
+      "lat": 33.752,
+      "lng": -84.385,
+      "coordinate_basis": "synthetic_grid_unverified"
+    }
+  ],
+  "suppliers": [
+    {
+      "name": "SIM 供应商 01",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-01"
+    },
+    {
+      "name": "SIM 供应商 02",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-02"
+    },
+    {
+      "name": "SIM 供应商 03",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-03"
+    },
+    {
+      "name": "SIM 供应商 04",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-04"
+    },
+    {
+      "name": "SIM 供应商 05",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-05"
+    },
+    {
+      "name": "SIM 供应商 06",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-06"
+    },
+    {
+      "name": "SIM 供应商 07",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-07"
+    },
+    {
+      "name": "SIM 供应商 08",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-08"
+    },
+    {
+      "name": "SIM 供应商 09",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-09"
+    },
+    {
+      "name": "SIM 供应商 10",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-10"
+    },
+    {
+      "name": "SIM 供应商 11",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-11"
+    },
+    {
+      "name": "SIM 供应商 12",
+      "products": [
+        "T2",
+        "T3",
+        "T5"
+      ],
+      "qualification": "S3",
+      "evidence": "SIM-SUPPLIER-12"
+    }
+  ],
+  "fleets": [
+    {
+      "vehicle": "SIM 车辆 01",
+      "crew": "SIM 班组 01",
+      "driver": "sim_driver_01",
+      "supplier": "SIM 供应商 01",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 02",
+      "crew": "SIM 班组 02",
+      "driver": "sim_driver_02",
+      "supplier": "SIM 供应商 02",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 03",
+      "crew": "SIM 班组 03",
+      "driver": "sim_driver_03",
+      "supplier": "SIM 供应商 03",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 04",
+      "crew": "SIM 班组 04",
+      "driver": "sim_driver_04",
+      "supplier": "SIM 供应商 04",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 05",
+      "crew": "SIM 班组 05",
+      "driver": "sim_driver_05",
+      "supplier": "SIM 供应商 05",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 06",
+      "crew": "SIM 班组 06",
+      "driver": "sim_driver_06",
+      "supplier": "SIM 供应商 06",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 07",
+      "crew": "SIM 班组 07",
+      "driver": "sim_driver_07",
+      "supplier": "SIM 供应商 07",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 08",
+      "crew": "SIM 班组 08",
+      "driver": "sim_driver_08",
+      "supplier": "SIM 供应商 08",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 09",
+      "crew": "SIM 班组 09",
+      "driver": "sim_driver_09",
+      "supplier": "SIM 供应商 09",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 10",
+      "crew": "SIM 班组 10",
+      "driver": "sim_driver_10",
+      "supplier": "SIM 供应商 10",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 11",
+      "crew": "SIM 班组 11",
+      "driver": "sim_driver_11",
+      "supplier": "SIM 供应商 11",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 12",
+      "crew": "SIM 班组 12",
+      "driver": "sim_driver_12",
+      "supplier": "SIM 供应商 12",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 13",
+      "crew": "SIM 班组 13",
+      "driver": "sim_driver_13",
+      "supplier": "SIM 供应商 01",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 14",
+      "crew": "SIM 班组 14",
+      "driver": "sim_driver_14",
+      "supplier": "SIM 供应商 02",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 15",
+      "crew": "SIM 班组 15",
+      "driver": "sim_driver_15",
+      "supplier": "SIM 供应商 03",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 16",
+      "crew": "SIM 班组 16",
+      "driver": "sim_driver_16",
+      "supplier": "SIM 供应商 04",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 17",
+      "crew": "SIM 班组 17",
+      "driver": "sim_driver_17",
+      "supplier": "SIM 供应商 05",
+      "capacity_units": 3,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    },
+    {
+      "vehicle": "SIM 车辆 18",
+      "crew": "SIM 班组 18",
+      "driver": "sim_driver_18",
+      "supplier": "SIM 供应商 06",
+      "capacity_units": 6,
+      "payload_kg": 2000,
+      "floor_length_cm": 650,
+      "floor_width_cm": 240,
+      "door_width_cm": 230,
+      "door_height_cm": 240,
+      "lift_capacity_kg": 850,
+      "headcount": 3
+    }
+  ],
+  "technicians": [
+    "sim_tech_1",
+    "sim_tech_2",
+    "sim_tech_3",
+    "sim_tech_4"
+  ],
+  "packing": {
+    "model": "M01",
+    "fictional": true,
+    "length_cm": 100,
+    "width_cm": 83,
+    "height_cm": 191,
+    "weight_kg": 226,
+    "upright": true,
+    "nonstackable": true
+  },
+  "limits": [
+    "Resource calendar exception days and capacity offers require separate planner fixtures; this file does not prove those constraints.",
+    "Grid coordinates and carrier time evidence are synthetic business-test inputs, not real-road verification."
+  ]
+}

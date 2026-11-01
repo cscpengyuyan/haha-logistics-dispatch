@@ -26,6 +26,9 @@ def connect_demo():
             raise core.ApiError(409,"此浏览器仅可打开演练库，请核对备份来源")
         db.execute("INSERT OR IGNORE INTO metadata(key,value) VALUES('mode','demo')")
     operations.init_db(db)
+    import migrations
+    with db:
+        migrations.migrate(db)
     if fresh:
         with db:
             seed(db)
@@ -33,12 +36,14 @@ def connect_demo():
         with db:
             operations.upgrade_demo_quotes(db)
     import practice
-    with db: practice.provision_training(db)
+    if not db.execute("SELECT 1 FROM orders WHERE id GLOB 'SIM200-*' LIMIT 1").fetchone():
+        with db: practice.provision_training(db)
 
 def call(path,method,body,username):
     users=[dict(x) for x in db.execute("SELECT id,username,role,name FROM users ORDER BY id")]
     user=next((u for u in users if u["username"]==username),None)
-    if path=="/api/session":return {"user":user,"demo":True,"demo_users":users}
+    if path=="/api/health":return {"ok":True,"app_version":"v13","engine_version":"v13","data_mode":"browser_demo","solver":"bounded_browser","road_coverage":"Dallas pilot 1-6 stops","shared_database":False}
+    if path=="/api/session":return {"user":user,"demo":True,"demo_users":users,"app_version":"v13","engine_version":"v13"}
     if path=="/api/demo-login":
         u=next((u for u in users if u["username"]==body.get("username")),None)
         if not u:raise core.ApiError(400,"请选择演练岗位")
@@ -69,6 +74,10 @@ def call(path,method,body,username):
             if row and any(f["id"]==row["id"] for f in core.order_detail(db,row["order_id"],user)["files"]):
                 return {"base64":base64.b64encode(row["content"]).decode(),"mime":row["mime"]}
             raise core.ApiError(404,"附件不存在")
+        if path.startswith("/api/simulation/"):
+            import simulation
+            result=simulation.handle(db,method,path,body,user)
+            if result is not None:return result
         out=operations.handle(db,method,path,body,user)
         if out is not None:return out
         raise core.ApiError(404,"演练接口不存在")

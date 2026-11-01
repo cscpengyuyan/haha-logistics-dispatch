@@ -1,7 +1,7 @@
 """Refresh same-origin public cache keys, including dynamically imported Python source."""
 from pathlib import Path
-import hashlib,re
-ROOT=Path(__file__).resolve().parent/"v12"
+import hashlib,re,os
+ROOT=Path(__file__).resolve().parent/os.environ.get('HH_APP_VERSION','v13')
 def digest(paths):
     h=hashlib.sha256()
     for p in paths:h.update(p.name.encode());h.update(p.read_bytes().replace(b'\r\n',b'\n'))

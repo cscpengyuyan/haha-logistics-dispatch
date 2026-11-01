@@ -1,0 +1,1049 @@
+{
+  "health": {
+    "ok": true,
+    "app_version": "v13",
+    "engine_version": "v13",
+    "static_entry": "/v13/",
+    "data_mode": "demo",
+    "road_configured": true,
+    "road_coverage": "DFW pilot",
+    "road_data_date": "2026-10-31",
+    "cp_sat_available": true
+  },
+  "job": {
+    "id": "JOB-aa25ce02af89429eb8db4c6bbe343bc6",
+    "state": "completed",
+    "attempt": 1,
+    "version": 3,
+    "plan_id": "PLAN-19acab8c37124e63",
+    "result": {
+      "plan": {
+        "id": "PLAN-19acab8c37124e63",
+        "plan_id": "PLAN-19acab8c37124e63",
+        "version": 1,
+        "state": "candidates_ready",
+        "created_at": "2026-11-01T15:32:32+00:00",
+        "order_ids": [
+          "SIM200-053"
+        ],
+        "planning_scope": "delivery_complete",
+        "objective": "lowest_cost",
+        "input_hash": "f33a69f55672d27234488f27de33a59e8e0bd209d252e51bcd678fa924ce090a",
+        "candidates": [
+          {
+            "id": "ALT-1",
+            "objective": "lowest_cost",
+            "routes": [],
+            "total_minor": null,
+            "currency": "USD",
+            "cost_items": [],
+            "unassigned": [
+              {
+                "order_id": "SIM200-053",
+                "reasons": [
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "补录尾板、固定、人员及工具核验依据",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "补录作业范围及授权依据",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "指定有效司机账号",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "发车不在已核仓窗内",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 执行人数未核或班组人数不足",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 本段必需工具未落实到执行班组",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 填写逐台已包装重量及高度",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 请核实是否需要尾板",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  },
+                  {
+                    "code": "ROUTE_CONFLICT",
+                    "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                    "object_id": "C-9ae6e373039a",
+                    "field": "route",
+                    "next_step": "请责任岗位补齐并重新计算"
+                  }
+                ]
+              }
+            ],
+            "coverage": {
+              "total": 1,
+              "assigned": 0,
+              "order_complete": 0,
+              "stage_assigned": 0,
+              "order_coverage": 0.0,
+              "stage_coverage": 0.0
+            },
+            "validation_status": "conditions_pending",
+            "solver": {
+              "indices": [],
+              "solver": "OR-Tools CP-SAT",
+              "exhausted": false,
+              "proven": true,
+              "seconds": 0.0,
+              "nodes": 0
+            },
+            "solve_status": "no_feasible_candidates",
+            "optimality_scope": "undetermined"
+          }
+        ],
+        "draft_routes": [
+          {
+            "name": "SIM Dallas · 2026-11-11 · SIM 车辆 16",
+            "warehouse": "SIM Dallas",
+            "date": "2026-11-11",
+            "timezone": "America/Chicago",
+            "start_time": "08:00",
+            "order_ids": [
+              "SIM200-053"
+            ],
+            "order_versions": {
+              "SIM200-053": 5
+            },
+            "resource_id": "VEH-737D81F3C762",
+            "crew_id": "CRE-2E2CE7CF51C8",
+            "executor_id": "SUP-AB8484FC46C3",
+            "service_minutes": 45,
+            "road_basis": "estimate",
+            "checks": {},
+            "stops": {
+              "SIM200-053": {
+                "from_id": "WAR-392704800B1C"
+              }
+            },
+            "id": "C-9ae6e373039a",
+            "version": 0,
+            "warehouse_id": "WAR-392704800B1C",
+            "planning_scope": "delivery_complete",
+            "first_leg_ids": [],
+            "check_result": {
+              "issues": [
+                "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "补录尾板、固定、人员及工具核验依据",
+                "补录作业范围及授权依据",
+                "指定有效司机账号",
+                "发车不在已核仓窗内",
+                "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "第 1 站 执行人数未核或班组人数不足",
+                "第 1 站 本段必需工具未落实到执行班组",
+                "第 1 站 填写逐台已包装重量及高度",
+                "第 1 站 请核实是否需要尾板",
+                "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "回程分钟未核；开放线路须明确填 0",
+                "核对车组班次起止、最长工时及回程"
+              ],
+              "stop_count": 1,
+              "timeline": [],
+              "resource_versions": {
+                "WAR-392704800B1C": 1,
+                "VEH-737D81F3C762": 1,
+                "CRE-2E2CE7CF51C8": 1
+              },
+              "start_utc": "2026-11-11T14:00:00+00:00",
+              "end_utc": null
+            },
+            "issues": [
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录尾板、固定、人员及工具核验依据",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录作业范围及授权依据",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "指定有效司机账号",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "发车不在已核仓窗内",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 执行人数未核或班组人数不足",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 本段必需工具未落实到执行班组",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 填写逐台已包装重量及高度",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 请核实是否需要尾板",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "回程分钟未核；开放线路须明确填 0",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "核对车组班次起止、最长工时及回程",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "LOAD_DIMENSIONS_REQUIRED",
+                "message": "须核实包装长宽、车厢地板和车门净宽",
+                "object_id": "SIM200-053",
+                "field": "length_cm",
+                "next_step": "请责任岗位补齐并重新计算"
+              }
+            ],
+            "load_profile": [
+              {
+                "before": "SIM200-053",
+                "units": 1,
+                "kg": 0,
+                "floor_length_cm": 0
+              }
+            ],
+            "cost_items": [
+              {
+                "order_id": "SIM200-053",
+                "amount_minor": 40000,
+                "currency": "USD",
+                "payee": "SUP-AB8484FC46C3",
+                "source": "QUO-A78CDF701D9F",
+                "source_version": 1,
+                "event": "delivery"
+              }
+            ],
+            "total_minor": 40000,
+            "currency": "USD",
+            "validation_status": "conditions_pending",
+            "sns": [
+              "SIM-SN-053-01"
+            ],
+            "occupancy": []
+          },
+          {
+            "name": "SIM Dallas · 2026-11-11 · SIM 车辆 16",
+            "warehouse": "SIM Dallas",
+            "date": "2026-11-11",
+            "timezone": "America/Chicago",
+            "start_time": "08:00",
+            "order_ids": [
+              "SIM200-053"
+            ],
+            "order_versions": {
+              "SIM200-053": 5
+            },
+            "resource_id": "VEH-737D81F3C762",
+            "crew_id": "CRE-EC0522CC2828",
+            "executor_id": "SUP-AB8484FC46C3",
+            "service_minutes": 45,
+            "road_basis": "estimate",
+            "checks": {},
+            "stops": {
+              "SIM200-053": {
+                "from_id": "WAR-392704800B1C"
+              }
+            },
+            "id": "C-ecd324254020",
+            "version": 0,
+            "warehouse_id": "WAR-392704800B1C",
+            "planning_scope": "delivery_complete",
+            "first_leg_ids": [],
+            "check_result": {
+              "issues": [
+                "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "补录尾板、固定、人员及工具核验依据",
+                "补录作业范围及授权依据",
+                "指定有效司机账号",
+                "发车不在已核仓窗内",
+                "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "第 1 站 执行人数未核或班组人数不足",
+                "第 1 站 本段必需工具未落实到执行班组",
+                "第 1 站 填写逐台已包装重量及高度",
+                "第 1 站 请核实是否需要尾板",
+                "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "回程分钟未核；开放线路须明确填 0",
+                "核对车组班次起止、最长工时及回程"
+              ],
+              "stop_count": 1,
+              "timeline": [],
+              "resource_versions": {
+                "WAR-392704800B1C": 1,
+                "VEH-737D81F3C762": 1,
+                "CRE-EC0522CC2828": 1
+              },
+              "start_utc": "2026-11-11T14:00:00+00:00",
+              "end_utc": null
+            },
+            "issues": [
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录尾板、固定、人员及工具核验依据",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录作业范围及授权依据",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "指定有效司机账号",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "发车不在已核仓窗内",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 执行人数未核或班组人数不足",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 本段必需工具未落实到执行班组",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 填写逐台已包装重量及高度",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 请核实是否需要尾板",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "回程分钟未核；开放线路须明确填 0",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "核对车组班次起止、最长工时及回程",
+                "object_id": "C-ecd324254020",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "LOAD_DIMENSIONS_REQUIRED",
+                "message": "须核实包装长宽、车厢地板和车门净宽",
+                "object_id": "SIM200-053",
+                "field": "length_cm",
+                "next_step": "请责任岗位补齐并重新计算"
+              }
+            ],
+            "load_profile": [
+              {
+                "before": "SIM200-053",
+                "units": 1,
+                "kg": 0,
+                "floor_length_cm": 0
+              }
+            ],
+            "cost_items": [
+              {
+                "order_id": "SIM200-053",
+                "amount_minor": 40000,
+                "currency": "USD",
+                "payee": "SUP-AB8484FC46C3",
+                "source": "QUO-A78CDF701D9F",
+                "source_version": 1,
+                "event": "delivery"
+              }
+            ],
+            "total_minor": 40000,
+            "currency": "USD",
+            "validation_status": "conditions_pending",
+            "sns": [
+              "SIM-SN-053-01"
+            ],
+            "occupancy": []
+          },
+          {
+            "name": "SIM Dallas · 2026-11-11 · SIM 车辆 04",
+            "warehouse": "SIM Dallas",
+            "date": "2026-11-11",
+            "timezone": "America/Chicago",
+            "start_time": "08:00",
+            "order_ids": [
+              "SIM200-053"
+            ],
+            "order_versions": {
+              "SIM200-053": 5
+            },
+            "resource_id": "VEH-32F080348576",
+            "crew_id": "CRE-2E2CE7CF51C8",
+            "executor_id": "SUP-AB8484FC46C3",
+            "service_minutes": 45,
+            "road_basis": "estimate",
+            "checks": {},
+            "stops": {
+              "SIM200-053": {
+                "from_id": "WAR-392704800B1C"
+              }
+            },
+            "id": "C-bdfdfbc8ac73",
+            "version": 0,
+            "warehouse_id": "WAR-392704800B1C",
+            "planning_scope": "delivery_complete",
+            "first_leg_ids": [],
+            "check_result": {
+              "issues": [
+                "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "补录尾板、固定、人员及工具核验依据",
+                "补录作业范围及授权依据",
+                "指定有效司机账号",
+                "发车不在已核仓窗内",
+                "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "第 1 站 执行人数未核或班组人数不足",
+                "第 1 站 本段必需工具未落实到执行班组",
+                "第 1 站 填写逐台已包装重量及高度",
+                "第 1 站 请核实是否需要尾板",
+                "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "回程分钟未核；开放线路须明确填 0",
+                "核对车组班次起止、最长工时及回程"
+              ],
+              "stop_count": 1,
+              "timeline": [],
+              "resource_versions": {
+                "WAR-392704800B1C": 1,
+                "VEH-32F080348576": 1,
+                "CRE-2E2CE7CF51C8": 1
+              },
+              "start_utc": "2026-11-11T14:00:00+00:00",
+              "end_utc": null
+            },
+            "issues": [
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录尾板、固定、人员及工具核验依据",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录作业范围及授权依据",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "指定有效司机账号",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "发车不在已核仓窗内",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 执行人数未核或班组人数不足",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 本段必需工具未落实到执行班组",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 填写逐台已包装重量及高度",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 请核实是否需要尾板",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "回程分钟未核；开放线路须明确填 0",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "核对车组班次起止、最长工时及回程",
+                "object_id": "C-bdfdfbc8ac73",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "LOAD_DIMENSIONS_REQUIRED",
+                "message": "须核实包装长宽、车厢地板和车门净宽",
+                "object_id": "SIM200-053",
+                "field": "length_cm",
+                "next_step": "请责任岗位补齐并重新计算"
+              }
+            ],
+            "load_profile": [
+              {
+                "before": "SIM200-053",
+                "units": 1,
+                "kg": 0,
+                "floor_length_cm": 0
+              }
+            ],
+            "cost_items": [
+              {
+                "order_id": "SIM200-053",
+                "amount_minor": 40000,
+                "currency": "USD",
+                "payee": "SUP-AB8484FC46C3",
+                "source": "QUO-A78CDF701D9F",
+                "source_version": 1,
+                "event": "delivery"
+              }
+            ],
+            "total_minor": 40000,
+            "currency": "USD",
+            "validation_status": "conditions_pending",
+            "sns": [
+              "SIM-SN-053-01"
+            ],
+            "occupancy": []
+          },
+          {
+            "name": "SIM Dallas · 2026-11-11 · SIM 车辆 04",
+            "warehouse": "SIM Dallas",
+            "date": "2026-11-11",
+            "timezone": "America/Chicago",
+            "start_time": "08:00",
+            "order_ids": [
+              "SIM200-053"
+            ],
+            "order_versions": {
+              "SIM200-053": 5
+            },
+            "resource_id": "VEH-32F080348576",
+            "crew_id": "CRE-EC0522CC2828",
+            "executor_id": "SUP-AB8484FC46C3",
+            "service_minutes": 45,
+            "road_basis": "estimate",
+            "checks": {},
+            "stops": {
+              "SIM200-053": {
+                "from_id": "WAR-392704800B1C"
+              }
+            },
+            "id": "C-f774e6406069",
+            "version": 0,
+            "warehouse_id": "WAR-392704800B1C",
+            "planning_scope": "delivery_complete",
+            "first_leg_ids": [],
+            "check_result": {
+              "issues": [
+                "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "补录尾板、固定、人员及工具核验依据",
+                "补录作业范围及授权依据",
+                "指定有效司机账号",
+                "发车不在已核仓窗内",
+                "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "第 1 站 执行人数未核或班组人数不足",
+                "第 1 站 本段必需工具未落实到执行班组",
+                "第 1 站 填写逐台已包装重量及高度",
+                "第 1 站 请核实是否需要尾板",
+                "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "回程分钟未核；开放线路须明确填 0",
+                "核对车组班次起止、最长工时及回程"
+              ],
+              "stop_count": 1,
+              "timeline": [],
+              "resource_versions": {
+                "WAR-392704800B1C": 1,
+                "VEH-32F080348576": 1,
+                "CRE-EC0522CC2828": 1
+              },
+              "start_utc": "2026-11-11T14:00:00+00:00",
+              "end_utc": null
+            },
+            "issues": [
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录尾板、固定、人员及工具核验依据",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录作业范围及授权依据",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "指定有效司机账号",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "发车不在已核仓窗内",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 执行人数未核或班组人数不足",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 本段必需工具未落实到执行班组",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 填写逐台已包装重量及高度",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 请核实是否需要尾板",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "回程分钟未核；开放线路须明确填 0",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "核对车组班次起止、最长工时及回程",
+                "object_id": "C-f774e6406069",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "LOAD_DIMENSIONS_REQUIRED",
+                "message": "须核实包装长宽、车厢地板和车门净宽",
+                "object_id": "SIM200-053",
+                "field": "length_cm",
+                "next_step": "请责任岗位补齐并重新计算"
+              }
+            ],
+            "load_profile": [
+              {
+                "before": "SIM200-053",
+                "units": 1,
+                "kg": 0,
+                "floor_length_cm": 0
+              }
+            ],
+            "cost_items": [
+              {
+                "order_id": "SIM200-053",
+                "amount_minor": 40000,
+                "currency": "USD",
+                "payee": "SUP-AB8484FC46C3",
+                "source": "QUO-A78CDF701D9F",
+                "source_version": 1,
+                "event": "delivery"
+              }
+            ],
+            "total_minor": 40000,
+            "currency": "USD",
+            "validation_status": "conditions_pending",
+            "sns": [
+              "SIM-SN-053-01"
+            ],
+            "occupancy": []
+          }
+        ],
+        "routes": [],
+        "unassigned": [
+          {
+            "order_id": "SIM200-053",
+            "reasons": [
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "当前线路仅可存草案；须重新规划货车道路或登记有承运方逐段书面核实的运单",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录尾板、固定、人员及工具核验依据",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "补录作业范围及授权依据",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "指定有效司机账号",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "发车不在已核仓窗内",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 交付装卸口待核；ZIP 代表点不能签发",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 待承运方核实此段起点、卡车路时及包装版本",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 执行人数未核或班组人数不足",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 本段必需工具未落实到执行班组",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 填写逐台已包装重量及高度",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 请核实是否需要尾板",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              },
+              {
+                "code": "ROUTE_CONFLICT",
+                "message": "第 1 站 逐段行车、准入、卸毕及作业分钟缺失或无效",
+                "object_id": "C-9ae6e373039a",
+                "field": "route",
+                "next_step": "请责任岗位补齐并重新计算"
+              }
+            ]
+          }
+        ],
+        "coverage": {
+          "total": 1,
+          "assigned": 0,
+          "order_complete": 0,
+          "stage_assigned": 0,
+          "order_coverage": 0.0,
+          "stage_coverage": 0.0
+        },
+        "cost_items": [],
+        "total_minor": null,
+        "currency": "USD",
+        "solve_status": "no_feasible_candidates",
+        "validation_status": "conditions_pending",
+        "optimality_scope": "undetermined",
+        "assumptions": [
+          "候选为有限枚举；最优性只适用于本次已生成且已校验候选。",
+          "未知道路、未确认价格及缺少包装/班次证据不会按零值参与可行方案。"
+        ],
+        "locks": {},
+        "road_errors": [],
+        "precheck": {
+          "order_ids": [
+            "SIM200-053"
+          ],
+          "planning_scope": "delivery_complete",
+          "input_hash": "f33a69f55672d27234488f27de33a59e8e0bd209d252e51bcd678fa924ce090a",
+          "orders": [
+            {
+              "id": "SIM200-053",
+              "issues": [],
+              "ready": true
+            }
+          ],
+          "issues": [],
+          "ready_count": 1,
+          "validation_status": "passed"
+        },
+        "metrics": {
+          "candidate_count": 4,
+          "feasible_count": 0,
+          "seconds": 0.7180000000007567
+        },
+        "pending_legs": []
+      }
+    },
+    "error": null
+  }
+}

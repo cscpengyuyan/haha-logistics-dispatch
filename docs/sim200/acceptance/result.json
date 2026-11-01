@@ -1,0 +1,1042 @@
+{
+  "seed": 20261101,
+  "orders": 200,
+  "states": {
+    "cancelled": 8,
+    "settled": 192
+  },
+  "rows": [
+    {
+      "id": "SIM200-001",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-002",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-003",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-004",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-005",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-006",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-007",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-008",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-009",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-010",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-011",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-012",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-013",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-014",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-015",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-016",
+      "status": "settled",
+      "version": 13
+    },
+    {
+      "id": "SIM200-017",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-018",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-019",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-020",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-021",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-022",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-023",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-024",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-025",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-026",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-027",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-028",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-029",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-030",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-031",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-032",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-033",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-034",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-035",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-036",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-037",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-038",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-039",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-040",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-041",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-042",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-043",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-044",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-045",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-046",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-047",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-048",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-049",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-050",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-051",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-052",
+      "status": "cancelled",
+      "version": 5
+    },
+    {
+      "id": "SIM200-053",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-054",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-055",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-056",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-057",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-058",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-059",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-060",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-061",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-062",
+      "status": "settled",
+      "version": 12
+    },
+    {
+      "id": "SIM200-063",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-064",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-065",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-066",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-067",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-068",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-069",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-070",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-071",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-072",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-073",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-074",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-075",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-076",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-077",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-078",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-079",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-080",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-081",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-082",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-083",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-084",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-085",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-086",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-087",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-088",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-089",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-090",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-091",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-092",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-093",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-094",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-095",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-096",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-097",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-098",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-099",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-100",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-101",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-102",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-103",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-104",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-105",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-106",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-107",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-108",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-109",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-110",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-111",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-112",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-113",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-114",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-115",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-116",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-117",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-118",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-119",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-120",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-121",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-122",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-123",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-124",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-125",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-126",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-127",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-128",
+      "status": "settled",
+      "version": 11
+    },
+    {
+      "id": "SIM200-129",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-130",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-131",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-132",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-133",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-134",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-135",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-136",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-137",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-138",
+      "status": "settled",
+      "version": 16
+    },
+    {
+      "id": "SIM200-139",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-140",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-141",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-142",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-143",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-144",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-145",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-146",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-147",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-148",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-149",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-150",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-151",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-152",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-153",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-154",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-155",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-156",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-157",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-158",
+      "status": "settled",
+      "version": 18
+    },
+    {
+      "id": "SIM200-159",
+      "status": "settled",
+      "version": 22
+    },
+    {
+      "id": "SIM200-160",
+      "status": "settled",
+      "version": 22
+    },
+    {
+      "id": "SIM200-161",
+      "status": "settled",
+      "version": 22
+    },
+    {
+      "id": "SIM200-162",
+      "status": "settled",
+      "version": 22
+    },
+    {
+      "id": "SIM200-163",
+      "status": "settled",
+      "version": 22
+    },
+    {
+      "id": "SIM200-164",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-165",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-166",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-167",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-168",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-169",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-170",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-171",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-172",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-173",
+      "status": "settled",
+      "version": 19
+    },
+    {
+      "id": "SIM200-174",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-175",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-176",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-177",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-178",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-179",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-180",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-181",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-182",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-183",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-184",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-185",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-186",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-187",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-188",
+      "status": "settled",
+      "version": 17
+    },
+    {
+      "id": "SIM200-189",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-190",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-191",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-192",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-193",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-194",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-195",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-196",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-197",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-198",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-199",
+      "status": "settled",
+      "version": 9
+    },
+    {
+      "id": "SIM200-200",
+      "status": "settled",
+      "version": 9
+    }
+  ],
+  "expected": {
+    "orders": 200,
+    "transport_delivered": 180,
+    "pickup_delivered": 12,
+    "cancelled": 8,
+    "demand_units": 260,
+    "first_delivery_units": 252,
+    "aftercare": 20
+  },
+  "scope": "200 票合成业务演练；道路真实引擎覆盖与业务 API 验收分开记录",
+  "complete": true,
+  "failures": [],
+  "engine": "v13\\engine\\core.py",
+  "inventory": {
+    "available": 8,
+    "delivered": 252
+  },
+  "real_road_integration": "not_run: synthetic carrier evidence only",
+  "aftercare_closed": 20,
+  "expected_rejections": 132,
+  "trace_events": 2591,
+  "first_delivery_unique_sns": 252,
+  "main_actual_cost": 72060.0,
+  "repair_actual_cost": 8000.0,
+  "repair_redelivery_orders": 20,
+  "repair_redelivery_settled": 20,
+  "open_aftercare": 0,
+  "cancelled_sn_locks": 0,
+  "orphan_bookings": 0,
+  "initial_stock_units": 174,
+  "ocean_receipt_units": 86,
+  "full_acceptance": false
+}
