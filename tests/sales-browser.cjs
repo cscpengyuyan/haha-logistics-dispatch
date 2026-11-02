@@ -59,7 +59,7 @@ with zipfile.ZipFile(src) as z, zipfile.ZipFile(dst,"w",zipfile.ZIP_DEFLATED) as
   assert.ok((await lines.allTextContents()).some(t=>t.includes('01 / 001')&&t.includes('06103')));
   await upload(file);assert.equal(await preview.locator('article').filter({hasText:'完全重复'}).count(),3);
   await page.getByRole('button',{name:'确认导入'}).click();await preview.waitFor({state:'hidden'});
-  await dl('下载达拉斯两台演练工作簿',file);await upload(file);await page.getByRole('button',{name:'确认导入'}).click();
+  await dl(/^(下载填写示例|下载达拉斯两台演练工作簿)$/,file);await upload(file);await page.getByRole('button',{name:'确认导入'}).click();
   await page.locator('[data-lines] article').filter({hasText:'DEMO-DAL-02'}).waitFor();
   await page.locator('#signout').click();await page.locator('#signin select').selectOption('dispatch');await page.locator('#signin [type=submit]').click();
   await page.goto(base+'#sales');const dal=page.locator('[data-lines] article').filter({hasText:'DEMO-DAL-02'});

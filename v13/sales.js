@@ -12,7 +12,7 @@ window.HHSales = (() => {
   }
   async function mount(host,ctx,params) {
     const api=(path,body)=>ctx.api('/api/sales/'+path,body?{method:'POST',body}:{});
-    host.innerHTML='<section class="wf-board"><header class="wf-board-head"><div><small class="wf-overline">SALES INTAKE</small><h2>销售交单</h2></div></header><div class="wf-form"><div class="wf-full"><button type="button" data-act="template">下载交单模板</button> <button type="button" data-act="example">下载达拉斯两台演练工作簿</button> <button type="button" data-act="online">在线填写</button></div><label class="field wf-full"><span>上传 XLSX / UTF-8 CSV 预检</span><input type="file" accept=".xlsx,.csv" data-file></label><p class="muted wf-full">工作簿第 5 行为表头。以 CRM 订单号、站点编号和明细行号匹配，保留编号前导零。公开演练请使用虚构数据。</p></div><div data-entry></div><div data-preview aria-live="polite"></div><div data-message role="status"></div></section><section class="wf-board"><header class="wf-board-head"><h2>销售交接记录</h2></header><div data-lines></div></section>';
+    host.innerHTML='<section class="wf-board"><header class="wf-board-head"><div><small class="wf-overline">SALES INTAKE</small><h2>销售交单</h2></div></header><div class="wf-form"><div class="wf-full"><button type="button" data-act="template">下载交单模板</button> <button type="button" data-act="example">下载填写示例</button> <button type="button" data-act="online">在线填写</button></div><label class="field wf-full"><span>上传 XLSX / UTF-8 CSV 预检</span><input type="file" accept=".xlsx,.csv" data-file></label><p class="muted wf-full">工作簿第 5 行为表头。以 CRM 订单号、站点编号和明细行号匹配，保留编号前导零。公开演练请使用虚构数据。</p></div><div data-entry></div><div data-preview aria-live="polite"></div><div data-message role="status"></div></section><section class="wf-board"><header class="wf-board-head"><h2>销售交接记录</h2></header><div data-lines></div></section>';
     let fields={},enums={},lines=[],file=null,report=null,mapping={},busy=false;
     const at=s=>host.querySelector(s),message=t=>{at('[data-message]').textContent=t};
     function formFields(facts={},exclude=[]) {
@@ -89,7 +89,7 @@ window.HHSales = (() => {
       busy=true;
       try {
         if(['template','example'].includes(what)){
-          const res=await api(what);download(new Blob([Uint8Array.from(atob(res.base64),v=>v.charCodeAt(0))]),(what==='example'?'达拉斯两台_演练':'销售交单收集表_系统模板')+'.xlsx');return;
+          const res=await api(what);download(new Blob([Uint8Array.from(atob(res.base64),v=>v.charCodeAt(0))]),(what==='example'?'销售交单收集表_填写示例':'销售交单收集表_系统模板')+'.xlsx');return;
         }
         if(what==='map'){at('[data-preview]').querySelectorAll('[data-header]').forEach(s=>{if(s.value)mapping[s.dataset.header]=s.value});await preview();return}
         if(what==='fix'||what==='unfix'){

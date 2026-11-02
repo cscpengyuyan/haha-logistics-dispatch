@@ -7,7 +7,7 @@ const {spawn}=require('node:child_process');
   fs.mkdirSync(out,{recursive:true});
   const shared=process.argv.includes('--shared');
   const startup=shared?['server.py','--port','0','--demo','--db',path.join(out,'shared-'+Date.now()+'.sqlite3')]:['preview.py','--port','0'];
-  const server=process.env.FLOW_URL?null:spawn('python',['-B','-u',...startup],{cwd:root,windowsHide:true,stdio:['ignore','pipe','ignore']});
+  const server=process.env.FLOW_URL?null:spawn('python',['-B','-u',...startup],{cwd:root,env:{...process.env,HH_APP_VERSION:'v12'},windowsHide:true,stdio:['ignore','pipe','ignore']});
   let browser,p,context,recorder,finished,timer;
   try{
     const base=process.env.FLOW_URL||await new Promise((ok,no)=>{server.stdout.once('data',b=>ok(shared?String(b).match(/http:\/\/127\.0\.0\.1:\d+/)[0]+'/v12/':String(b).trim().split('#')[0]));server.once('error',no)});
